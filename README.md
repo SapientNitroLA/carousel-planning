@@ -60,19 +60,19 @@ This is an outline for an idea to create a low weight responsive carousel with a
 
 
 ## Development process: ##
-Grunt
-Transit.js
-Easing.js
-Mediaelement.js vs Video.js?
-Popcorn.js for events?
-Vanilla JS? jQuery/Zepto?
-separate jQuery plugin?
+Grunt 
+Transit.js 
+Easing.js 
+Mediaelement.js vs Video.js? 
+Popcorn.js for events? 
+Vanilla JS? jQuery/Zepto? 
+separate jQuery plugin? 
 
 
 ## Modules: ##
-Video
-SWF
-Easing
-touch/mobile
-navigation controls (L/R and dots)
-thumbnails
+Video 
+SWF 
+Easing 
+touch/mobile 
+navigation controls (L/R and dots) 
+thumbnails 
