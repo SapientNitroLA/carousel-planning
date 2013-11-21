@@ -87,4 +87,4 @@ touch/mobile
 
 navigation controls (L/R and dots) 
 
-thumbnails 
+thumbnails  
