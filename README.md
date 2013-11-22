@@ -1,90 +1,139 @@
-# Overview #
+# Objective #
 
-This is an outline for an idea to create a low weight responsive carousel with a plugin module architecture for extending features.
+Design a light-weight, flexible carousel module that enables reusable across projects:
 
-
-## Features: ##
-+ responsive
-+ left/right controls
-	+ visible
-	+ custom graphic (default: lt/gt)
-	+ hotspot
-	+ placement (top/middle/bottom)
-	+ looping
-	+ hover state graphic
-+ navigation dots
-	+ custom graphic (default: dot)
-	+ placement (left/middle/right)
-	+ offset (vertical/horizontal)
-	+ hover state graphic
-+ thumbnails
-	+ size
-	+ image
-	+ hover state
-	+ # visible
-	+ L/R arrows
-		+ graphic
-		+ hover state
-	+ current slide marker
-		+ graphic or CSS
-+ mobile touch capable
-	+ iOS
-	+ Android
-	+ Touch tablets
-+ content
-	+ images
-	+ videos (HTML5 w/Flash fallback - Mediaelement.js) or user can use custom player
-	+ SWFs
-	+ everything else?
-+ API
-	+ external controls
-		+ next
-		+ previous
-		+ id
-	+ deep linking
-	+ transition
-		+ speed
-		+ type
-	+ slide duration
-	+ ease type
-	+ events
-		+ transition start
-		+ transition end
-		+ click
-			+ dots
-			+ L/R controls
-+ Lightbox functionality?
-
-+ CSS3 animation with JS animation fallback (transit.js?)
-+ CSS styling template
+- Deeply customizable options
+- Deeply extensible architecture
+- Library/framework agnostic with minimal code redundancy
 
 
-## Development process: ##
-Grunt 
+  
+## Core Features ##
 
-Transit.js 
+- Accessible
 
-Easing.js 
+- Basic prev/next navigation controls
 
-Mediaelement.js vs Video.js? 
+- Minimal (and replaceable) animation
+    - Basic css animation (js fallback as extension?)
+    - Pluggable framework to replace default animation engine
+    - expose needed elements/object/properties
 
-Popcorn.js for events? 
-
-Vanilla JS? jQuery/Zepto? 
-
-separate jQuery plugin? 
+- Deep linking
 
 
 
-## Modules: ##
-Video 
+## Options ##
 
-SWF 
 
-Easing 
+### Properties ###
 
-touch/mobile 
+**Layout**
 
-navigation controls (L/R and dots) 
+- Fixed or Responsive
+    - fixed or relative units?
+    - should content be ignored and left up to the developer?
 
-thumbnails  
+- Horizontal or Vertical
+
+
+**Controls**
+
+- Prev/Next
+    - Markup:
+        - `ul` with `button` tags
+        - `nav` with `button` tags
+        - custom markup with template `{token}` tags
+    - Placement:
+        - inside/outside the mask
+        - before/after mask
+
+- Frames
+    - Markup:
+      - `ul` with `button` tags
+      - `nav` with `button` tags
+      - custom markup with template `{token}` tags
+    - Placement:
+      - inside the navigation controls
+      - inside/outside the mask
+      - before/after the mask
+
+
+### Event Hooks ###
+
+Should these should instead be events that are emitted rather than added to the options.
+
+- Ready
+- Before Destroy
+- After Destroy
+- Before Animation
+- After Animation
+- Before Resize
+- After Resize
+- Tiles Added
+- Tiles Removed
+- Tile Input
+    - extensible, default input type would be click
+
+
+
+## API ##
+
+
+### Properties ###
+
+- State `Object`
+    - Length `Number`
+    - Tiles `Array`
+    - Frames `Array`
+    - Current Tile Index `Number`
+    - Current Frame Index `Number`
+    - Options `Object`
+
+
+### Methods ###
+
+- Previous
+- Next
+- Config
+- Destroy
+- Add Tiles
+- Remove Tiles
+- Subscribe to Event
+    - should a subscribe method be used instead of event hooks on the options object?
+
+
+
+## Extension Ideas ##
+
+The extensible architecture should support the ability to add features that integrate at the core level.
+
+- Support for Touch/Pointer Events
+
+- Modes
+    - Auto Advance
+    - Looping
+
+- Content Type Support
+    - Video
+      - what API would be useful?
+
+- Animation Engine
+    - enable the animation to be replaced
+
+- CSS Layout Themes
+
+
+
+## Dependencies ##
+
+- GruntJS for builds
+
+- [UMD](https://github.com/umdjs/umd) pattern for source modularity and extension configuration. Need to research on how other libs handle this.
+    - RequireJS
+
+- DOM libs
+    - Vanilla JS for DOM manipulation?
+        - Support for passing in a jQuery/Zepto collection and convert it to an array.
+    - What about animation? Is there a small lib that can handle basic css animations with js fallback? Can we use only the animation aspect of jQuery?
+    - Modernizr, or can we get away with minimal feature tests and require extensions to roll their own? How do other libs handle this?
