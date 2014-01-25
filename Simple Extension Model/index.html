@@ -1,0 +1,30 @@
+<!DOCTYPE html>                       <!--[if lt IE 8]>
+<html lang="en" class="no-js ltie8">  <![endif]--><!--[if IE 8]>
+<html lang="en" class="no-js ie8">    <![endif]--><!--[if IE 9]>
+<html lang="en" class="no-js ie9">    <![endif]--><!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="en" class="no-js">        <!--<![endif]-->
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>Simple Extension Model</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+</head>
+<body>
+<script src="x.js"></script>
+<script src="core.js"></script>
+<script src="core-feature-a.js"></script>
+<script src="core-feature-b.js"></script>
+<script>
+
+  var component1 = core( featureA );
+  var component2 = core( featureA, featureB );
+  
+  component1.init();
+  component2.init();
+  
+  console.log( 'component1', component1 );
+  console.log( 'component2', component2 );
+
+</script>
+</body>
+</html>
