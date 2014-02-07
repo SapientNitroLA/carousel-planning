@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <title>Carousel Examples</title>
+  <link href="css/reset.css" rel="stylesheet"/>
+  <link href="css/styles.css" rel="stylesheet"/>
+  <link href="css/tile-carousel.css" rel="stylesheet"/>
+  <link href="css/product-details.css" rel="stylesheet"/>
+  <link href="css/components.css" rel="stylesheet"/>
+  <link href="css/ie.css" rel="stylesheet"/>
+  <link href="css/documentation.css" rel="stylesheet"/>
+  <style type="text/css">
+    #ProductDetailsTop {
+    	margin:0;
+    	padding-top:0;
+    }
+    #ProductDetailsTop .more {
+    	float:none;
+    	min-height:0;
+    	padding-bottom:0;
+    }
+    #ProductDetailsTop .more .contentModule {
+    	border-bottom:none;
+    }
+    #Main .single-image-story.carousel-story {
+    	padding:0;
+    	height:auto;
+    }
+    #ProductDetailsTop .more:after {
+    	height:0;
+    	clear:both;
+    	content:".";
+    	display:block;
+    	visibility:hidden;
+    }
+    .ie #ProductDetailsTop .more {
+    	zoom:1;
+    }
+    #ProductDetailsTop .more .views ul.alt-views li {
+    	cursor:default;
+    }
+  </style>
+  <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="js/TileCarousel.js"></script>
+  <script type="text/javascript">
+	
+    $(function() {
+      
+      var body = $( 'body' ),
+        adjBackground = $( '#adjacency-background' );
+      
+      var sizeAdjacencyBackground = function () {
+      
+        var ab = adjBackground,
+          parent = ab.offsetParent(),
+          sab = sizeAdjacencyBackground,
+          resize = function() {
+          
+            var bodyWidth = body.outerWidth( true ),
+              margin = -1 * parent.offset().left - sab.delta;
+            
+            ab.css({
+                'margin-left': margin,
+                'width': bodyWidth
+            });
+          };
+
+          sab.delta = sab.delta >= 0
+              ? sab.delta
+              : ab.offset().left - parent.offset().left;
+          
+          if ( !sab.init ) return ( sab.init = true && resize() );
+          
+          if ( sab.id ) clearTimeout( sab.id );
+          
+          sab.id = setTimeout( resize, 5 );
+      };
+      
+      // instantiate alternate views carousel
+      $('.alt-views').tileCarousel({
+          increment: 3,
+          pagination: true,
+          centerPagination: false,
+          encapsulateControls: true
+      });
+      
+      // instantiate component views carousel
+      $('.component-carousel-4').tileCarousel({
+          increment: 4
+      });
+      
+      // instantiate adjacency bar carousel
+      sizeAdjacencyBackground();
+      $(window).bind( 'resize', function() {
+          sizeAdjacencyBackground();
+      });
+      adjBackground.find( '.adjacency-carousel' ).tileCarousel({
+          increment: 6,
+          loop: true,
+          wrapperDelta: 52,
+          viewportDelta: -1
+      });   
+    });
+   
+	</script>
+</head>
+<body>
+<div id="Core">
+  <h1>Carousel Examples</h1>
+  <div id="Content">
+    <div class="section-intro">
+      <h2 class="section-intro-title">Overview</h2>
+      <p>This page contains representations of each type of carousel found on the site.</p>
+      <ol>
+        <li><a title="Skip to" href="#carousel-alternate-views">Alternate Views Carousel</a></li>
+        <li><a title="Skip to" href="#carousel-component">Component Carousel</a></li>
+        <li><a title="Skip to" href="#carousel-adjacency">Adjacency Carousel</a></li>
+      </ol>
+    </div>
+    
+    <hr class="section-divider" />
+    
+    <div id="Main">
+      
+      <div id="carousel-alternate-views" class="example-section">
+        <h2 class="example-title">Alternate Views Carousel</h2>
+        <div id="ProductDetailsTop">
+          <div class="more">
+            <div class="views contentModule" id="alt-views-carousel"> <strong>more views.</strong>
+              
+              <!--#include virtual="includes/alt-views.shtml" -->
+              
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr class="section-divider" />
+      
+      <div id="carousel-component" class="example-section">
+        <h2 class="example-title">Component Carousel</h2>
+        <div class="single-image-story h3 carousel-story">
+          <div class="component component-set w3">
+            <div class="content">
+                
+                <!--#include virtual="includes/component.html" -->
+              
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr class="section-divider" />
+      
+      <div id="carousel-adjacency" class="example-section">
+        <h2 class="example-title">Adjacency Carousel</h2>
+        <div id="adjacency-background">
+          <div id="Carousel">
+              
+              <!--#include virtual="includes/adjacency.html" -->
+            
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+</body>
+</html>
