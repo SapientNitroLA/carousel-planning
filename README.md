@@ -6,7 +6,11 @@ Design a light-weight, flexible carousel module that enables reusable across pro
 - Deeply extensible architecture
 - Library/framework agnostic with minimal code redundancy
 
+## Terminology
 
+*Tile*: Single carousel item
+
+*Frame*: Visible tiles displayed in carousel
   
 ## Core Features ##
 
@@ -21,9 +25,28 @@ Design a light-weight, flexible carousel module that enables reusable across pro
 
 - Deep linking
 
+- Fluid by default (scaling)
+
+- Responsive by extension
+
+- Single tile transition
+
+- Previous/Next buttons
+
+- Tile container is specified by class so carousel is element agnostic (e.g. \<ul\>)
+
+- Default animation: single tile at a time
+
+- Frame tile count
+
+- Frame - no empty tile spaces
 
 
 ## Options ##
+
+- Carousel DOM element (object)
+- Tiles per frame (integer)
+- Animate by frame (boolean)
 
 
 ### Properties ###
@@ -137,3 +160,12 @@ The extensible architecture should support the ability to add features that inte
         - Support for passing in a jQuery/Zepto collection and convert it to an array.
     - What about animation? Is there a small lib that can handle basic css animations with js fallback? Can we use only the animation aspect of jQuery?
     - Modernizr, or can we get away with minimal feature tests and require extensions to roll their own? How do other libs handle this?
+
+
+## Thoughts:
+
+Initial extensions should include:
+
+- Responsive frame feature should be an extension
+- Loop extension
+- Pagination extension
