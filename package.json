@@ -1,0 +1,9 @@
+{
+  "volo": {
+    "baseDir": "library/js/vendor",
+    "dependencies": {
+      "lodash": "github:lodash/lodash/2.4.1#dist/lodash.js",
+      "lodash.min": "github:lodash/lodash/2.4.1#dist/lodash.min.js"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+var defaults=function(e){each(slice.call(arguments,1),function(t){if(t)for(var n in t)e[n]===void 0&&(e[n]=t[n])});return e};

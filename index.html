@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Example Carousel</title>
+	
+	<link rel="stylesheet" href="library/css/core.css" />
+	
+	<style>
+		
+		#carousel {
+			width: 305px;
+		}
+	</style>
+	
+</head>
+<body>
+	<div id="example">
+		<span id="title">Example Carousel</span>
+		<div id="carousel">
+			<ul id="example-carousel">
+				<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
+				<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
+				<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
+				<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
+				<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
+			</ul>
+		</div>
+	</div>
+	
+	<script src="library/js/vendor/jquery.js"></script>
+	<script src="library/js/vendor/lodash.min.js"></script>
+	<script src="library/js/defaults.js"></script>
+	<script src="library/js/x.js"></script>
+	<script src="library/js/core.js"></script>
+	
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			var options = {
+				parent: document.querySelector("#example-carousel")
+			}
+			var carousel1 = core();
+	
+			carousel1.init(options);
+		});
+	</script>
+</body>
+</html>
