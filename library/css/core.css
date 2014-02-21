@@ -20,7 +20,7 @@ ul.adjacency-carousel li {
   float: left;
   outline: none;
   display: block;
-  border: 1px dotted transparent;
+  /* border:1px dotted transparent; */
 }
 .carousel-panel.state-focus {
   border-color: #0069ff;

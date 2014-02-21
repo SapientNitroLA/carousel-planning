@@ -9,37 +9,49 @@
 	<style>
 		
 		#carousel {
-			width: 305px;
+			/* width: 305px; */
+		}
+		
+		.prevFrame {
+			float: left;
+		}
+		.nextFrame {
+			float: right;
+		}
+		
+		.carousel-container {
+			clear: both;
 		}
 	</style>
 	
 </head>
 <body>
-	<div id="example">
-		<span id="title">Example Carousel</span>
-		<div id="carousel">
-			<ul id="example-carousel">
-				<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
-				<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
-				<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
-				<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
-				<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
-			</ul>
-		</div>
+	<h1 id="title">Example Carousel</h1>
+	<div id="carousel">
+		<ul id="example-carousel">
+			<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
+			<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
+			<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
+			<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
+			<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
+		</ul>
 	</div>
 	
-	<script src="library/js/vendor/jquery.js"></script>
-	<script src="library/js/vendor/lodash.min.js"></script>
-	<script src="library/js/defaults.js"></script>
+	<!-- <script src="library/js/vendor/jquery.js"></script> -->
+	<script src="library/js/vendor/lodash.js"></script>
+	<!-- <script src="library/js/defaults.js"></script> -->
 	<script src="library/js/x.js"></script>
 	<script src="library/js/core.js"></script>
+	<script src="library/js/core-feature-a.js"></script>
 	
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
 			var options = {
-				parent: document.querySelector("#example-carousel")
+				parent: document.getElementById("example-carousel"),
+				increment: 2,
+				incrementMode: 'frame'
 			}
-			var carousel1 = core();
+			var carousel1 = core( featureA );
 	
 			carousel1.init(options);
 		});
