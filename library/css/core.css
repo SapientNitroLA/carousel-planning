@@ -8,37 +8,25 @@
   position: relative;
 }
 .carousel-viewport ul,
-.carousel-viewport ul li,
-ul.adjacency-carousel,
-ul.adjacency-carousel li {
+.carousel-viewport ul li {
   margin: 0;
   padding: 0;
   position: relative;
 }
-.carousel-viewport ul li,
-ul.adjacency-carousel li {
+.carousel-viewport ul li {
   float: left;
   outline: none;
   display: block;
   /* border:1px dotted transparent; */
 }
+.carousel-viewport ul * > * {
+  width: 100%;
+}
 .carousel-panel.state-focus {
   border-color: #0069ff;
 }
-.carousel-pagination,
-.carousel-pagination li {
-  margin: 0;
-  padding: 0;
+.carousel-controls {
   position: relative;
-}
-.carousel-pagination li {
-  float: left;
-  display: block;
-}
-.carousel-pagination li a {
-  width: 15px;
-  height: 15px;
-  display: block;
 }
 /*
     Render the element invisible to screen readers to make 

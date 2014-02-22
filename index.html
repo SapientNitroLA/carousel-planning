@@ -5,12 +5,9 @@
 	<title>Example Carousel</title>
 	
 	<link rel="stylesheet" href="library/css/core.css" />
+	<link rel="stylesheet" href="library/css/main.css" />
 	
 	<style>
-		
-		#carousel {
-			/* width: 305px; */
-		}
 		
 		.prevFrame {
 			float: left;
@@ -27,7 +24,7 @@
 </head>
 <body>
 	<h1 id="title">Example Carousel</h1>
-	<div id="carousel">
+	<div id="carousel-wrapper">
 		<ul id="example-carousel">
 			<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
 			<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
@@ -37,9 +34,13 @@
 		</ul>
 	</div>
 	
-	<!-- <script src="library/js/vendor/jquery.js"></script> -->
+	
+	<!-- USED FOR TESING -->
+	<script src="library/js/vendor/jquery.js"></script>
+	<!-- USED FOR TESING -->
+	
+	
 	<script src="library/js/vendor/lodash.js"></script>
-	<!-- <script src="library/js/defaults.js"></script> -->
 	<script src="library/js/x.js"></script>
 	<script src="library/js/core.js"></script>
 	<script src="library/js/core-feature-a.js"></script>
@@ -48,12 +49,15 @@
 		document.addEventListener('DOMContentLoaded', function() {
 			var options = {
 				parent: document.getElementById("example-carousel"),
-				increment: 2,
-				incrementMode: 'frame'
+				increment: 1,
+				incrementMode: 'tile',
+				encapsulateControls: false,
+				wrapperDelta: 10,
+				viewportDelta: 20
 			}
-			var carousel1 = core( featureA );
+			var carousel = core( featureA );
 	
-			carousel1.init(options);
+			carousel.init(options);
 		});
 	</script>
 </body>
