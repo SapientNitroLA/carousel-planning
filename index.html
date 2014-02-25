@@ -49,11 +49,17 @@
 		document.addEventListener('DOMContentLoaded', function() {
 			var options = {
 				parent: document.getElementById("example-carousel"),
-				increment: 1,
+				increment: 3,
 				incrementMode: 'tile',
 				encapsulateControls: false,
 				wrapperDelta: 10,
-				viewportDelta: 20
+				viewportDelta: 20,
+				preFrameChange: function() {
+					console.log("options: preFrameChange()");
+				},
+				postFrameChange: function() {
+					console.log("options: postFrameChange()");
+				}
 			}
 			var carousel = core( featureA );
 	

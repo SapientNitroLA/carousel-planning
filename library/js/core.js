@@ -24,11 +24,11 @@
  * }
  * var carousel1 = core();
  * carousel1.init(options);
- *  
- *  
- *  
- *  
- *  
+ *	
+ *	
+ *	
+ *	
+ *	
  * $('.carousel').tileCarousel();
  * @title Example #1: Default Instantiation
  * @syntax javascript
@@ -52,27 +52,27 @@
 
 
 !function( root, factory ) {
-    if ( typeof define === 'function' && define.amd ) {
-    	// AMD. Register as an anonymous module.
-        define(
-        
-        	[
-        		'libary/js/x',
-        		'library/js/vendor/lodash.min',
-        		'library/js/vendor/jquery'
-        	],
-        	
+	if ( typeof define === 'function' && define.amd ) {
+		// AMD. Register as an anonymous module.
+		define(
+		
+			[
+				'libary/js/x',
+				'library/js/vendor/lodash.min',
+				'library/js/vendor/jquery'
+			],
+			
 			factory
 			
 		);
-    } else {
-        // Browser globals
-        root.carousel = factory(
-	        	root.X,
-	        	root._,
-	        	root.jQuery
-	        );
-    }
+	} else {
+		// Browser globals
+		root.carousel = factory(
+			 	root.X,
+			 	root._,
+			 	root.jQuery
+			 );
+	}
 }(
 	this,
 	function( x, _, jQuery ) {
@@ -206,33 +206,13 @@
 			if ( nextSibling ) nextSibling.insertAfter( wrapper );
 			else parentNode.appendChild( wrapper );
 			
-			// Listen for focus on tiles
-			
-			// !TODO: Add event listener to carousel items when focus changes
-			// Get the element, add a click listener...
-
-
-/*	
-			carousel.delegate( '.carousel-panel', 'focusin focusout', function(e) {
-				var action = e.type === 'focusin' ? 'add' : 'remove';
-				$( e.currentTarget )[ action + 'Class' ]( 'state-focus' );
-			});
-*/
-
-/*
-			carousel.addEventListener( "click", function( e ) {
-				// e.target is the clicked element!
-				// If it was a list item
-				if(e.target && e.target.nodeName == "button") {
-					// List item found!  Output the ID!
-					console.log("List item ",e.target.id.replace("post-")," was clicked!");
-				}
-			});
-*/
-			
-			
 			// Build out the frames and state object
 			this.state = this.normalizeState();
+			
+			
+			
+			
+			
 			
 			wrapper.style.margin = options.wrapperDelta + 'px';
 			viewport.style.margin = options.viewportDelta + 'px';
@@ -252,6 +232,31 @@
 			// load only the visible frame
 			this.lazyloadImages( state.index, state.index + options.increment );
 			
+			// Listen for focus on tiles		
+			var panels = carousel.querySelectorAll( '.carousel-panel' );
+			
+			for( var i = 0, len = panels.length; i < len; ++i ) {
+				this.addEvent( panels[ i ], 'focus', this.focusHandler );
+				this.addEvent( panels[ i ], 'blur', this.focusHandler );
+			}
+			
+			
+			document.addEventListener( 'preFrameEvent', preEvHandler, true );
+			document.addEventListener( 'preFrameEvent', function(evt) {
+			    console.log(evt.detail);
+			}, false );
+			function preEvHandler( e ) {
+				console.log( e );
+			}
+		},
+		
+		focusHandler: function( e ) {
+			var cls = ' state-focus';
+			if ( e.type === 'focus' ) {
+				e.target.className = e.target.className + cls;
+			} else {
+				e.target.className = e.target.className.replace( cls, '' );
+			}
 		},
 		
 		cache: function( key, value ) {
@@ -336,8 +341,9 @@
 				'margin-right: ' + this.options.tileDelta + 'px;';
 				
 			for ( var i = 0; i < tileArr.length; i++ ) {
-				tileArr[0].setAttribute( 'style', tileStyle );
-				carousel.appendChild( tileArr[0] );
+				tileArr[ 0 ].setAttribute( 'style', tileStyle );
+				tileArr[ 0 ].classList.add( 'component-container' );
+				carousel.appendChild( tileArr[ 0 ] );
 			}
 			
 			return state;
@@ -396,8 +402,25 @@
 			
 			// !TODO: Re-work extension event system
 			//self.carousel.trigger( 'preFrameChange', [ state ] );
-			//preFrameChange && preFrameChange.call( self, state );
+			preFrameChange && preFrameChange.call( self, state );
 			
+			var preEvent = document.createEvent( 'MessageEvent' );
+			preEvent.initEvent( 'preFrameEvent', true, true, state );
+			
+/*
+			var evt = document.createEvent("CustomEvent");
+			evt.initCustomEvent("MyEventType", true, true, "Any Object Here");
+			window.dispatchEvent(evt);
+*/
+			
+			document.dispatchEvent( preEvent, [ state ] );
+			//var preEvent = new CustomEvent( 'preFrameEvent', state );
+			//document.dispatchEvent( preEvent );
+			/*
+			target.addEventListener( "custom", xEventHandler, true );
+			var target = document.getElementById( "target" );
+			e.initEvent( "custom", true, true ); 
+			*/
 			
 			carousel.setAttribute( 'class', 'state-busy' );
 			self.toggleAria( state.tileArr, 'remove' );
@@ -410,7 +433,10 @@
 			
 			// !TODO: Re-work extension event system
 			//self.carousel.trigger( 'postFrameChange', [ state ] );
-			//postFrameChange && postFrameChange.call( self, state );
+			postFrameChange && postFrameChange.call( self, state );
+			var postEvent = document.createEvent( "HTMLEvents" );
+			postEvent.initEvent( 'postFrameEvent', true, true );
+			document.dispatchEvent( postEvent, [ state ] );
 						
 		},
 		
@@ -622,6 +648,7 @@
 				obj.addEventListener( evt, fn, capture )
 			}
 		},
+
 		
 		// Helper for updating buttons
 		toggleControl: function( oldBtn, newBtn, obj ) {
@@ -652,4 +679,23 @@
 			init: x.proxy( c, c.init )
 		}
 	}
+	
+	return {
+		this: this
+	}
 });
+
+
+
+(function () {
+  function CustomEvent ( event, params ) {
+	params = params || { bubbles: false, cancelable: false, detail: undefined };
+	var evt = document.createEvent( 'CustomEvent' );
+	evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+	return evt;
+   };
+
+  CustomEvent.prototype = window.CustomEvent.prototype;
+
+  window.CustomEvent = CustomEvent;
+})();

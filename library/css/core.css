@@ -29,10 +29,10 @@
   position: relative;
 }
 /*
-    Render the element invisible to screen readers to make 
-    sure the content is ignored. This is used when 
-    the element needs to take up space in the document
-    flow for dimension calculations.
+	Render the element invisible to screen readers to make 
+	sure the content is ignored. This is used when 
+	the element needs to take up space in the document
+	flow for dimension calculations.
 */
 .state-hidden {
   visibility: hidden;
@@ -40,4 +40,13 @@
 .state-hidden * {
   display: none;
   visibility: hidden;
+}
+/*
+COMPONENT CAROUSEL ACCESSIBILITY
+---------------------------------*/
+.component-container {
+  /* border: 1px dotted transparent !important; */
+}
+.component-container.state-focus {
+  border-color: #0069ff !important;
 }
