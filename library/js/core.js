@@ -26,10 +26,6 @@
  * carousel1.init(options);
  *	
  *	
- *	
- *	
- *	
- * $('.carousel').tileCarousel();
  * @title Example #1: Default Instantiation
  * @syntax javascript
  * @desc Instantiation using default settings: single item carousel, one tile displayed at a time, advances one tile at a time, does not loop and does not display pagination. Note: the `carousel` class is not required for instantiation - any selector can be used.
@@ -39,6 +35,8 @@
  * @option Number increment Number of tiles to display per frame. Default is 1.
  * @option String incrementMode Whether to move the carousel by frame or single tile. Accepted values are `frame` and `tile`. Default is `frame`.
  * @option Boolean encapsulateControls Default is `false`. If `true`, a wrapper is placed around the prev/next links and pagination and centered.
+ * @option String prevText Default is `Previous`. Set controls previous button text.
+ * @option String nextText Default is `Next`. Set controls next button text.
  * @option Number wrapperDelta Change wrapper width by this pixel value. Default is 0.
  * @option Number viewportDelta Change viewport width by this pixel value. Default is 0.
  * @option Number tileDelta Change tile padding by this pixel value. Default is 0.
@@ -58,8 +56,7 @@
 		
 			[
 				'libary/js/x',
-				'library/js/vendor/lodash.min',
-				'library/js/vendor/jquery'
+				'library/js/vendor/lodash.min'
 			],
 			
 			factory
@@ -69,13 +66,12 @@
 		// Browser globals
 		root.carousel = factory(
 			 	root.X,
-			 	root._,
-			 	root.jQuery
+			 	root._
 			 );
 	}
 }(
 	this,
-	function( x, _, jQuery ) {
+	function( x, _ ) {
 	
 	'use strict';
 	
@@ -209,19 +205,8 @@
 			// Build out the frames and state object
 			this.state = this.normalizeState();
 			
-			
-			
-			
-			
-			
 			wrapper.style.margin = options.wrapperDelta + 'px';
 			viewport.style.margin = options.viewportDelta + 'px';
-/*
-			wrapper.style.width = this.state.tileWidth * options.increment + options.wrapperDelta + 'px';
-			viewport.style.width = this.state.tileWidth * options.increment + options.viewportDelta + 'px';
-			carousel.style.width = this.state.tileWidth * this.state.curTileLength + 'px';
-			viewport.scrollLeft = this.state.offset;
-*/
 			
 			this.buildNavigation();
 			
@@ -240,29 +225,22 @@
 				this.addEvent( panels[ i ], 'blur', this.focusHandler );
 			}
 			
-			
-			document.addEventListener( 'preFrameEvent', preEvHandler, true );
-			document.addEventListener( 'preFrameEvent', function(evt) {
-			    console.log(evt.detail);
-			}, false );
-			function preEvHandler( e ) {
-				console.log( e );
-			}
 		},
 		
 		focusHandler: function( e ) {
+		
 			var cls = ' state-focus';
-			if ( e.type === 'focus' ) {
-				e.target.className = e.target.className + cls;
-			} else {
-				e.target.className = e.target.className.replace( cls, '' );
-			}
+			
+			if ( e.type === 'focus' ) e.target.className = e.target.className + cls;
+			else e.target.className = e.target.className.replace( cls, '' );
+			
 		},
 		
 		cache: function( key, value ) {
 			
-			var cache = this.cacheObj,
-				query = cache[ key ] !== 'undefined' ? cache[ key ] : undefined;
+			var cache = this.cacheObj
+				, query = cache[ key ] !== 'undefined' ? cache[ key ] : undefined
+				;
 			
 			if ( !value ) return query;
 				
@@ -274,20 +252,20 @@
 		
 		normalizeState: function() {
 			
-			var index			= 0,
-				state			= this.state,
-				carousel		= this.carousel,
-				tileArr			= carousel.children,
-				origTiles		= tileArr,
-				firstTile		= tileArr[ 0 ],
-				tileWidth		= firstTile.offsetWidth,
-				tileHeight		= firstTile.offsetHeight,
-				options			= this.options,
-				increment		= options.increment,
-				origTileLength	= tileArr.length,
-				curTileLength	= origTileLength,
-				frameLength		= Math.ceil( curTileLength / increment ),
-				state = {
+			var index				= 0
+				, state				= this.state
+				, carousel			= this.carousel
+				, tileArr			= carousel.children
+				, origTiles			= tileArr
+				, firstTile			= tileArr[ 0 ]
+				, tileWidth			= firstTile.offsetWidth
+				, tileHeight		= firstTile.offsetHeight
+				, options			= this.options
+				, increment			= options.increment
+				, origTileLength	= tileArr.length
+				, curTileLength		= origTileLength
+				, frameLength		= Math.ceil( curTileLength / increment )
+				, state = {
 					index: index,
 					offset: 0,
 					spacers: 0,
@@ -308,7 +286,8 @@
 					prevFrame: [],
 					frameIndex: 0,
 					prevFrameIndex: 0
-				};
+				}
+				;
 			
 			this.toggleAria( tileArr, 'add', 'carousel-panel' );
 			
@@ -332,13 +311,13 @@
 			state.curFrame			= state.frameArr[ state.frameIndex ];
 			state.tileDelta			= ( increment * state.curFrameLength ) - state.curTileLength;
 			
-			var tilePercent = Math.round( ( ( 100 / this.options.increment ) * 100) / 100 );
 			
 			this.toggleAria( state.curFrame, 'remove' );
-			
-			var tileStyle =
-				'width: ' + tilePercent + '%; ' +
-				'margin-right: ' + this.options.tileDelta + 'px;';
+			var tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000
+				, tileStyle =
+					'width: ' + tilePercent + '%; ' +
+					'margin-right: ' + this.options.tileDelta + 'px;'
+				;
 				
 			for ( var i = 0; i < tileArr.length; i++ ) {
 				tileArr[ 0 ].setAttribute( 'style', tileStyle );
@@ -352,17 +331,18 @@
 		
 		updateState: function( index, animate ) {
 
-			var self			= this,
-				state			= self.state,
-				ops				= self.options,
-				increment		= ops.increment,
-				prevFrameIndex	= state.frameIndex,
-				index			= index > state.curTileLength - increment ? state.curTileLength - increment
-									: index < 0 ? 0
-									: index,
-				frameIndex		= Math.ceil( index / increment ),
-				isFirstFrame	= index === 0,
-				isLastFrame		= index === state.curTileLength - increment;
+			var self				= this
+				, state				= self.state
+				, ops				= self.options
+				, increment			= ops.increment
+				, prevFrameIndex	= state.frameIndex
+				, index				= index > state.curTileLength - increment ? state.curTileLength - increment
+										: index < 0 ? 0
+										: index
+				, frameIndex		= Math.ceil( index / increment )
+				, isFirstFrame		= index === 0
+				, isLastFrame		= index === state.curTileLength - increment
+				;
 						
 			_.extend( this.state, {
 				index: index,
@@ -385,42 +365,26 @@
 		
 		animate: function() {
 			
-			var self = this,
-				state = self.state,
-				index = state.index,
-				targetIndex = index,
-				options = this.options,
-				carousel = this.element,
-				increment = options.increment,
-				tileWidth = state.tileWidth,
-				preFrameChange = options.preFrameChange,
-				postFrameChange = options.postFrameChange,
-				isFirst = index === 0,
-				isLast = index === ( state.curTileLength - increment );
+			var self = this
+				, state = self.state
+				, index = state.index
+				, targetIndex = index
+				, options = this.options
+				, carousel = this.element
+				, increment = options.increment
+				, tileWidth = state.tileWidth
+				, preFrameChange = options.preFrameChange
+				, postFrameChange = options.postFrameChange
+				, isFirst = index === 0
+				, isLast = index === ( state.curTileLength - increment )
+				;
 			
 			
 			
-			// !TODO: Re-work extension event system
-			//self.carousel.trigger( 'preFrameChange', [ state ] );
+			// Publish animation begin and call pre-animation option
+			this.x.publish( 'preFrameChange' );
 			preFrameChange && preFrameChange.call( self, state );
 			
-			var preEvent = document.createEvent( 'MessageEvent' );
-			preEvent.initEvent( 'preFrameEvent', true, true, state );
-			
-/*
-			var evt = document.createEvent("CustomEvent");
-			evt.initCustomEvent("MyEventType", true, true, "Any Object Here");
-			window.dispatchEvent(evt);
-*/
-			
-			document.dispatchEvent( preEvent, [ state ] );
-			//var preEvent = new CustomEvent( 'preFrameEvent', state );
-			//document.dispatchEvent( preEvent );
-			/*
-			target.addEventListener( "custom", xEventHandler, true );
-			var target = document.getElementById( "target" );
-			e.initEvent( "custom", true, true ); 
-			*/
 			
 			carousel.setAttribute( 'class', 'state-busy' );
 			self.toggleAria( state.tileArr, 'remove' );
@@ -431,18 +395,16 @@
 			carousel.className.replace( /\bstate-busy\b/, '' );
 			
 			
-			// !TODO: Re-work extension event system
-			//self.carousel.trigger( 'postFrameChange', [ state ] );
+			// Publish animation end and call post-animation option
+			this.x.publish( 'postFrameChange' );
 			postFrameChange && postFrameChange.call( self, state );
-			var postEvent = document.createEvent( "HTMLEvents" );
-			postEvent.initEvent( 'postFrameEvent', true, true );
-			document.dispatchEvent( postEvent, [ state ] );
 						
 		},
 		
 		lazyloadImages: function( start, stop ) {
-			var self = this,
-				tiles = self.state.tileObj;
+			var self = this
+				, tiles = self.state.tileObj
+				;
 
 			if ( this.lazyloadCache[ start ] ) return;
 			
@@ -462,33 +424,36 @@
 		
 		buildNavigation: function() {
 			
-			var text,
-				self			= this,
-				state			= this.state,
-				index			= state.index,
-				wrapper			= self.wrapper,
-				options			= self.options,
-				increment		= options.increment,
-				controls		= tmplControls.cloneNode( true ),
-				controlsParent	= tmplControlsParent.cloneNode( true ),
-				controlsWrapper = options.encapsulateControls ? controls : wrapper,
-				viewport		= self.viewport,
-				viewportWidth	= state.tileWidth * options.increment + options.viewportDelta;
+			var text
+				, self				= this
+				, state				= this.state
+				, index				= state.index
+				, wrapper			= self.wrapper
+				, options			= self.options
+				, increment			= options.increment
+				, controls			= tmplControls.cloneNode( true )
+				, controlsParent	= tmplControlsParent.cloneNode( true )
+				, controlsWrapper 	= options.encapsulateControls ? controls : wrapper
+				, viewport			= self.viewport
+				, viewportWidth		= state.tileWidth * options.increment + options.viewportDelta
+				, prevFrame			= 'prevFrame'
+				, nextFrame			= 'nextFrame'
+				;
 			
 			text = options.prevText;
 			self.prev = tmplPN.cloneNode( true );
-			self.prev.setAttribute( 'class', 'prevFrame' );
+			self.prev.setAttribute( 'class', prevFrame );
 			self.prev.innerHTML = text;
 			
 			text = options.nextText;
 			self.next = tmplPN.cloneNode( true );
-			self.next.setAttribute( 'class', 'nextFrame' );
+			self.next.setAttribute( 'class', nextFrame );
 			self.next.innerHTML = text;
 			
 			self.prevDisabled = tmplPNDisabled.cloneNode( true );
-			self.prevDisabled.classList.add( 'prevFrame' );
+			self.prevDisabled.classList.add( prevFrame );
 			self.nextDisabled = tmplPNDisabled.cloneNode( true );
-			self.nextDisabled.classList.add( 'nextFrame' );
+			self.nextDisabled.classList.add( nextFrame );
 			
 			// Set original buttons
 			self.prevBtn = self.prev;
@@ -540,14 +505,15 @@
 		
 		updateNavigation: function() {
 			
-			var prevDisabled,
-				nextDisabled,
-				self = this,
-				state = this.state,
-				index = state.index,
-				options = self.options,
-				isFirst = index === 0,
-				isLast = index + this.options.increment >= state.curTileLength;
+			var prevDisabled
+				, nextDisabled
+				, self = this
+				, state = this.state
+				, index = state.index
+				, options = self.options
+				, isFirst = index === 0
+				, isLast = index + this.options.increment >= state.curTileLength
+				;
 				
 			prevDisabled = self.prevBtn !== self.prev;
 			nextDisabled = self.nextBtn !== self.next;
@@ -585,10 +551,11 @@
 		
 		reset: function() {
 			
-			var self = this,
-				state = self.state,
-				index = state.index,
-				options = self.options;
+			var self = this
+				, state = self.state
+				, index = state.index
+				, options = self.options
+				;
 			
 			index = 0;
 			
@@ -601,20 +568,21 @@
 		
 		toggleAria: function( itemArray, operation, initClass ) {
 			
-			var item,
-				classes,
-				i = 0,
-				self = this,
-				state = self.state,
-				length = itemArray.length,
-				ariaHClass = ' state-hidden',
-				ariaVClass = ' state-visible',
-				rAriaHClass = /\sstate-hidden/,
-				rAriaVClass = /\sstate-visible/,
-				rSpacerClass = /carousel-panel-spacer/,
-				add = operation === 'add' ? true : false,
-				initClass = initClass ? ' ' + initClass : '',
-				hasAriaInited = this.cache( 'hasAriaInited' );
+			var item
+				, classes
+				, i = 0
+				, self = this
+				, state = self.state
+				, length = itemArray.length
+				, ariaHClass = ' state-hidden'
+				, ariaVClass = ' state-visible'
+				, rAriaHClass = /\sstate-hidden/
+				, rAriaVClass = /\sstate-visible/
+				, rSpacerClass = /carousel-panel-spacer/
+				, add = operation === 'add' ? true : false
+				, initClass = initClass ? ' ' + initClass : ''
+				, hasAriaInited = this.cache( 'hasAriaInited' )
+				;
 			
 			for ( ; i < length; i++ ) {
 				
@@ -684,18 +652,3 @@
 		this: this
 	}
 });
-
-
-
-(function () {
-  function CustomEvent ( event, params ) {
-	params = params || { bubbles: false, cancelable: false, detail: undefined };
-	var evt = document.createEvent( 'CustomEvent' );
-	evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
-	return evt;
-   };
-
-  CustomEvent.prototype = window.CustomEvent.prototype;
-
-  window.CustomEvent = CustomEvent;
-})();
