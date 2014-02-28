@@ -106,22 +106,22 @@
 	var tmplPN = document.createElement( 'button' );
 			
 	var tmplPNDisabled = document.createElement( 'span' );
-		tmplPNDisabled.setAttribute('class', 'disabled' );
+		tmplPNDisabled.setAttribute( 'class', 'disabled' );
 	
 	var tmplControls = document.createElement( 'div' );
-		tmplControls.setAttribute('class', 'carousel-controls' );
+		tmplControls.setAttribute( 'class', 'carousel-controls' );
 		
 	var tmplControlsParent = document.createElement( 'div' );
-		tmplControlsParent.setAttribute('class', 'carousel-controls-wrapper' );
+		tmplControlsParent.setAttribute( 'class', 'carousel-controls-wrapper' );
 	
 	var tmplPagination = document.createElement( 'ul' );
-		tmplPagination.setAttribute('class', 'carousel-pagination' );
+		tmplPagination.setAttribute( 'class', 'carousel-pagination' );
 	
 	var tmplCounter = document.createElement( 'div' );
-		tmplCounter.setAttribute('class', 'carousel-display-counter' );
+		tmplCounter.setAttribute( 'class', 'carousel-display-counter' );
 		
 	var tmplSpacerTile = document.createElement( 'li' );
-		tmplSpacerTile.setAttribute('class', 'carousel-panel-spacer state-hidden' );
+		tmplSpacerTile.setAttribute( 'class', 'carousel-panel-spacer state-hidden' );
 	
 
 	// - See more at: http:osric.com/chris/accidental-developer/2009/08/javascript-insertafter
