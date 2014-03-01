@@ -147,7 +147,7 @@
 		element: null,
 		parentNode: null,
 		options: { id: 'options' },
-		state: { test: 'test' },
+		state: {},
 		
 		init: function( options ) {
 			
