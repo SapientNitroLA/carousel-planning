@@ -471,16 +471,15 @@
 			}
 			
 			// Disable prev button
-			if ( index === 0 ) self.prevBtn = self.prevDisabled;
+			//if ( index === 0 ) self.prevBtn = self.prevDisabled;
+			if ( index === 0 ) self.prevBtn.disabled = true;
 			
 			// Insert controls
 			if ( !options.encapsulateControls ) {
-				
 				wrapper.parentNode.insertBefore( self.prevBtn, wrapper );
-				wrapper.parentNode.insertBefore( self.nextBtn, wrapper );
+				wrapper.parentNode.insertBefore( self.nextBtn, wrapper.nextSibling );
 			
 			} else {
-				
 				controlsParent.appendChild( controls );
 				controls.appendChild( self.prevBtn );
 				controls.appendChild( self.nextBtn );
@@ -500,9 +499,7 @@
 		
 		updateNavigation: function() {
 			
-			var prevDisabled
-				, nextDisabled
-				, self = this
+			var self = this
 				, state = this.state
 				, index = state.index
 				, options = self.options
@@ -510,14 +507,11 @@
 				, isLast = index + this.options.increment >= state.curTileLength
 				;
 				
-			prevDisabled = self.prevBtn !== self.prev;
-			nextDisabled = self.nextBtn !== self.next;
-										
-			if ( isFirst ) this.toggleControl( 'prevBtn', 'prevDisabled', self );
-			else if ( prevDisabled ) this.toggleControl( 'prevBtn', 'prev', self );
+			if ( isFirst ) self.prevBtn.disabled = true;
+			else self.prevBtn.disabled = false;
 
-			if ( isLast ) this.toggleControl( 'nextBtn', 'nextDisabled', self );
-			else if ( nextDisabled ) this.toggleControl( 'nextBtn', 'next', self );
+			if ( isLast ) self.nextBtn.disabled = true;
+			else self.nextBtn.disabled = false;
 		},
 		
 		prevFrame: function() {
@@ -611,18 +605,7 @@
 				obj.addEventListener( evt, fn, capture )
 			}
 		},
-
 		
-		// Helper for updating buttons
-		toggleControl: function( oldBtn, newBtn, obj ) {
-			
-			var parent = ( this.options.encapsulateControls ) ?
-					this.parentNode.querySelector('.carousel-controls') :
-					this.parentNode;
-			
-			parent.replaceChild( obj[ newBtn ], obj[ oldBtn ]);
-			
-			obj[ oldBtn ] = obj[ newBtn ];
 		log: {
 			enabled: true,
 			msg: function( msg ) {
@@ -648,6 +631,7 @@
 		}
 	}
 	
+
 	return {
 		this: this
 	}
