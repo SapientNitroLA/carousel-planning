@@ -81,7 +81,6 @@
 			incrementMode: 'frame', // tile or frame
 			encapsulateControls: false,
 			accessible: true,
-			showTile: 0,
 			wrapperDelta: 0,
 			viewportDelta: 0,
 			preFrameChange: null,
@@ -128,9 +127,6 @@
 		this.parentNode.insertBefore( newNode, this.nextSibling );
 	}
 	
-	
-	
-	
 	var Core = function( x, options ) {
 		this.log.msg( 'new Core instance created' );
 		
@@ -157,7 +153,7 @@
 			this.options = _.extend( defaults, options );
 			
 			// Make sure we have integers
-			[ 'increment', 'speed', 'showTile', 'wrapperDelta', 'viewportDelta' ].forEach( function( el ) {
+			_([ 'increment', 'wrapperDelta', 'viewportDelta' ]).forEach( function( el ) {
 				self.options[ el ] = parseInt( self.options[ el ], 10 );
 			});
 			
@@ -443,7 +439,6 @@
 			}
 			
 			// Disable prev button
-			//if ( index === 0 ) self.prevBtn = self.prevDisabled;
 			if ( index === 0 ) self.prevBtn.disabled = true;
 			
 			// Insert controls
@@ -465,7 +460,6 @@
 					'left: ' + ( ( viewportWidth / 2 ) - ( controlsWidth / 2 ) ) + 'px';
 				
 				controls.setAttribute( 'style', newStyle );
-				
 			}
 		},
 		
