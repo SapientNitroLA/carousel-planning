@@ -575,7 +575,10 @@
 		log: {
 			enabled: true,
 			msg: function( msg ) {
-				if ( this.enabled ) console.log( msg );
+				if ( this.enabled ) {
+					if ( arguments.length === 1 ) console.log( msg );
+					else console.log( arguments );
+				}
 			}
 		}
 	}

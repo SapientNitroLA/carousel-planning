@@ -75,9 +75,12 @@ X.prototype = {
     },
     
     log: {
-		enabled: false,
+		enabled: true,
 		msg: function( msg ) {
-				if ( this.enabled ) this.log.msg( msg );
+			if ( this.enabled ) {
+				if ( arguments.length === 1 ) console.log( msg );
+				else console.log( arguments );
+			}
 		}
 	}
 };
