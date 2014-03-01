@@ -134,7 +134,7 @@
 	
 	
 	var Core = function( x, options ) {
-		console.log( 'new Core instance created' );
+		this.log.msg( 'new Core instance created' );
 		
 		var self = this;
 		
@@ -628,6 +628,11 @@
 			parent.replaceChild( obj[ newBtn ], obj[ oldBtn ]);
 			
 			obj[ oldBtn ] = obj[ newBtn ];
+		log: {
+			enabled: true,
+			msg: function( msg ) {
+				if ( this.enabled ) console.log( msg );
+			}
 		}
 	}
 

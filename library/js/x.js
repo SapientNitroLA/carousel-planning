@@ -29,9 +29,9 @@ X.prototype = {
             , subs = this.subscribers[ hook ]
             ;
 
-        if ( !subs ) return console.log( 'publish', hook );
+        if ( !subs ) return this.log.msg( 'publish', hook );
     
-        console.log( 'publish begin', hook );
+        this.log.msg( 'publish begin', hook );
     
         for ( var i = 0; i < subs.length; i++ ) {
         
@@ -42,11 +42,11 @@ X.prototype = {
             else sub.call( this );
         }
     
-        console.log( 'publish end', hook );
+        this.log.msg( 'publish end', hook );
     },
     
     subscribe: function( hook, method ) {
-        console.log( 'subscriber added to', hook );
+        this.log.msg( 'subscriber added to', hook );
     
         this.subscribers[ hook ] = this.subscribers[ hook ] || [];
     
@@ -72,5 +72,12 @@ X.prototype = {
                 return context.state[ key ];
             }
         };
-    }
+    },
+    
+    log: {
+		enabled: false,
+		msg: function( msg ) {
+				if ( this.enabled ) this.log.msg( msg );
+		}
+	}
 };

@@ -5,7 +5,7 @@ var featureA = {
 	
 	// Default
 	setup: function( api ) {
-		console.log( '[' + this.id	+ ']', 'execute setup' );
+		this.log.msg( '[' + this.id	+ ']', 'execute setup' );
 		
 		api.subscribe( 'afterInit', this.custom );
 		api.subscribe( 'preFrameChange', this.preFrameChange );
@@ -13,24 +13,31 @@ var featureA = {
 	},
 	
 	preFrameChange: function( api ) {
-		console.log( '[' + this.id	+ ']', 'pre-frame animation' );
+		this.log.msg( '[' + this.id	+ ']', 'pre-frame animation' );
 	},
 	
 	postFrameChange: function( api ) {
-		console.log( '[' + this.id	+ ']', 'post-frame animation' );
+		this.log.msg( '[' + this.id	+ ']', 'post-frame animation' );
 	},
 	
 	// Default
 	destroy: function( api ) {
-		console.log( '[' + this.id	+ ']', 'execute destroy' );
+		this.log.msg( '[' + this.id	+ ']', 'execute destroy' );
 	},
 	
 	custom: function( api ) {
-		console.log( '[' + this.id	+ ']', 'execute custom' );
+		this.log.msg( '[' + this.id	+ ']', 'execute custom' );
 		
 		api.data.init = true;
 		
-		console.log( '[' + this.id	+ ']', 'core.state.init:', api.state( 'init' ) );
+		this.log.msg( '[' + this.id	+ ']', 'core.state.init:', api.state( 'init' ) );
 		api.publish( 'update' );
+	},
+	
+	log: {
+		enabled: false,
+		msg: function( msg ) {
+				if ( this.enabled ) console.log( msg );
+		}
 	}
 }
