@@ -208,13 +208,6 @@
 			
 			this.buildNavigation();
 			
-			// Cache array for lazy loader
-			this.lazyloadCache = new Array( state.curTileLength );
-			
-			// Lazy load images
-			// load only the visible frame
-			this.lazyloadImages( state.index, state.index + options.increment );
-			
 			// Listen for focus on tiles		
 			var panels = carousel.querySelectorAll( '.carousel-panel' );
 			
@@ -394,27 +387,6 @@
 			this.x.publish( 'postFrameChange' );
 			postFrameChange && postFrameChange.call( self, state );
 						
-		},
-		
-		lazyloadImages: function( start, stop ) {
-			var self = this
-				, tiles = self.state.tileObj
-				;
-
-			if ( this.lazyloadCache[ start ] ) return;
-			
-			for ( var i = start; i < stop; i++ ) {
-								
-				self.lazyloadCache[ i ] = true;
-				
-				var imgs = tiles[ i ].getElementsByTagName( 'img' );
-				
-				$('img', tiles[ i ] ).each( function() {
-					
-					if ( !this.src ) this.src = $( this ).attr( 'original' );
-
-				});
-			}
 		},
 		
 		buildNavigation: function() {
