@@ -88,10 +88,10 @@
 			postFrameChange: null
 		};
 	
-	 // Make sure to use the correct case for IE
-	var test = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
-		tabindex = test ? 'tabIndex' : 'tabindex';
-	test = null;
+	// Make sure to use the correct case for IE
+	var ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
+		tabindex = ieTest ? 'tabIndex' : 'tabindex';
+	ieTest = null;
 		
 	
 	// Compile templates
