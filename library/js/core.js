@@ -39,7 +39,6 @@
  * @option String nextText Default is `Next`. Set controls next button text.
  * @option Number wrapperDelta Change wrapper width by this pixel value. Default is 0.
  * @option Number viewportDelta Change viewport width by this pixel value. Default is 0.
- * @option Number tileDelta Change tile padding by this pixel value. Default is 0.
  * @option Function preFrameChange Callback fired before the transitional frame animation.
  * @option Function postFrameChange Callback fired after the transitional frame animation.
  * 
@@ -85,7 +84,6 @@
 			showTile: 0,
 			wrapperDelta: 0,
 			viewportDelta: 0,
-			tileDelta: 0,
 			preFrameChange: null,
 			postFrameChange: null
 		};
@@ -159,7 +157,7 @@
 			this.options = _.extend( defaults, options );
 			
 			// Make sure we have integers
-			[ 'increment', 'speed', 'showTile', 'wrapperDelta', 'viewportDelta', 'tileDelta' ].forEach( function( el ) {
+			[ 'increment', 'speed', 'showTile', 'wrapperDelta', 'viewportDelta' ].forEach( function( el ) {
 				self.options[ el ] = parseInt( self.options[ el ], 10 );
 			});
 			
@@ -311,12 +309,9 @@
 			state.curFrame			= state.frameArr[ state.frameIndex ];
 			state.tileDelta			= ( increment * state.curFrameLength ) - state.curTileLength;
 			
-			
 			this.toggleAria( state.curFrame, 'remove' );
 			var tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000
-				, tileStyle =
-					'width: ' + tilePercent + '%; ' +
-					'margin-right: ' + this.options.tileDelta + 'px;'
+				, tileStyle = 'width: ' + tilePercent + '%; '
 				;
 				
 			for ( var i = 0; i < tileArr.length; i++ ) {
