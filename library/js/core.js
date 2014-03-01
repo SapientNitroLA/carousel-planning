@@ -203,8 +203,8 @@
 			// Build out the frames and state object
 			this.state = this.normalizeState();
 			
-			wrapper.style.margin = options.wrapperDelta + 'px';
-			viewport.style.margin = options.viewportDelta + 'px';
+			wrapper.style.padding = options.wrapperDelta + 'px';
+			viewport.style.padding = options.viewportDelta + 'px';
 			
 			this.buildNavigation();
 			
