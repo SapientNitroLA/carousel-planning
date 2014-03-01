@@ -602,7 +602,7 @@
 				obj.attachEvent( 'on' + evt, fn );
 			} else {
 				if ( !capture ) capture = false;
-				obj.addEventListener( evt, fn, capture )
+				obj.addEventListener( evt, fn, capture );
 			}
 		},
 		
@@ -631,7 +631,6 @@
 		}
 	}
 	
-
 	return {
 		this: this
 	}
