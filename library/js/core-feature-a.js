@@ -37,10 +37,7 @@ var featureA = {
 	log: {
 		enabled: true,
 		msg: function( msg ) {
-			if ( this.enabled ) {
-				if ( arguments.length === 1 ) console.log( msg );
-				else console.log( arguments );
-			}
+			console.log.apply( console, arguments );
 		}
 	}
 }

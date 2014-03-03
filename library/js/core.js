@@ -63,7 +63,7 @@
 		);
 	} else {
 		// Browser globals
-		root.carousel = factory(
+		root.core = factory(
 			 	root.X,
 			 	root._
 			 );
@@ -73,6 +73,15 @@
 	function( x, _ ) {
 	
 	'use strict';
+	
+	var ieTest
+		, tabindex
+		, tmplWrapper
+		, tmplViewport
+		, tmplControls
+		, tmplPN
+		, tmplControlsParent
+		;
 	
 	var defaults = {
 			prevText: 'Previous',
@@ -88,47 +97,44 @@
 		};
 	
 	// Make sure to use the correct case for IE
-	var ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
-		tabindex = ieTest ? 'tabIndex' : 'tabindex';
+	ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
+	tabindex = ieTest ? 'tabIndex' : 'tabindex';
 	ieTest = null;
 		
 	
 	// Compile templates
-	var tmplWrapper = document.createElement( 'div' );
-		tmplWrapper.setAttribute( 'class', 'carousel-container' );
+	tmplWrapper = document.createElement( 'div' );
+	tmplWrapper.setAttribute( 'class', 'carousel-container' );
 		
-	var tmplViewport = document.createElement( 'div' );
-		tmplViewport.setAttribute( 'class', 'carousel-viewport' );
+	tmplViewport = document.createElement( 'div' );
+	tmplViewport.setAttribute( 'class', 'carousel-viewport' );
 		
-	var tmplPN = document.createElement( 'button' );
-			
-	var tmplPNDisabled = document.createElement( 'span' );
-		tmplPNDisabled.setAttribute( 'class', 'disabled' );
+	tmplPN = document.createElement( 'button' );
 	
-	var tmplControls = document.createElement( 'div' );
-		tmplControls.setAttribute( 'class', 'carousel-controls' );
+	tmplControls = document.createElement( 'div' );
+	tmplControls.setAttribute( 'class', 'carousel-controls' );
 		
-	var tmplControlsParent = document.createElement( 'div' );
-		tmplControlsParent.setAttribute( 'class', 'carousel-controls-wrapper' );
+	tmplControlsParent = document.createElement( 'div' );
+	tmplControlsParent.setAttribute( 'class', 'carousel-controls-wrapper' );
 	
-	var tmplPagination = document.createElement( 'ul' );
-		tmplPagination.setAttribute( 'class', 'carousel-pagination' );
 	
-	var tmplCounter = document.createElement( 'div' );
-		tmplCounter.setAttribute( 'class', 'carousel-display-counter' );
-		
-	var tmplSpacerTile = document.createElement( 'li' );
-		tmplSpacerTile.setAttribute( 'class', 'carousel-panel-spacer state-hidden' );
-	
-
-	// - See more at: http:osric.com/chris/accidental-developer/2009/08/javascript-insertafter
-	// Usage: nodeToInsertAfter.insertAfter(nodeToInsert);
-	Object.prototype.insertAfter = function( newNode ) {
-		this.parentNode.insertBefore( newNode, this.nextSibling );
+	// Utilities
+	function insertAfter( targetNode, newNode ) {
+		targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
 	}
 	
-	var Core = function( x, options ) {
-		this.log.msg( 'new Core instance created' );
+	// Using addEvent method for IE8 support
+	function addEvent( obj, evt, fn, capture ) {
+		if ( window.attachEvent ) {
+			obj.attachEvent( 'on' + evt, fn );
+		} else {
+			if ( !capture ) capture = false;
+			obj.addEventListener( evt, fn, capture );
+		}
+	}
+	
+	function Core( x, options ) {
+		this.log.msg( options, 'new Core instance created' );
 		
 		var self = this;
 		
@@ -158,11 +164,13 @@
 			});
 			
 			if ( this.x.state.init ) return;
-
+			
+			// !TODO: Replace string
 			this.x.publish( 'beforeInit' );
 
 			this.x.state.init = true;
-
+			
+			// !TODO: Replace string
 			this.x.publish( 'afterInit' );
 			
 			this.setup();
@@ -193,7 +201,7 @@
 			viewport.appendChild( carousel );
 			
 			// Replace the carousel
-			if ( nextSibling ) nextSibling.insertAfter( wrapper );
+			if ( nextSibling ) insertAfter( nextSibling, wrapper );
 			else parentNode.appendChild( wrapper );
 			
 			// Build out the frames and state object
@@ -202,22 +210,26 @@
 			wrapper.style.padding = options.wrapperDelta + 'px';
 			viewport.style.padding = options.viewportDelta + 'px';
 			
+			// !TODO: Add event before building navigation
 			this.buildNavigation();
+			// !TODO: Add event after building navigation
 			
-			// Listen for focus on tiles		
+			// Listen for focus on tiles
+			// !TODO: Replace string	
 			var panels = carousel.querySelectorAll( '.carousel-panel' );
 			
 			for( var i = 0, len = panels.length; i < len; ++i ) {
-				this.addEvent( panels[ i ], 'focus', this.focusHandler );
-				this.addEvent( panels[ i ], 'blur', this.focusHandler );
+				addEvent( panels[ i ], 'focus', this.focusHandler );
+				addEvent( panels[ i ], 'blur', this.focusHandler );
 			}
 			
 		},
 		
 		focusHandler: function( e ) {
-		
+			// !TODO: Replace string
 			var cls = ' state-focus';
 			
+			// Using 'className' to support IE8
 			if ( e.type === 'focus' ) e.target.className = e.target.className + cls;
 			else e.target.className = e.target.className.replace( cls, '' );
 			
@@ -239,7 +251,10 @@
 		
 		normalizeState: function() {
 			
-			var index				= 0
+			var tile
+				, tileStyle
+				, tilePercent
+				, index				= 0
 				, state				= this.state
 				, carousel			= this.carousel
 				, tileArr			= carousel.children
@@ -275,14 +290,15 @@
 					prevFrameIndex: 0
 				}
 				;
-			
+				
+			// !TODO: Replace string
 			this.toggleAria( tileArr, 'add', 'carousel-panel' );
 			
 			// Build the normalized frames array
 			for ( var sec = 0, len = tileArr.length / increment, count = 1; 
 					sec < len; 
 					sec++, count++ ) {
-				var tile = Array.prototype.slice.call( tileArr, increment * sec, increment * count );
+				tile = Array.prototype.slice.call( tileArr, increment * sec, increment * count );
 				state.frameArr.push( tile );
 			};
 			
@@ -299,13 +315,13 @@
 			state.tileDelta			= ( increment * state.curFrameLength ) - state.curTileLength;
 			
 			this.toggleAria( state.curFrame, 'remove' );
-			var tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000
-				, tileStyle = 'width: ' + tilePercent + '%; '
-				;
+			
+			tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000;
+			tileStyle = 'width: ' + tilePercent + '%; ';
 				
 			for ( var i = 0; i < tileArr.length; i++ ) {
 				tileArr[ 0 ].setAttribute( 'style', tileStyle );
-				tileArr[ 0 ].classList.add( 'component-container' );
+				tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
 				carousel.appendChild( tileArr[ 0 ] );
 			}
 			
@@ -342,7 +358,7 @@
 				prevFrameIndex: state.frameIndex
 			});
 				 
-			animate && this.animate();
+			if ( animate ) this.animate();
 			
 			return state;
 		},
@@ -367,10 +383,10 @@
 			
 			// Publish animation begin and call pre-animation option
 			this.x.publish( 'preFrameChange' );
-			preFrameChange && preFrameChange.call( self, state );
+			if ( preFrameChange ) preFrameChange.call( self, state );
 			
 			
-			carousel.setAttribute( 'class', 'state-busy' );
+			carousel.setAttribute( 'class', 'state-busy' ); // !TODO: Replace string	
 			self.toggleAria( state.tileArr, 'remove' );
 			self.updateNavigation();
 			self.toggleAria( state.tileArr, 'add' );
@@ -388,6 +404,8 @@
 		buildNavigation: function() {
 			
 			var text
+				, controlsWidth
+				, newStyle
 				, self				= this
 				, state				= this.state
 				, index				= state.index
@@ -404,26 +422,17 @@
 				;
 			
 			text = options.prevText;
-			self.prev = tmplPN.cloneNode( true );
-			self.prev.setAttribute( 'class', prevFrame );
-			self.prev.innerHTML = text;
+			self.prevBtn = tmplPN.cloneNode( true );
+			self.prevBtn.setAttribute( 'class', prevFrame );
+			self.prevBtn.innerHTML = text;
 			
 			text = options.nextText;
-			self.next = tmplPN.cloneNode( true );
-			self.next.setAttribute( 'class', nextFrame );
-			self.next.innerHTML = text;
-			
-			self.prevDisabled = tmplPNDisabled.cloneNode( true );
-			self.prevDisabled.classList.add( prevFrame );
-			self.nextDisabled = tmplPNDisabled.cloneNode( true );
-			self.nextDisabled.classList.add( nextFrame );
-			
-			// Set original buttons
-			self.prevBtn = self.prev;
-			self.nextBtn = self.next;
+			self.nextBtn = tmplPN.cloneNode( true );
+			self.nextBtn.setAttribute( 'class', nextFrame );
+			self.nextBtn.innerHTML = text;
 				
 			// Set click events buttons
-			this.addEvent( this.parentNode, 'click', function( e ) {
+			addEvent( this.parentNode, 'click', function( e ) {
 				if ( e.target.nodeName == 'BUTTON' ) {
 					var method = e.target.className;
 					if ( method === 'prevFrame' || method === 'nextFrame' ) {
@@ -434,8 +443,8 @@
 			
 			// Disable buttons if there is only one frame
 			if ( state.curTileLength <= options.increment ) {
-				self.prevBtn = self.prevDisabled;
-				self.nextBtn = self.nextDisabled;
+				self.prevBtn.disabled = true;
+				self.nextBtn.disabled = true;
 			}
 			
 			// Disable prev button
@@ -451,15 +460,6 @@
 				controls.appendChild( self.prevBtn );
 				controls.appendChild( self.nextBtn );
 				wrapper.appendChild( controlsParent );
-
-				// Center controls beneath carousel
-				var controlsWidth = self.prevBtn.clientWidth + self.nextBtn.clientWidth;
-				
-				var newStyle =
-					'width: ' + controlsWidth + 'px,' +
-					'left: ' + ( ( viewportWidth / 2 ) - ( controlsWidth / 2 ) ) + 'px';
-				
-				controls.setAttribute( 'style', newStyle );
 			}
 		},
 		
@@ -563,27 +563,16 @@
 			
 		},
 		
-		addEvent: function( obj, evt, fn, capture ) {
-			if ( window.attachEvent ) {
-				obj.attachEvent( 'on' + evt, fn );
-			} else {
-				if ( !capture ) capture = false;
-				obj.addEventListener( evt, fn, capture );
-			}
-		},
-		
+		// For development only
 		log: {
 			enabled: true,
 			msg: function( msg ) {
-				if ( this.enabled ) {
-					if ( arguments.length === 1 ) console.log( msg );
-					else console.log( arguments );
-				}
+				console.log.apply( console, arguments );
 			}
 		}
 	}
 
-	window.core = function( extensions, options ) {
+	return function( extensions, options ) {
 		
 		var x = new X;
 
@@ -596,11 +585,9 @@
 		var c = new Core( x, options );
 
 		return {
+			x: x,
 			init: x.proxy( c, c.init )
 		}
 	}
-	
-	return {
-		this: this
-	}
+
 });
