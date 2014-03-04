@@ -72,522 +72,522 @@
 	this,
 	function( x, _ ) {
 	
-	'use strict';
-	
-	var ieTest
-		, tabindex
-		, tmplWrapper
-		, tmplViewport
-		, tmplControls
-		, tmplPN
-		, tmplControlsParent
-		;
-	
-	var defaults = {
-			prevText: 'Previous',
-			nextText: 'Next',
-			increment: 1,
-			incrementMode: 'frame', // tile or frame
-			encapsulateControls: false,
-			accessible: true,
-			wrapperDelta: 0,
-			viewportDelta: 0,
-			preFrameChange: null,
-			postFrameChange: null
-		};
-	
-	// Make sure to use the correct case for IE
-	ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
-	tabindex = ieTest ? 'tabIndex' : 'tabindex';
-	ieTest = null;
+		'use strict';
 		
-	
-	// Compile templates
-	tmplWrapper = document.createElement( 'div' );
-	tmplWrapper.setAttribute( 'class', 'carousel-container' );
+		var ieTest
+			, tabindex
+			, tmplWrapper
+			, tmplViewport
+			, tmplControls
+			, tmplPN
+			, tmplControlsParent
+			;
 		
-	tmplViewport = document.createElement( 'div' );
-	tmplViewport.setAttribute( 'class', 'carousel-viewport' );
+		var defaults = {
+				prevText: 'Previous',
+				nextText: 'Next',
+				increment: 1,
+				incrementMode: 'frame', // tile or frame
+				encapsulateControls: false,
+				accessible: true,
+				wrapperDelta: 0,
+				viewportDelta: 0,
+				preFrameChange: null,
+				postFrameChange: null
+			};
 		
-	tmplPN = document.createElement( 'button' );
-	
-	tmplControls = document.createElement( 'div' );
-	tmplControls.setAttribute( 'class', 'carousel-controls' );
+		// Make sure to use the correct case for IE
+		ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
+		tabindex = ieTest ? 'tabIndex' : 'tabindex';
+		ieTest = null;
+			
 		
-	tmplControlsParent = document.createElement( 'div' );
-	tmplControlsParent.setAttribute( 'class', 'carousel-controls-wrapper' );
-	
-	
-	// Utilities
-	function insertAfter( targetNode, newNode ) {
-		targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
-	}
-	
-	// Using addEvent method for IE8 support
-	function addEvent( obj, evt, fn, capture ) {
-		if ( window.attachEvent ) {
-			obj.attachEvent( 'on' + evt, fn );
-		} else {
-			if ( !capture ) capture = false;
-			obj.addEventListener( evt, fn, capture );
+		// Compile templates
+		tmplWrapper = document.createElement( 'div' );
+		tmplWrapper.setAttribute( 'class', 'carousel-container' );
+			
+		tmplViewport = document.createElement( 'div' );
+		tmplViewport.setAttribute( 'class', 'carousel-viewport' );
+			
+		tmplPN = document.createElement( 'button' );
+		
+		tmplControls = document.createElement( 'div' );
+		tmplControls.setAttribute( 'class', 'carousel-controls' );
+			
+		tmplControlsParent = document.createElement( 'div' );
+		tmplControlsParent.setAttribute( 'class', 'carousel-controls-wrapper' );
+		
+		
+		// Utilities
+		function insertAfter( targetNode, newNode ) {
+			targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
 		}
-	}
-	
-	function Core( x, options ) {
-		this.log.msg( options, 'new Core instance created' );
 		
-		var self = this;
+		// Using addEvent method for IE8 support
+		function addEvent( obj, evt, fn, capture ) {
+			if ( window.attachEvent ) {
+				obj.attachEvent( 'on' + evt, fn );
+			} else {
+				if ( !capture ) capture = false;
+				obj.addEventListener( evt, fn, capture );
+			}
+		}
 		
-		self.x = x;
-		x.state.init = false;
-	}
-
-	Core.prototype = {
-		
-		cacheObj: {},
-		elementNode: null,
-		element: null,
-		parentNode: null,
-		options: { id: 'options' },
-		state: {},
-		
-		init: function( options ) {
+		function Core( x, options ) {
+			this.log.msg( 'new Core instance created' );
 			
 			var self = this;
-			this.elementNode = options.parent;
-			this.element = options.parent;
-			this.options = _.extend( defaults, options );
 			
-			// Make sure we have integers
-			_([ 'increment', 'wrapperDelta', 'viewportDelta' ]).forEach( function( el ) {
-				self.options[ el ] = parseInt( self.options[ el ], 10 );
-			});
-			
-			if ( this.x.state.init ) return;
-			
-			// !TODO: Replace string
-			this.x.publish( 'beforeInit' );
-
-			this.x.state.init = true;
-			
-			// !TODO: Replace string
-			this.x.publish( 'afterInit' );
-			
-			this.setup();
-			
-		},
-
-		setup: function() {
-			var options			= this.options
-				, self			= this
-				, state			= self.state
-				, carousel		= this.element
-				, nextSibling	= this.elementNode.nextSibling
-				, wrapper		= tmplWrapper
-				, viewport		= tmplViewport
-				, controls		= tmplControls
-				, increment		= options.increment
-				;
-			
-			// Make the main elements avaible to `this`
-			this.parentNode = this.elementNode.parentNode;
-			this.wrapper = wrapper;
-			this.carousel = carousel;
-			this.viewport = viewport;
-			
-			// Remove and build the carousel
-			carousel.parentNode.removeChild( carousel );
-			wrapper.appendChild( viewport );
-			viewport.appendChild( carousel );
-			
-			// Replace the carousel
-			if ( nextSibling ) insertAfter( nextSibling, wrapper );
-			else parentNode.appendChild( wrapper );
-			
-			// Build out the frames and state object
-			this.state = this.normalizeState();
-			
-			wrapper.style.padding = options.wrapperDelta + 'px';
-			viewport.style.padding = options.viewportDelta + 'px';
-			
-			// !TODO: Add event before building navigation
-			this.buildNavigation();
-			// !TODO: Add event after building navigation
-			
-			// Listen for focus on tiles
-			// !TODO: Replace string	
-			var panels = carousel.querySelectorAll( '.carousel-panel' );
-			
-			for( var i = 0, len = panels.length; i < len; ++i ) {
-				addEvent( panels[ i ], 'focus', this.focusHandler );
-				addEvent( panels[ i ], 'blur', this.focusHandler );
-			}
-			
-		},
+			self.x = x;
+			x.state.init = false;
+		}
+	
+		Core.prototype = {
 		
-		focusHandler: function( e ) {
-			// !TODO: Replace string
-			var cls = ' state-focus';
+			cacheObj: {},
+			elementNode: null,
+			element: null,
+			parentNode: null,
+			options: { id: 'options' },
+			state: {},
 			
-			// Using 'className' to support IE8
-			if ( e.type === 'focus' ) e.target.className = e.target.className + cls;
-			else e.target.className = e.target.className.replace( cls, '' );
-			
-		},
-		
-		cache: function( key, value ) {
-			
-			var cache = this.cacheObj
-				, query = cache[ key ] !== 'undefined' ? cache[ key ] : undefined
-				;
-			
-			if ( !value ) return query;
+			init: function( options ) {
 				
-			cache[ key ] = value;
-			
-			return cache;
-			
-		},
-		
-		normalizeState: function() {
-			
-			var tile
-				, tileStyle
-				, tilePercent
-				, index				= 0
-				, state				= this.state
-				, carousel			= this.carousel
-				, tileArr			= carousel.children
-				, origTiles			= tileArr
-				, firstTile			= tileArr[ 0 ]
-				, tileWidth			= firstTile.offsetWidth
-				, tileHeight		= firstTile.offsetHeight
-				, options			= this.options
-				, increment			= options.increment
-				, origTileLength	= tileArr.length
-				, curTileLength		= origTileLength
-				, frameLength		= Math.ceil( curTileLength / increment )
-				, state = {
-					index: index,
-					offset: 0,
-					spacers: 0,
-					prevIndex: false,
-					tileObj: tileArr,
-					tileArr: tileArr,
-					origTileLength: origTileLength,
-					curTileLength: curTileLength,
-					tileWidth: tileWidth,
-					tileHeight: tileHeight,
-					curTile: false,
-					prevTile: false,
-					frameArr: [],
-					origFrameLength: frameLength,
-					curFrameLength: frameLength,
-					frameWidth: increment * tileWidth,
-					curFrame: [],
-					prevFrame: [],
-					frameIndex: 0,
-					prevFrameIndex: 0
+				var self = this;
+				this.elementNode = options.parent;
+				this.element = options.parent;
+				this.options = _.extend( defaults, options );
+				
+				// Make sure we have integers
+				_([ 'increment', 'wrapperDelta', 'viewportDelta' ]).forEach( function( el ) {
+					self.options[ el ] = parseInt( self.options[ el ], 10 );
+				});
+				
+				if ( this.x.state.init ) return;
+				
+				// !TODO: Replace string
+				this.x.publish( 'beforeInit' );
+	
+				this.x.state.init = true;
+				
+				// !TODO: Replace string
+				this.x.publish( 'afterInit' );
+				
+				this.setup();
+				
+			},
+	
+			setup: function() {
+				var options			= this.options
+					, self			= this
+					, state			= self.state
+					, carousel		= this.element
+					, nextSibling	= this.elementNode.nextSibling
+					, wrapper		= tmplWrapper
+					, viewport		= tmplViewport
+					, controls		= tmplControls
+					, increment		= options.increment
+					;
+				
+				// Make the main elements avaible to `this`
+				this.parentNode = this.elementNode.parentNode;
+				this.wrapper = wrapper;
+				this.carousel = carousel;
+				this.viewport = viewport;
+				
+				// Remove and build the carousel
+				carousel.parentNode.removeChild( carousel );
+				wrapper.appendChild( viewport );
+				viewport.appendChild( carousel );
+				
+				// Replace the carousel
+				if ( nextSibling ) insertAfter( nextSibling, wrapper );
+				else parentNode.appendChild( wrapper );
+				
+				// Build out the frames and state object
+				this.state = this.normalizeState();
+				
+				wrapper.style.padding = options.wrapperDelta + 'px';
+				viewport.style.padding = options.viewportDelta + 'px';
+				
+				// !TODO: Add event before building navigation
+				this.buildNavigation();
+				// !TODO: Add event after building navigation
+				
+				// Listen for focus on tiles
+				// !TODO: Replace string	
+				var panels = carousel.querySelectorAll( '.carousel-panel' );
+				
+				for( var i = 0, len = panels.length; i < len; ++i ) {
+					addEvent( panels[ i ], 'focus', this.focusHandler );
+					addEvent( panels[ i ], 'blur', this.focusHandler );
 				}
-				;
 				
-			// !TODO: Replace string
-			this.toggleAria( tileArr, 'add', 'carousel-panel' );
+			},
 			
-			// Build the normalized frames array
-			for ( var sec = 0, len = tileArr.length / increment, count = 1; 
-					sec < len; 
-					sec++, count++ ) {
-				tile = Array.prototype.slice.call( tileArr, increment * sec, increment * count );
-				state.frameArr.push( tile );
-			};
-			
-			state.index				= index;
-			state.offset			= state.index ? state.frameWidth : state.offset;
-			state.tileArr			= tileArr;						
-			state.tileObj			= state.tileArr;
-			state.curTile			= state.tileObj[ state.index ];
-			state.curTileLength		= state.tileArr.length;
-			state.curFrameLength	= Math.ceil( state.curTileLength / increment );
-			state.frameIndex		= Math.ceil( state.index / increment );
-			state.prevFrameIndex	= state.frameIndex;
-			state.curFrame			= state.frameArr[ state.frameIndex ];
-			state.tileDelta			= ( increment * state.curFrameLength ) - state.curTileLength;
-			
-			this.toggleAria( state.curFrame, 'remove' );
-			
-			tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000;
-			tileStyle = 'width: ' + tilePercent + '%; ';
+			focusHandler: function( e ) {
+				// !TODO: Replace string
+				var cls = ' state-focus';
 				
-			for ( var i = 0; i < tileArr.length; i++ ) {
-				tileArr[ 0 ].setAttribute( 'style', tileStyle );
-				tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
-				carousel.appendChild( tileArr[ 0 ] );
-			}
-			
-			return state;
-			
-		},
-		
-		updateState: function( index, animate ) {
-
-			var self				= this
-				, state				= self.state
-				, ops				= self.options
-				, increment			= ops.increment
-				, prevFrameIndex	= state.frameIndex
-				, index				= index > state.curTileLength - increment ? state.curTileLength - increment
-										: index < 0 ? 0
-										: index
-				, frameIndex		= Math.ceil( index / increment )
-				, isFirstFrame		= index === 0
-				, isLastFrame		= index === state.curTileLength - increment
-				;
-						
-			_.extend( this.state, {
-				index: index,
-				offset: state.tileWidth * index,
-				prevIndex: state.index,
-				prevTile: state.curTile,
-				curTile: isLastFrame && state.tileDelta && ops.incrementMode === 'frame'
-							? state.tileArr[ index + state.tileDelta ]
-							: state.tileArr[ index ],
-				curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, increment + index ),
-				prevFrame: state.curFrame,
-				frameIndex: frameIndex,
-				prevFrameIndex: state.frameIndex
-			});
-				 
-			if ( animate ) this.animate();
-			
-			return state;
-		},
-		
-		animate: function() {
-			
-			var self = this
-				, state = self.state
-				, index = state.index
-				, targetIndex = index
-				, options = this.options
-				, carousel = this.element
-				, increment = options.increment
-				, tileWidth = state.tileWidth
-				, preFrameChange = options.preFrameChange
-				, postFrameChange = options.postFrameChange
-				, isFirst = index === 0
-				, isLast = index === ( state.curTileLength - increment )
-				;
-			
-			
-			
-			// Publish animation begin and call pre-animation option
-			this.x.publish( 'preFrameChange' );
-			if ( preFrameChange ) preFrameChange.call( self, state );
-			
-			
-			carousel.setAttribute( 'class', 'state-busy' ); // !TODO: Replace string	
-			self.toggleAria( state.tileArr, 'remove' );
-			self.updateNavigation();
-			self.toggleAria( state.tileArr, 'add' );
-			self.toggleAria( state.curFrame, 'remove' );
-			state.curTile.focus();
-			carousel.className.replace( /\bstate-busy\b/, '' );
-			
-			
-			// Publish animation end and call post-animation option
-			this.x.publish( 'postFrameChange' );
-			postFrameChange && postFrameChange.call( self, state );
-						
-		},
-		
-		buildNavigation: function() {
-			
-			var text
-				, controlsWidth
-				, newStyle
-				, self				= this
-				, state				= this.state
-				, index				= state.index
-				, wrapper			= self.wrapper
-				, options			= self.options
-				, increment			= options.increment
-				, controls			= tmplControls.cloneNode( true )
-				, controlsParent	= tmplControlsParent.cloneNode( true )
-				, controlsWrapper 	= options.encapsulateControls ? controls : wrapper
-				, viewport			= self.viewport
-				, viewportWidth		= state.tileWidth * options.increment + options.viewportDelta
-				, prevFrame			= 'prevFrame'
-				, nextFrame			= 'nextFrame'
-				;
-			
-			text = options.prevText;
-			self.prevBtn = tmplPN.cloneNode( true );
-			self.prevBtn.setAttribute( 'class', prevFrame );
-			self.prevBtn.innerHTML = text;
-			
-			text = options.nextText;
-			self.nextBtn = tmplPN.cloneNode( true );
-			self.nextBtn.setAttribute( 'class', nextFrame );
-			self.nextBtn.innerHTML = text;
+				// Using 'className' to support IE8
+				if ( e.type === 'focus' ) e.target.className = e.target.className + cls;
+				else e.target.className = e.target.className.replace( cls, '' );
 				
-			// Set click events buttons
-			addEvent( this.parentNode, 'click', function( e ) {
-				if ( e.target.nodeName == 'BUTTON' ) {
-					var method = e.target.className;
-					if ( method === 'prevFrame' || method === 'nextFrame' ) {
-						self[ method ]();
+			},
+			
+			cache: function( key, value ) {
+				
+				var cache = this.cacheObj
+					, query = cache[ key ] !== 'undefined' ? cache[ key ] : undefined
+					;
+				
+				if ( !value ) return query;
+					
+				cache[ key ] = value;
+				
+				return cache;
+				
+			},
+			
+			normalizeState: function() {
+				
+				var tile
+					, tileStyle
+					, tilePercent
+					, index				= 0
+					, state				= this.state
+					, carousel			= this.carousel
+					, tileArr			= carousel.children
+					, origTiles			= tileArr
+					, firstTile			= tileArr[ 0 ]
+					, tileWidth			= firstTile.offsetWidth
+					, tileHeight		= firstTile.offsetHeight
+					, options			= this.options
+					, increment			= options.increment
+					, origTileLength	= tileArr.length
+					, curTileLength		= origTileLength
+					, frameLength		= Math.ceil( curTileLength / increment )
+					, state = {
+						index: index,
+						offset: 0,
+						spacers: 0,
+						prevIndex: false,
+						tileObj: tileArr,
+						tileArr: tileArr,
+						origTileLength: origTileLength,
+						curTileLength: curTileLength,
+						tileWidth: tileWidth,
+						tileHeight: tileHeight,
+						curTile: false,
+						prevTile: false,
+						frameArr: [],
+						origFrameLength: frameLength,
+						curFrameLength: frameLength,
+						frameWidth: increment * tileWidth,
+						curFrame: [],
+						prevFrame: [],
+						frameIndex: 0,
+						prevFrameIndex: 0
 					}
+					;
+					
+				// !TODO: Replace string
+				this.toggleAria( tileArr, 'add', 'carousel-panel' );
+				
+				// Build the normalized frames array
+				for ( var sec = 0, len = tileArr.length / increment, count = 1; 
+						sec < len; 
+						sec++, count++ ) {
+					tile = Array.prototype.slice.call( tileArr, increment * sec, increment * count );
+					state.frameArr.push( tile );
+				};
+				
+				state.index				= index;
+				state.offset			= state.index ? state.frameWidth : state.offset;
+				state.tileArr			= tileArr;						
+				state.tileObj			= state.tileArr;
+				state.curTile			= state.tileObj[ state.index ];
+				state.curTileLength		= state.tileArr.length;
+				state.curFrameLength	= Math.ceil( state.curTileLength / increment );
+				state.frameIndex		= Math.ceil( state.index / increment );
+				state.prevFrameIndex	= state.frameIndex;
+				state.curFrame			= state.frameArr[ state.frameIndex ];
+				state.tileDelta			= ( increment * state.curFrameLength ) - state.curTileLength;
+				
+				this.toggleAria( state.curFrame, 'remove' );
+				
+				tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000;
+				tileStyle = 'width: ' + tilePercent + '%; ';
+					
+				for ( var i = 0; i < tileArr.length; i++ ) {
+					tileArr[ 0 ].setAttribute( 'style', tileStyle );
+					tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
+					carousel.appendChild( tileArr[ 0 ] );
 				}
-			});
-			
-			// Disable buttons if there is only one frame
-			if ( state.curTileLength <= options.increment ) {
-				self.prevBtn.disabled = true;
-				self.nextBtn.disabled = true;
-			}
-			
-			// Disable prev button
-			if ( index === 0 ) self.prevBtn.disabled = true;
-			
-			// Insert controls
-			if ( !options.encapsulateControls ) {
-				wrapper.parentNode.insertBefore( self.prevBtn, wrapper );
-				wrapper.parentNode.insertBefore( self.nextBtn, wrapper.nextSibling );
-			
-			} else {
-				controlsParent.appendChild( controls );
-				controls.appendChild( self.prevBtn );
-				controls.appendChild( self.nextBtn );
-				wrapper.appendChild( controlsParent );
-			}
-		},
-		
-		updateNavigation: function() {
-			
-			var self = this
-				, state = this.state
-				, index = state.index
-				, options = self.options
-				, isFirst = index === 0
-				, isLast = index + this.options.increment >= state.curTileLength
-				;
 				
-			if ( isFirst ) self.prevBtn.disabled = true;
-			else self.prevBtn.disabled = false;
-
-			if ( isLast ) self.nextBtn.disabled = true;
-			else self.nextBtn.disabled = false;
-		},
-		
-		prevFrame: function() {
-			
-			var index = this.state.index;
-			
-			if ( this.options.incrementMode === 'tile' ) index--;
-			else index = index - this.options.increment;
-			
-			this.updateState( index, true );
-			return this.carousel;
-			
-		},
-		
-		nextFrame: function() {
-			
-			var index = this.state.index;
-			
-			if ( this.options.incrementMode === 'tile' ) index++;
-			else index = index + this.options.increment;
-			
-			this.updateState( index, true );
-			return this.carousel;
-			
-		},
-		
-		reset: function() {
-			
-			var self = this
-				, state = self.state
-				, index = state.index
-				, options = self.options
-				;
-			
-			index = 0;
-			
-			self.updateState( index, true );
-			
-			return this.carousel;
-			
-		},
-		
-		
-		toggleAria: function( itemArray, operation, initClass ) {
-			
-			var item
-				, classes
-				, i = 0
-				, self = this
-				, state = self.state
-				, length = itemArray.length
-				, ariaHClass = ' state-hidden'
-				, ariaVClass = ' state-visible'
-				, rAriaHClass = /\sstate-hidden/
-				, rAriaVClass = /\sstate-visible/
-				, rSpacerClass = /carousel-panel-spacer/
-				, add = operation === 'add' ? true : false
-				, initClass = initClass ? ' ' + initClass : ''
-				, hasAriaInited = this.cache( 'hasAriaInited' )
-				;
-			
-			for ( ; i < length; i++ ) {
+				return state;
 				
-				item = itemArray[ i ];
-				classes = item.className + initClass;
+			},
+			
+			updateState: function( index, animate ) {
+	
+				var self				= this
+					, state				= self.state
+					, ops				= self.options
+					, increment			= ops.increment
+					, prevFrameIndex	= state.frameIndex
+					, index				= index > state.curTileLength - increment ? state.curTileLength - increment
+											: index < 0 ? 0
+											: index
+					, frameIndex		= Math.ceil( index / increment )
+					, isFirstFrame		= index === 0
+					, isLastFrame		= index === state.curTileLength - increment
+					;
+							
+				_.extend( this.state, {
+					index: index,
+					offset: state.tileWidth * index,
+					prevIndex: state.index,
+					prevTile: state.curTile,
+					curTile: isLastFrame && state.tileDelta && ops.incrementMode === 'frame'
+								? state.tileArr[ index + state.tileDelta ]
+								: state.tileArr[ index ],
+					curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, increment + index ),
+					prevFrame: state.curFrame,
+					frameIndex: frameIndex,
+					prevFrameIndex: state.frameIndex
+				});
+					 
+				if ( animate ) this.animate();
 				
-				if ( rSpacerClass.test( classes ) ) continue;
+				return state;
+			},
+			
+			animate: function() {
 				
-				if ( add ) classes = classes.replace( rAriaVClass, ariaHClass );
-				else classes = classes.replace( rAriaHClass, ariaVClass );
+				var self = this
+					, state = self.state
+					, index = state.index
+					, targetIndex = index
+					, options = this.options
+					, carousel = this.element
+					, increment = options.increment
+					, tileWidth = state.tileWidth
+					, preFrameChange = options.preFrameChange
+					, postFrameChange = options.postFrameChange
+					, isFirst = index === 0
+					, isLast = index === ( state.curTileLength - increment )
+					;
 				
-				item.className = classes.replace( /^\s/, '' );
 				
-				if ( !hasAriaInited ) {
-					item.className = item.className + ariaHClass;
-					item.setAttribute( tabindex, '-1' );
+				
+				// Publish animation begin and call pre-animation option
+				this.x.publish( 'preFrameChange' );
+				if ( preFrameChange ) preFrameChange.call( self, state );
+				
+				
+				carousel.setAttribute( 'class', 'state-busy' ); // !TODO: Replace string	
+				self.toggleAria( state.tileArr, 'remove' );
+				self.updateNavigation();
+				self.toggleAria( state.tileArr, 'add' );
+				self.toggleAria( state.curFrame, 'remove' );
+				state.curTile.focus();
+				carousel.className.replace( /\bstate-busy\b/, '' );
+				
+				
+				// Publish animation end and call post-animation option
+				this.x.publish( 'postFrameChange' );
+				postFrameChange && postFrameChange.call( self, state );
+							
+			},
+			
+			buildNavigation: function() {
+				
+				var text
+					, controlsWidth
+					, newStyle
+					, self				= this
+					, state				= this.state
+					, index				= state.index
+					, wrapper			= self.wrapper
+					, options			= self.options
+					, increment			= options.increment
+					, controls			= tmplControls.cloneNode( true )
+					, controlsParent	= tmplControlsParent.cloneNode( true )
+					, controlsWrapper 	= options.encapsulateControls ? controls : wrapper
+					, viewport			= self.viewport
+					, viewportWidth		= state.tileWidth * options.increment + options.viewportDelta
+					, prevFrame			= 'prevFrame'
+					, nextFrame			= 'nextFrame'
+					;
+				
+				text = options.prevText;
+				self.prevBtn = tmplPN.cloneNode( true );
+				self.prevBtn.setAttribute( 'class', prevFrame );
+				self.prevBtn.innerHTML = text;
+				
+				text = options.nextText;
+				self.nextBtn = tmplPN.cloneNode( true );
+				self.nextBtn.setAttribute( 'class', nextFrame );
+				self.nextBtn.innerHTML = text;
+					
+				// Set click events buttons
+				addEvent( this.parentNode, 'click', function( e ) {
+					if ( e.target.nodeName == 'BUTTON' ) {
+						var method = e.target.className;
+						if ( method === 'prevFrame' || method === 'nextFrame' ) {
+							self[ method ]();
+						}
+					}
+				});
+				
+				// Disable buttons if there is only one frame
+				if ( state.curTileLength <= options.increment ) {
+					self.prevBtn.disabled = true;
+					self.nextBtn.disabled = true;
 				}
-																
-				classes = null;
-			}
-						
-			this.cache( 'hasAriaInited', true );
+				
+				// Disable prev button
+				if ( index === 0 ) self.prevBtn.disabled = true;
+				
+				// Insert controls
+				if ( !options.encapsulateControls ) {
+					wrapper.parentNode.insertBefore( self.prevBtn, wrapper );
+					wrapper.parentNode.insertBefore( self.nextBtn, wrapper.nextSibling );
+				
+				} else {
+					controlsParent.appendChild( controls );
+					controls.appendChild( self.prevBtn );
+					controls.appendChild( self.nextBtn );
+					wrapper.appendChild( controlsParent );
+				}
+			},
 			
-		},
-		
-		// For development only
-		log: {
-			enabled: true,
-			msg: function( msg ) {
-				console.log.apply( console, arguments );
+			updateNavigation: function() {
+				
+				var self = this
+					, state = this.state
+					, index = state.index
+					, options = self.options
+					, isFirst = index === 0
+					, isLast = index + this.options.increment >= state.curTileLength
+					;
+					
+				if ( isFirst ) self.prevBtn.disabled = true;
+				else self.prevBtn.disabled = false;
+	
+				if ( isLast ) self.nextBtn.disabled = true;
+				else self.nextBtn.disabled = false;
+			},
+			
+			prevFrame: function() {
+				
+				var index = this.state.index;
+				
+				if ( this.options.incrementMode === 'tile' ) index--;
+				else index = index - this.options.increment;
+				
+				this.updateState( index, true );
+				return this.carousel;
+				
+			},
+			
+			nextFrame: function() {
+				
+				var index = this.state.index;
+				
+				if ( this.options.incrementMode === 'tile' ) index++;
+				else index = index + this.options.increment;
+				
+				this.updateState( index, true );
+				return this.carousel;
+				
+			},
+			
+			reset: function() {
+				
+				var self = this
+					, state = self.state
+					, index = state.index
+					, options = self.options
+					;
+				
+				index = 0;
+				
+				self.updateState( index, true );
+				
+				return this.carousel;
+				
+			},
+			
+			
+			toggleAria: function( itemArray, operation, initClass ) {
+				
+				var item
+					, classes
+					, i = 0
+					, self = this
+					, state = self.state
+					, length = itemArray.length
+					, ariaHClass = ' state-hidden'
+					, ariaVClass = ' state-visible'
+					, rAriaHClass = /\sstate-hidden/
+					, rAriaVClass = /\sstate-visible/
+					, rSpacerClass = /carousel-panel-spacer/
+					, add = operation === 'add' ? true : false
+					, initClass = initClass ? ' ' + initClass : ''
+					, hasAriaInited = this.cache( 'hasAriaInited' )
+					;
+				
+				for ( ; i < length; i++ ) {
+					
+					item = itemArray[ i ];
+					classes = item.className + initClass;
+					
+					if ( rSpacerClass.test( classes ) ) continue;
+					
+					if ( add ) classes = classes.replace( rAriaVClass, ariaHClass );
+					else classes = classes.replace( rAriaHClass, ariaVClass );
+					
+					item.className = classes.replace( /^\s/, '' );
+					
+					if ( !hasAriaInited ) {
+						item.className = item.className + ariaHClass;
+						item.setAttribute( tabindex, '-1' );
+					}
+																	
+					classes = null;
+				}
+							
+				this.cache( 'hasAriaInited', true );
+				
+			},
+			
+			// For development only
+			log: {
+				enabled: true,
+				msg: function( msg ) {
+					console.log.apply( console, arguments );
+				}
+			}
+		}
+	
+		return function( extensions, options ) {
+			
+			var x = new X;
+	
+			for ( var i = 0; i < arguments.length; i++ ) {
+	
+				x.extend( arguments[ i ] );
+			}
+			
+			
+			var c = new Core( x, options );
+	
+			return {
+				x: x,
+				init: x.proxy( c, c.init )
 			}
 		}
 	}
-
-	return function( extensions, options ) {
-		
-		var x = new X;
-
-		for ( var i = 0; i < arguments.length; i++ ) {
-
-			x.extend( arguments[ i ] );
-		}
-		
-		
-		var c = new Core( x, options );
-
-		return {
-			x: x,
-			init: x.proxy( c, c.init )
-		}
-	}
-
-});
+);
