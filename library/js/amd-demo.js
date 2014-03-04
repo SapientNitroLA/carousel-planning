@@ -4,8 +4,7 @@ require.config({
 		'core': 'core',
 		'x': 'x',
 		'lodash': 'vendor/lodash'
-	},
-	waitSeconds: 15
+	}
 });
 require(
 	[
