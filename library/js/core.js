@@ -54,8 +54,8 @@
 		define(
 		
 			[
-				'libary/js/x',
-				'library/js/vendor/lodash.min'
+				'x',
+				'lodash'
 			],
 			
 			factory
