@@ -210,9 +210,11 @@
 				wrapper.style.padding = options.wrapperDelta + 'px';
 				viewport.style.padding = options.viewportDelta + 'px';
 				
-				// !TODO: Add event before building navigation
+				this.x.publish( 'preBuildNav' );
+
 				this.buildNavigation();
-				// !TODO: Add event after building navigation
+
+				this.x.publish( 'postBuildNav' );
 				
 				// Listen for focus on tiles
 				// !TODO: Replace string	
