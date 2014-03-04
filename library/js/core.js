@@ -211,9 +211,9 @@
 				viewport.style.padding = options.viewportDelta + 'px';
 				
 				this.x.publish( 'preBuildNav' );
-
+				
 				this.buildNavigation();
-
+				
 				this.x.publish( 'postBuildNav' );
 				
 				// Listen for focus on tiles
@@ -455,7 +455,7 @@
 				// Insert controls
 				if ( !options.encapsulateControls ) {
 					wrapper.parentNode.insertBefore( self.prevBtn, wrapper );
-					wrapper.parentNode.insertBefore( self.nextBtn, wrapper.nextSibling );
+					insertAfter( wrapper, self.nextBtn );
 				
 				} else {
 					controlsParent.appendChild( controls );
