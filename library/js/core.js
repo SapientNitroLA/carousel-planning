@@ -124,12 +124,23 @@
 		}
 		
 		// Using addEvent method for IE8 support
+		// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
 		function addEvent( obj, evt, fn, capture ) {
-			if ( window.attachEvent ) {
-				obj.attachEvent( 'on' + evt, fn );
-			} else {
+			if ( obj.attachEvent ) {
+				obj[ "e" + evt + fn ] = fn;
+				obj[ evt + fn ] = function() { obj[ 'e' + evt + fn ]( window.event ); }
+				obj.attachEvent( 'on' + evt, obj[ evt + fn ] );
+			} else if ( obj.addEventListener ) {
 				if ( !capture ) capture = false;
 				obj.addEventListener( evt, fn, capture );
+			}
+		}
+		function removeEvent( obj, evt, fn ) {
+			if ( obj.detachEvent ) {
+				obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
+				obj[ evt + fn ] = null;
+			} else {
+				obj.removeEventListener( evt, fn, false );
 			}
 		}
 		
@@ -159,6 +170,7 @@
 				this.options = _.extend( defaults, options );
 				
 				// Make sure we have integers
+				// Using LoDash for IE8 compatibility
 				_([ 'increment', 'wrapperDelta', 'viewportDelta' ]).forEach( function( el ) {
 					self.options[ el ] = parseInt( self.options[ el ], 10 );
 				});
@@ -221,7 +233,9 @@
 				var panels = carousel.querySelectorAll( '.carousel-panel' );
 				
 				for( var i = 0, len = panels.length; i < len; ++i ) {
+					// Using addEvent method for IE8 support
 					addEvent( panels[ i ], 'focus', this.focusHandler );
+					// Using addEvent method for IE8 support
 					addEvent( panels[ i ], 'blur', this.focusHandler );
 				}
 				
@@ -434,6 +448,7 @@
 				self.nextBtn.innerHTML = text;
 					
 				// Set click events buttons
+				// Using addEvent method for IE8 support
 				addEvent( this.parentNode, 'click', function( e ) {
 					if ( e.target.nodeName == 'BUTTON' ) {
 						var method = e.target.className;
