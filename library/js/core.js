@@ -159,6 +159,7 @@
 				this.options = _.extend( defaults, options );
 				
 				// Make sure we have integers
+				// Using LoDash for IE8 compatibility
 				_([ 'increment', 'wrapperDelta', 'viewportDelta' ]).forEach( function( el ) {
 					self.options[ el ] = parseInt( self.options[ el ], 10 );
 				});
@@ -221,7 +222,9 @@
 				var panels = carousel.querySelectorAll( '.carousel-panel' );
 				
 				for( var i = 0, len = panels.length; i < len; ++i ) {
+					// Using addEvent method for IE8 support
 					addEvent( panels[ i ], 'focus', this.focusHandler );
+					// Using addEvent method for IE8 support
 					addEvent( panels[ i ], 'blur', this.focusHandler );
 				}
 				
@@ -434,6 +437,7 @@
 				self.nextBtn.innerHTML = text;
 					
 				// Set click events buttons
+				// Using addEvent method for IE8 support
 				addEvent( this.parentNode, 'click', function( e ) {
 					if ( e.target.nodeName == 'BUTTON' ) {
 						var method = e.target.className;
