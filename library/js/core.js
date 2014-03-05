@@ -124,12 +124,23 @@
 		}
 		
 		// Using addEvent method for IE8 support
+		// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
 		function addEvent( obj, evt, fn, capture ) {
-			if ( window.attachEvent ) {
-				obj.attachEvent( 'on' + evt, fn );
-			} else {
+			if ( obj.attachEvent ) {
+				obj[ "e" + evt + fn ] = fn;
+				obj[ evt + fn ] = function() { obj[ 'e' + evt + fn ]( window.event ); }
+				obj.attachEvent( 'on' + evt, obj[ evt + fn ] );
+			} else if ( obj.addEventListener ) {
 				if ( !capture ) capture = false;
 				obj.addEventListener( evt, fn, capture );
+			}
+		}
+		function removeEvent( obj, evt, fn ) {
+			if ( obj.detachEvent ) {
+				obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
+				obj[ evt + fn ] = null;
+			} else {
+				obj.removeEventListener( evt, fn, false );
 			}
 		}
 		
