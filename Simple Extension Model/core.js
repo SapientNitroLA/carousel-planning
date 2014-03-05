@@ -2,7 +2,9 @@
 
 !function() {
     
-    var Core = function( x, options ) {
+    var defaults
+    
+    function Core( x, options ) {
         console.log( 'new Core instance created' );
     
         this.x = x;
@@ -27,9 +29,9 @@
     
         var x = new X;
     
-        for ( var i = 0; i < arguments.length; i++ ) {
+        for ( var i = 0; i < extensions.length; i++ ) {
         
-            x.extend( arguments[i] );
+            x.extend( extensions[i] );
         }
     
         var c = new Core( x, options );
