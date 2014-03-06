@@ -42,9 +42,7 @@
  * @option Function preFrameChange Callback fired before the transitional frame animation.
  * @option Function postFrameChange Callback fired after the transitional frame animation.
  * 
- * @name tileCarousel
- * @type jQuery
- * @author Ryan Fitzer and Travis Higdon
+ * @name carousel
  */
 
 
@@ -83,6 +81,7 @@
 			, tmplControlsParent
 			;
 		
+        // @FLAG: The `parent` option should be present in `defaults`. Also, why is it named `parent`? Something like `element` makes more sense to me. | ryanfitzer on 03-05-2014 
 		var defaults = {
 				prevText: 'Previous',
 				nextText: 'Next',
@@ -100,9 +99,28 @@
 		ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
 		tabindex = ieTest ? 'tabIndex' : 'tabindex';
 		ieTest = null;
-			
-		
-		// Compile templates
+
+        // @FLAG: Maybe an object and function would be better here? This seems more configurable to me and then the compilation could be hooked into if needed | ryanfitzer on 03-05-2014 
+        /*
+            var tmpl = {
+                wrapper: [ 'div', 'carousel-viewport' ],
+                viewport: [ 'div', 'carousel-viewport' ],
+                button: [ 'button' ],
+                controls: [ 'div', 'carousel-controls' ]
+                controlsWrapper: [ 'div', 'carousel-controls-wrapper' ]
+            }
+            
+            function compileTemplates() {
+
+                for ( var item in tmpl ) {
+        
+                    tmpl[ item ] = document.createElement( tmpl[ item ][0] );
+                
+                    if ( tmpl[ item ][1] ) tmpl[ item ].setAttribute( 'class', tmpl[ item ][1] );
+                }
+            }
+        */
+        // Compile templates
 		tmplWrapper = document.createElement( 'div' );
 		tmplWrapper.setAttribute( 'class', 'carousel-container' );
 			
@@ -152,9 +170,15 @@
 			self.x = x;
 			x.state.init = false;
 		}
-	
+
 		Core.prototype = {
-		
+            
+            // @FLAG: Documention comment blocks for prototype members should be started at this stage to help the review process | ryanfitzer on 03-05-2014 
+            /**
+             * Holds the cache.
+             * 
+             * @type Object
+             */
 			cacheObj: {},
 			elementNode: null,
 			element: null,
@@ -162,9 +186,12 @@
 			options: { id: 'options' },
 			state: {},
 			
+            // @FLAG: This setup should take place in the constructor. I see the constructor as constructing the context before  | ryanfitzer on 03-05-2014 
 			init: function( options ) {
 				
 				var self = this;
+                
+                // @FLAG: What's the purpose of having both `elementNode` and `element`? | ryanfitzer on 03-05-2014 
 				this.elementNode = options.parent;
 				this.element = options.parent;
 				this.options = _.extend( defaults, options );
@@ -175,11 +202,13 @@
 					self.options[ el ] = parseInt( self.options[ el ], 10 );
 				});
 				
+                // @FLAG: What's this return for? | ryanfitzer on 03-05-2014 
 				if ( this.x.state.init ) return;
 				
 				// !TODO: Replace string
 				this.x.publish( 'beforeInit' );
-	
+                
+                // @FLAG: This isn't needed, correct? | ryanfitzer on 03-05-2014 
 				this.x.state.init = true;
 				
 				// !TODO: Replace string
@@ -190,6 +219,7 @@
 			},
 	
 			setup: function() {
+                
 				var options			= this.options
 					, self			= this
 					, state			= self.state
@@ -592,15 +622,25 @@
 		return function( extensions, options ) {
 			
 			var x = new X;
+	        
+            // @FLAG: What is the fix? | ryanfitzer on 03-05-2014 
+			for ( var i = 0; i < extensions.length; i++ ) {
 	
-			for ( var i = 0; i < arguments.length; i++ ) {
-	
-				x.extend( arguments[ i ] );
+				x.extend( extensions[ i ] );
 			}
 			
 			
 			var c = new Core( x, options );
-	
+            
+            // @FLAG: We should only return the api methods that are needed. | ryanfitzer on 03-05-2014 
+            /*
+                return {
+                    go: x.proxy( c, c.go ),
+                    next: x.proxy( c, c.next ),
+                    prev: x.proxy( c, c.prev ),
+                    reset: x.proxy( c, c.reset )
+                }
+            */
 			return {
 				x: x,
 				init: x.proxy( c, c.init )

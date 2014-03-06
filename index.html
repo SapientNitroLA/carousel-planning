@@ -77,6 +77,9 @@
 					//console.log("options: postFrameChange()");
 				}
 			}
+      
+      // @FLAG: I think the signature should be the following. This way, the carousel object that's returned is fully configured and ready to go. Not `init` needed. | ryanfitzer on 03-05-2014 
+      // var carousel = core( options );
 			var carousel = core( featureA );
 	
 			carousel.init(options);

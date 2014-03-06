@@ -15,23 +15,27 @@ X.prototype = {
         }
     },
     
-    extend: function( extension ) {
+    extend: function( extension, options ) {
         
         this.data[ extension.id ] = {};
         this.extensions[ extension.id ] = extension;
     
-        extension.setup.call( extension, this.api( this, extension.id ) );
+        extension.setup.call( extension, this.api( this, extension.id ), options );
     },
     
-    publish: function( hook ) {
+    publish: function( hook, id ) {
         
         var sub
-            , subs = this.subscribers[ hook ]
+            , subs
             ;
+            
+        hook = id ? hook + '.' + id : hook;
+        
+        subs = this.subscribers[ hook ]
 
-        if ( !subs ) return console.log( 'publish', hook );
+        if ( !subs ) return console.log( '[x] publish', hook );
     
-        console.log( 'publish begin', hook );
+        console.log( '[x] publish begin', hook );
     
         for ( var i = 0; i < subs.length; i++ ) {
         
@@ -42,11 +46,11 @@ X.prototype = {
             else sub.call( this );
         }
     
-        console.log( 'publish end', hook );
+        console.log( '[x] publish end', hook );
     },
     
     subscribe: function( hook, method ) {
-        console.log( 'subscriber added to', hook );
+        console.log( '[x] subscriber added to', hook );
     
         this.subscribers[ hook ] = this.subscribers[ hook ] || [];
     
@@ -59,7 +63,10 @@ X.prototype = {
         
             data: context.data[ id ],
         
-            publish: this.proxy( context, this.publish ),
+            publish: function( hook ) {
+                
+                this.publish.call( context, hook, id );
+            },
         
             subscribe: function( hook, method ) {
             

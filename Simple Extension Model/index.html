@@ -16,14 +16,14 @@
 <script src="core-feature-b.js"></script>
 <script>
 
-  var component1 = core( featureA );
-  var component2 = core( featureA, featureB );
+  var component1 = core( { featureA: true, featureB: true } );
+  // var component2 = core( { featureA: true, featureB: true } );
   
-  component1.init();
-  component2.init();
+  component1.log( '-> Hello from component1!' );
+  // component2.log( '-> Hello from component2!' );
   
   console.log( 'component1', component1 );
-  console.log( 'component2', component2 );
+  // console.log( 'component2', component2 );
 
 </script>
 </body>
