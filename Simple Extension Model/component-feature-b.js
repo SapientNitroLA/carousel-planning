@@ -1,6 +1,6 @@
-!function( core ) {
+!function( component ) {
     
-    core.extend({
+    component.plugin({
         
         id: 'featureB',
         
@@ -21,10 +21,10 @@
             
             api.data.hello = this.id;
             
-            console.log( '[' + this.id  + ']', 'core.state.hello:', api.state( 'hello' ) );
+            console.log( '[' + this.id  + ']', 'component.state.hello:', api.state( 'hello' ) );
             
             api.publish( 'update' );
         }
     });
     
-}( window.core );
+}( window.component );
