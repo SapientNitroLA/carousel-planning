@@ -1,5 +1,19 @@
 !function() {
     
+    // function ConstructCore( defaultOptions ) {
+    //     
+    //     console.log( '[component] new Component instance created' );
+    //     
+    //     // TODO reconcile options with defaults
+    // 
+    //     this.utils = utils;
+    //     this.utils.state.hello = 'component';
+    //     
+    //     this.init();
+    // }
+
+    // function createPlugin() {}
+    
     function X() {
     
         this.data = {};
@@ -7,6 +21,15 @@
         this.extensions = {};
         this.subscribers = {};
     }
+    
+    // X.create = function () {
+    //     
+    //     var core = ConstructCore;
+    //     
+    //     core.plugin = createPlugin;
+    //     
+    //     return core;
+    // }
 
     X.prototype = {
     
