@@ -15,8 +15,9 @@ X.prototype = {};
 // = Component.js =
 // ================
 
-var Component = X.define({
-    // Turns into prototype
+var componentName = x.define({
+    // componentName is now a constructor with a prototype
+    // xjs will provide mixins to allow plugins to be created and managed
 });
 
 
@@ -26,19 +27,29 @@ var Component = X.define({
 // = Feature.js =
 // =============
 
-component.plugin( 'namespace', {
+componentName.plugin( 'pluginName', {
+    
     setup: function() {
-        this.subscribe( 'any/channel', fn );
+        
+        // Receive updates from componentName and any other plugins
+        this.subscribe( 'all/channel', fn );
+        
+        // Publish updates to self, componentName and any other plugins
+        this.publish( 'self/channel', data );
+        
+        // UNsubscribe from channel
         this.unsubscribe( token );
-        this.publish( 'own/channel', data );
-        this.trigger( 'someMethod', data );
+        
+        // Trigger a command to execute on componentName
+        this.trigger( 'command', data );
     },
+    
     destroy: function() {}
 });
 
 
 
 // =============
-// = Public.js =
+// = Page.js =
 // =============
 

@@ -1,11 +1,11 @@
 !function( x ) {
-    
-    var Component = x.define({
+
+    var componentName = x.define({
         // Prototype
     });
     
     // return Component;
-    window.component = Component;
+    window.componentName = componentName;
     
 }( window.x );
 

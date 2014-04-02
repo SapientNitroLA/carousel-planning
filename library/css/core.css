@@ -52,3 +52,17 @@ COMPONENT CAROUSEL ACCESSIBILITY
 .component-container.state-focus {
   outline-color: #0069ff !important;
 }
+
+/*
+FLOAT CLEARING
+---------------------------*/
+:after {
+    height:0;
+    clear:both;
+    content:".";
+    display:block;
+    visibility:hidden;
+}
+*+html  {
+    zoom:1;
+}
