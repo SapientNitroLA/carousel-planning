@@ -16,10 +16,15 @@
 <script src="component-feature-b.js"></script>
 <script>
 
-  var component1 = componentName({
-    featureA: true,
+  // var component1 = new componentName({
+  //   featureA: true,
+  //   featureB: true
+  // });
+
+  var component2 = componentName.create({
+    // featureA: true,
     featureB: true
-  });
+  }, 'testingArgs' );
 
   // var component1 = component( { featureA: true, featureB: true } );
   // // var component2 = component( { featureA: true, featureB: true } );

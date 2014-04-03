@@ -41,7 +41,7 @@ componentName.plugin( 'pluginName', {
         this.unsubscribe( token );
         
         // Trigger a command to execute on componentName
-        this.trigger( 'command', data );
+        this.trigger( 'nextFrame', data );
     },
     
     destroy: function() {}

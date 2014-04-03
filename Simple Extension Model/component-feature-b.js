@@ -1,30 +1,34 @@
-// !function( component ) {
-//     
-//     component.plugin({
-//         
-//         id: 'featureB',
-//         
-//         // Default
-//         setup: function( api, options ) {
-//             console.log( '[' + this.id  + ']', 'execute setup' );
-//             
-//             api.subscribe( 'beforeInit', this.custom );
-//         },
-//         
-//         // Default
-//         destroy: function( api ) {
-//             console.log( '[' + this.id  + ']', 'execute destroy' );
-//         },
-//         
-//         custom: function( api ) {
-//             console.log( '[' + this.id  + ']', 'execute init' );
-//             
-//             api.data.hello = this.id;
-//             
-//             console.log( '[' + this.id  + ']', 'component.state.hello:', api.state( 'hello' ) );
-//             
-//             api.publish( 'update' );
-//         }
-//     });
-//     
-// }( window.component );
+!function( componentName ) {
+    
+    function FeatureB( options, api ) {
+        
+        this.options = options;
+        this.api = api;
+        
+        // console.log(this.options);
+        // console.log(this.api);
+        
+        this.setup();
+    }
+    
+    FeatureB.prototype = {
+        
+        // Default
+        setup: function() {
+            console.log( 'featureB execute setup' );
+            
+            // api.subscribe( 'afterInit', this.custom );
+        },
+    
+        // Default
+        destroy: function() {
+            console.log( 'featureB execute destroy' );
+        }
+    }
+    
+    componentName.plugin( 'featureB', function( options, api ) {
+        
+        new FeatureB( options, api );
+    });
+    
+}( window.componentName );
