@@ -1,16 +1,42 @@
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+        if (typeof this !== "function") {
+            // closest thing possible to the ECMAScript 5 internal IsCallable function
+            throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+        }
+        
+        var aArgs = Array.prototype.slice.call(arguments, 1), 
+            fToBind = this, 
+            fNOP = function () {},
+            fBound = function () {
+              return fToBind.apply(this instanceof fNOP && oThis
+                                     ? this
+                                     : oThis,
+                                   aArgs.concat(Array.prototype.slice.call(arguments)));
+            };
+        
+        fNOP.prototype = this.prototype;
+        fBound.prototype = new fNOP();
+        
+        return fBound;
+    };
+}
+
 !function() {
     
     var staticAPI = {
         
-        plugins: {},
-        
         plugin: function plugin( name, factory ) {
             
-            console.log(name + ' plugin added');
-            this.plugins[ name ] = factory;
+            // console.log(name + ' plugin added');
+            this.prototype.plugins[ name ] = factory;
         },
         
-        create: function() {
+        /**
+         * Provide a way to abstract away the use of the `new` keyword to instantiate component.
+         */
+        create: function create() {
         
             var args = arguments
                 , constructorFn = this
@@ -28,29 +54,50 @@
     
     var protoAPI = {
         
-        // setupPlugins: function() {
-        //     
-        //     var plugins = componentName.plugins;
-        //     
-        //     for ( var member in plugins ) {
-        //         
-        //         if ( !( member in this.options ) ) continue;
-        //         
-        //         plugins[ member ]( this.options[ member ], this.x );
-        //     }
-        // }
+        plugins: {},
+        
+        setupPlugins: function setupPlugins() {
+            
+            var plugins = this.plugins;
+
+            for ( var member in plugins ) {
+                
+                if ( !( member in this.options ) ) continue;
+                
+                plugins[ member ]( this.options[ member ], this.x );
+            }
+        }
     }
     
-    function X() {};
+    function X( component ) {
+        
+        this.channels = {}
+        this.tokenUid = -1
+        
+        this.getState = function( key ) {
+            return component.state[ key ];
+        };
+        
+        this.trigger = function ( method ) {
+            
+            var func = component[ method ]
+            
+            if ( !func ) { return; };
+            
+            return func.apply( component, [].slice.call( arguments, 1 ) );
+        }
+    };
     
-    X.define = function( proto ) {
+    X.define = function( namespace, proto ) {
         
         var F = function() {
             
-            // Provide an new instance of X
-            this.x = new X;
+            this.state = {};
+            this.namespace = namespace;
             
-            // F.setupPlugins();
+            // Provide an new instance of X
+            // Pass in the component
+            this.x = new X( this );
             
             // Pass in constructor arguments to new component
             this.setup.apply( this, arguments );
@@ -62,7 +109,7 @@
             F[ member ] = staticAPI[ member ];
         }
         
-        // Provide the component with prototype API
+        // Provide the component's prototype with an API
         for ( var member in protoAPI ) {
             
             proto[ member ] = protoAPI[ member ];
@@ -77,26 +124,67 @@
     
     X.prototype = {
         
-        proxy: function( context, func ) {
-        
-            return function() {
-                return func.apply( context, arguments );
+        subscribe: function( channel, method ) {
+            
+            var subscribers;
+            
+            this.tokenUid = this.tokenUid + 1;
+            
+            if ( !this.channels[ channel ] ) {
+                this.channels[ channel ] = [];
             }
+            
+            subscribers = this.channels[ channel ];
+            
+            subscribers.push({
+                token: this.tokenUid,
+                method: method
+            });
+
+            return this.tokenUid;
         },
         
-        subscribe: function() {},
+        unsubscribe: function( token ) {
+            
+            var subscribers;
+
+            for ( var channel in this.channels ) {
+                
+                subscribers = this.channels[ channel ];
+                
+                if ( !subscribers ) { continue; }
+                
+                for ( var i = 0, len = subscribers.length; i < len; i++ ) {
+
+                    if ( !( subscribers[i].token === token ) ) { continue; }
+                    
+                    subscribers.splice( i, 1 );
+                    
+                    return token;
+                }
+            }
+            
+            return this;
+        },
         
-        unsubscribe: function() {},
-        
-        publish: function() {},
-        
-        state: function() {},
-        
-        trigger: function() {}
+        publish: function( channel, data ) {
+ 
+            var subscribers = this.channels[ channel ]
+                , subsLength = subscribers ? subscribers.length : 0
+                ;
+
+            if ( !subscribers ) { return false; }
+ 
+            while ( subsLength-- ) {
+                subscribers[ subsLength ].method( data );
+            }
+ 
+            return this;
+        }
     }
     
     // return X;
-    window.X = X;
+    window.x = X;
 }();
 
 /*

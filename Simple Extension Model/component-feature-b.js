@@ -5,9 +5,6 @@
         this.options = options;
         this.api = api;
         
-        // console.log(this.options);
-        // console.log(this.api);
-        
         this.setup();
     }
     
@@ -17,12 +14,13 @@
         setup: function() {
             console.log( 'featureB execute setup' );
             
-            // api.subscribe( 'afterInit', this.custom );
+            this.initToken = this.api.subscribe( 'componentName/init', this.destroy.bind( this ) );
         },
     
         // Default
         destroy: function() {
             console.log( 'featureB execute destroy' );
+            this.api.unsubscribe( this.initToken );
         }
     }
     

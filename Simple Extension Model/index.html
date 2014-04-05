@@ -7,33 +7,41 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <title>Simple Extension Model</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
+  <style type="text/css">
+    .tests {
+      float:left;
+      width:200px;
+      height:200px;
+      text-align:center;
+    }
+    #component1 {
+      background:grey;
+    }
+    #component2 {
+      background:yellow;
+    }
+  </style>
 </head>
 <body>
+
+<div class="tests" id="component1"><p>component1</p></div>
+<div class="tests" id="component2"><p>component2</p></div>
+  
 <script src="x.js"></script>
 <script src="component.js"></script>
 <script src="component-feature-a.js"></script>
 <script src="component-feature-b.js"></script>
 <script>
 
-  // var component1 = new componentName({
-  //   featureA: true,
-  //   featureB: true
-  // });
+  var component1 = componentName.create({
+    element: document.getElementById( 'component1' ),
+    featureA: true
+  });
 
   var component2 = componentName.create({
-    // featureA: true,
+    element: document.getElementById( 'component2' ),
     featureB: true
-  }, 'testingArgs' );
-
-  // var component1 = component( { featureA: true, featureB: true } );
-  // // var component2 = component( { featureA: true, featureB: true } );
-  // 
-  // component1.log( '-> Hello from component1!' );
-  // // component2.log( '-> Hello from component2!' );
-  // 
-  // console.log( 'component1', component1 );
-  // // console.log( 'component2', component2 );
+  });
 
 </script>
 </body>
