@@ -25,6 +25,7 @@ if (!Function.prototype.bind) {
 
 !function() {
     
+    // Provide static API
     var staticAPI = {
         
         plugin: function plugin( name, factory ) {
