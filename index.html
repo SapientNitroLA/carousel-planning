@@ -55,8 +55,9 @@
 	
 	
 	<script src="library/js/vendor/lodash.js"></script>
-	<script src="library/js/x.js"></script>
-	<script src="library/js/core.js"></script>
+	<!-- <script src="library/js/x.js"></script> -->
+  <script src="Simple Extension Model/x.js"></script>
+	<script src="library/js/carousel.js"></script>
 	<script src="library/js/core-feature-a.js"></script>
 	
 	<script>
@@ -80,9 +81,12 @@
       
       // @FLAG: I think the signature should be the following. This way, the carousel object that's returned is fully configured and ready to go. Not `init` needed. | ryanfitzer on 03-05-2014 
       // var carousel = core( options );
-			var carousel = core( featureA );
+      // var carousel = core( featureA );
 	
-			carousel.init(options);
+      // carousel.init(options);
+      
+      var myCarousel = core.create( options );
+      
 		});
 	</script>
 </body>

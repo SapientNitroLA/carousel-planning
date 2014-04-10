@@ -46,7 +46,12 @@
  */
 
 
-!function( root, factory ) {
+!function(
+    
+    root,
+    factory
+) {
+    
 	if ( typeof define === 'function' && define.amd ) {
 		// AMD. Register as an anonymous module.
 		define(
@@ -62,16 +67,18 @@
 	} else {
 		// Browser globals
 		root.core = factory(
-			 	root.X,
+			 	root.x,
 			 	root._
 			 );
 	}
+
 }(
-	this,
+	
+    this,
 	function( x, _ ) {
 	
 		'use strict';
-		
+
 		var ieTest
 			, tabindex
 			, tmplWrapper
@@ -83,17 +90,17 @@
 		
         // @FLAG: The `parent` option should be present in `defaults`. Also, why is it named `parent`? Something like `element` makes more sense to me. | ryanfitzer on 03-05-2014 
 		var defaults = {
-				prevText: 'Previous',
-				nextText: 'Next',
-				increment: 1,
-				incrementMode: 'frame', // tile or frame
-				encapsulateControls: false,
-				accessible: true,
-				wrapperDelta: 0,
-				viewportDelta: 0,
-				preFrameChange: null,
-				postFrameChange: null
-			};
+			prevText: 'Previous',
+			nextText: 'Next',
+			increment: 1,
+			incrementMode: 'frame', // tile or frame
+			encapsulateControls: false,
+			accessible: true,
+			wrapperDelta: 0,
+			viewportDelta: 0,
+			preFrameChange: null,
+			postFrameChange: null
+		};
 		
 		// Make sure to use the correct case for IE
 		ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
@@ -153,7 +160,8 @@
 				obj.addEventListener( evt, fn, capture );
 			}
 		}
-		function removeEvent( obj, evt, fn ) {
+		
+        function removeEvent( obj, evt, fn ) {
 			if ( obj.detachEvent ) {
 				obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
 				obj[ evt + fn ] = null;
@@ -184,10 +192,10 @@
 			element: null,
 			parentNode: null,
 			options: { id: 'options' },
-			state: {},
+            // state: {},
 			
             // @FLAG: This setup should take place in the constructor. I see the constructor as constructing the context before  | ryanfitzer on 03-05-2014 
-			init: function( options ) {
+			setup: function( options ) {
 				
 				var self = this;
                 
@@ -203,22 +211,22 @@
 				});
 				
                 // @FLAG: What's this return for? | ryanfitzer on 03-05-2014 
-				if ( this.x.state.init ) return;
+                // if ( this.x.state.init ) return;
 				
 				// !TODO: Replace string
 				this.x.publish( 'beforeInit' );
                 
                 // @FLAG: This isn't needed, correct? | ryanfitzer on 03-05-2014 
-				this.x.state.init = true;
+                // this.x.state.init = true;
 				
 				// !TODO: Replace string
 				this.x.publish( 'afterInit' );
 				
-				this.setup();
+				this.init();
 				
 			},
 	
-			setup: function() {
+			init: function() {
                 
 				var options			= this.options
 					, self			= this
@@ -567,7 +575,6 @@
 				
 			},
 			
-			
 			toggleAria: function( itemArray, operation, initClass ) {
 				
 				var item
@@ -618,33 +625,37 @@
 				}
 			}
 		}
-	
-		return function( extensions, options ) {
-			
-			var x = new X;
-	        
-            // @FLAG: What is the fix? | ryanfitzer on 03-05-2014 
-			for ( var i = 0; i < extensions.length; i++ ) {
-	
-				x.extend( extensions[ i ] );
-			}
-			
-			
-			var c = new Core( x, options );
-            
-            // @FLAG: We should only return the api methods that are needed. | ryanfitzer on 03-05-2014 
-            /*
-                return {
-                    go: x.proxy( c, c.go ),
-                    next: x.proxy( c, c.next ),
-                    prev: x.proxy( c, c.prev ),
-                    reset: x.proxy( c, c.reset )
-                }
-            */
-			return {
-				x: x,
-				init: x.proxy( c, c.init )
-			}
-		}
+	    
+        var carousel = x.define( 'carousel', Core.prototype );
+        
+        return carousel;
+        
+        // return function( extensions, options ) {
+        //     
+        //     var x = new X;
+        //             
+        //             // @FLAG: What is the fix? | ryanfitzer on 03-05-2014 
+        //     for ( var i = 0; i < extensions.length; i++ ) {
+        //     
+        //         x.extend( extensions[ i ] );
+        //     }
+        //     
+        //     
+        //     var c = new Core( x, options );
+        //             
+        //             // @FLAG: We should only return the api methods that are needed. | ryanfitzer on 03-05-2014 
+        //             /*
+        //                 return {
+        //                     go: x.proxy( c, c.go ),
+        //                     next: x.proxy( c, c.next ),
+        //                     prev: x.proxy( c, c.prev ),
+        //                     reset: x.proxy( c, c.reset )
+        //                 }
+        //             */
+        //     return {
+        //         x: x,
+        //         init: x.proxy( c, c.init )
+        //     }
+        // }
 	}
 );
