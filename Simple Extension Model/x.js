@@ -23,6 +23,20 @@ if (!Function.prototype.bind) {
     };
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+if (typeof Object.create != 'function') {
+    (function () {
+        var F = function () {};
+        Object.create = function (o) {
+            if (arguments.length > 1) { throw Error('Second argument not supported');}
+            if (o === null) { throw Error('Cannot set a null [[Prototype]]');}
+            if (typeof o != 'object') { throw TypeError('Argument must be an object');}
+            F.prototype = o;
+            return new F;
+        };
+    })();
+}
+
 !function() {
     
     // Provide component's static API
@@ -185,6 +199,29 @@ if (!Function.prototype.bind) {
             }
  
             return this;
+        },
+        
+        /**
+         * Simple method for extending multiple objects into one.
+         *
+         * @source http://stackoverflow.com/questions/11197247/javascript-equivalent-of-jquerys-extend-method/11197343#11197343
+         */
+        extend: function extend() {
+            
+            var length = arguments.length;
+            
+            for( var i = 1; i < length; i++ ) {
+            
+                for( var key in arguments[i] ) {
+                
+                    if( arguments[i].hasOwnProperty( key ) ) {
+                    
+                        arguments[0][key] = arguments[i][key];
+                    }
+                }
+            }
+        
+            return arguments[0];
         }
     }
     

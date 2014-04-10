@@ -14,14 +14,8 @@
             
             console.log( 'featureA execute setup', this.options, this.api );
             
-            this.tokens = {
-                preFrame: {
-                    after: this.api.subscribe( this.api.ns + '/prevFrame/after', this.prev.bind( this ) )
-                },
-                nextFrame: {
-                    before: this.api.subscribe( this.api.ns + '/nextFrame/after', this.next.bind( this ) )
-                }
-            }
+            this.api.subscribe( this.api.ns + '/prevFrame/after', this.prev.bind( this ) );
+            this.api.subscribe( this.api.ns + '/nextFrame/after', this.next.bind( this ) );
         },
         
         next: function() {

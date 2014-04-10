@@ -57,7 +57,6 @@
 		
 			[
 				'x',
-				'lodash'
 			],
 			
 			factory
@@ -66,14 +65,13 @@
 	} else {
 		// Browser globals
 		root.carousel = factory(
-            root.x,
-		    root._
+            root.x
 		);
 	}
 
 }(
     this,
-	function( x, _ ) {
+	function( x ) {
 	
 		'use strict';
         
@@ -95,6 +93,8 @@
 			}
 		}
 		
+		// Using removeEvent method for IE8 support
+		// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
         function removeEvent( obj, evt, fn ) {
 			if ( obj.detachEvent ) {
 				obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
@@ -127,6 +127,9 @@
 			preFrameChange: null,
 			postFrameChange: null
 		};
+        
+        // Options that require integers
+        var defaultInts = [ 'increment', 'wrapperDelta', 'viewportDelta' ];
 		
 		// Make sure to use the correct case for IE
 		ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
@@ -188,18 +191,18 @@
                 // @FLAG: What's the purpose of having both `elementNode` and `element`? | ryanfitzer on 03-05-2014 
 				this.elementNode = options.parent;
 				this.element = options.parent;
-				this.options = _.extend( defaults, options );
+                this.options = this.x.extend( defaults, options );
 				
 				// Make sure we have integers
-				_( [ 'increment', 'wrapperDelta', 'viewportDelta' ] ).forEach( function( el ) {
-					self.options[ el ] = parseInt( self.options[ el ], 10 );
-				});
+                for ( var i = 0; i < defaultInts.length; i++ ) {
+                    this.options[ defaultInts[i] ] = parseInt( this.options[ defaultInts[i] ], 10 );
+                }
 				
                 this.setupPlugins();
                 this.x.publish( this.ns + '/setup/after' );
                 this.init();
 			},
-	
+
 			init: function() {
                 
                 this.x.publish( this.ns + '/init/before' );
@@ -371,7 +374,7 @@
 					, isLastFrame		= index === state.curTileLength - increment
 					;
 							
-				_.extend( this.state, {
+				this.x.extend( this.state, {
 					index: index,
 					offset: state.tileWidth * index,
 					prevIndex: state.index,
