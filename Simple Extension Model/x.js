@@ -25,7 +25,7 @@ if (!Function.prototype.bind) {
 
 !function() {
     
-    // Provide static API
+    // Provide component's static API
     var staticAPI = {
         
         plugin: function plugin( name, factory ) {
@@ -43,16 +43,18 @@ if (!Function.prototype.bind) {
                 , constructorFn = this
                 ;
         
-            var aliasFn = function () { 
-                    constructorFn.apply( this, args ); 
+            var aliasFn = function () {
+                
+                constructorFn.apply( this, args ); 
             };
             
             aliasFn.prototype = constructorFn.prototype;
-        
+            
             return new aliasFn();
         }
     }
     
+    // Provide component's prototype API
     var protoAPI = {
         
         plugins: {},
@@ -71,10 +73,10 @@ if (!Function.prototype.bind) {
     }
     
     function X( component ) {
-        
+
         this.channels = {}
         this.tokenUid = -1
-        
+
         this.getState = function( key ) {
             return component.state[ key ];
         };
@@ -91,14 +93,16 @@ if (!Function.prototype.bind) {
     
     X.define = function( namespace, proto ) {
         
+        // Component constructor
         var F = function() {
             
             this.state = {};
-            this.namespace = namespace;
+            this.ns = namespace;
             
             // Provide an new instance of X
             // Pass in the component
             this.x = new X( this );
+            this.x.ns = namespace;
             
             // Pass in constructor arguments to new component
             this.setup.apply( this, arguments );

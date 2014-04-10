@@ -47,7 +47,6 @@
 
 
 !function(
-    
     root,
     factory
 ) {
@@ -66,20 +65,47 @@
 		);
 	} else {
 		// Browser globals
-		root.core = factory(
-			 	root.x,
-			 	root._
-			 );
+		root.carousel = factory(
+            root.x,
+		    root._
+		);
 	}
 
 }(
-	
     this,
 	function( x, _ ) {
 	
 		'use strict';
+        
+		// Utilities
+		function insertAfter( targetNode, newNode ) {
+			targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
+		}
+		
+		// Using addEvent method for IE8 support
+		// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
+		function addEvent( obj, evt, fn, capture ) {
+			if ( obj.attachEvent ) {
+				obj[ "e" + evt + fn ] = fn;
+				obj[ evt + fn ] = function() { obj[ 'e' + evt + fn ]( window.event ); }
+				obj.attachEvent( 'on' + evt, obj[ evt + fn ] );
+			} else if ( obj.addEventListener ) {
+				if ( !capture ) capture = false;
+				obj.addEventListener( evt, fn, capture );
+			}
+		}
+		
+        function removeEvent( obj, evt, fn ) {
+			if ( obj.detachEvent ) {
+				obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
+				obj[ evt + fn ] = null;
+			} else {
+				obj.removeEventListener( evt, fn, false );
+			}
+		}
 
-		var ieTest
+		var core
+            , ieTest
 			, tabindex
 			, tmplWrapper
 			, tmplViewport
@@ -130,72 +156,32 @@
         // Compile templates
 		tmplWrapper = document.createElement( 'div' );
 		tmplWrapper.setAttribute( 'class', 'carousel-container' );
-			
+
 		tmplViewport = document.createElement( 'div' );
 		tmplViewport.setAttribute( 'class', 'carousel-viewport' );
-			
+
 		tmplPN = document.createElement( 'button' );
-		
+
 		tmplControls = document.createElement( 'div' );
 		tmplControls.setAttribute( 'class', 'carousel-controls' );
-			
+
 		tmplControlsParent = document.createElement( 'div' );
 		tmplControlsParent.setAttribute( 'class', 'carousel-controls-wrapper' );
-		
-		
-		// Utilities
-		function insertAfter( targetNode, newNode ) {
-			targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
-		}
-		
-		// Using addEvent method for IE8 support
-		// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
-		function addEvent( obj, evt, fn, capture ) {
-			if ( obj.attachEvent ) {
-				obj[ "e" + evt + fn ] = fn;
-				obj[ evt + fn ] = function() { obj[ 'e' + evt + fn ]( window.event ); }
-				obj.attachEvent( 'on' + evt, obj[ evt + fn ] );
-			} else if ( obj.addEventListener ) {
-				if ( !capture ) capture = false;
-				obj.addEventListener( evt, fn, capture );
-			}
-		}
-		
-        function removeEvent( obj, evt, fn ) {
-			if ( obj.detachEvent ) {
-				obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
-				obj[ evt + fn ] = null;
-			} else {
-				obj.removeEventListener( evt, fn, false );
-			}
-		}
-		
-		function Core( x, options ) {
-			this.log.msg( 'new Core instance created' );
-			
-			var self = this;
-			
-			self.x = x;
-			x.state.init = false;
-		}
 
-		Core.prototype = {
+		core = {
             
-            // @FLAG: Documention comment blocks for prototype members should be started at this stage to help the review process | ryanfitzer on 03-05-2014 
-            /**
-             * Holds the cache.
-             * 
-             * @type Object
-             */
 			cacheObj: {},
+            
 			elementNode: null,
+            
 			element: null,
+            
 			parentNode: null,
-			options: { id: 'options' },
-            // state: {},
 			
-            // @FLAG: This setup should take place in the constructor. I see the constructor as constructing the context before  | ryanfitzer on 03-05-2014 
+            // Required by XJS
 			setup: function( options ) {
+
+                this.x.publish( this.ns + '/setup/before' );
 				
 				var self = this;
                 
@@ -205,28 +191,18 @@
 				this.options = _.extend( defaults, options );
 				
 				// Make sure we have integers
-				// Using LoDash for IE8 compatibility
-				_([ 'increment', 'wrapperDelta', 'viewportDelta' ]).forEach( function( el ) {
+				_( [ 'increment', 'wrapperDelta', 'viewportDelta' ] ).forEach( function( el ) {
 					self.options[ el ] = parseInt( self.options[ el ], 10 );
 				});
 				
-                // @FLAG: What's this return for? | ryanfitzer on 03-05-2014 
-                // if ( this.x.state.init ) return;
-				
-				// !TODO: Replace string
-				this.x.publish( 'beforeInit' );
-                
-                // @FLAG: This isn't needed, correct? | ryanfitzer on 03-05-2014 
-                // this.x.state.init = true;
-				
-				// !TODO: Replace string
-				this.x.publish( 'afterInit' );
-				
-				this.init();
-				
+                this.setupPlugins();
+                this.x.publish( this.ns + '/setup/after' );
+                this.init();
 			},
 	
 			init: function() {
+                
+                this.x.publish( this.ns + '/init/before' );
                 
 				var options			= this.options
 					, self			= this
@@ -238,7 +214,7 @@
 					, controls		= tmplControls
 					, increment		= options.increment
 					;
-				
+                
 				// Make the main elements avaible to `this`
 				this.parentNode = this.elementNode.parentNode;
 				this.wrapper = wrapper;
@@ -259,12 +235,8 @@
 				
 				wrapper.style.padding = options.wrapperDelta + 'px';
 				viewport.style.padding = options.viewportDelta + 'px';
-				
-				this.x.publish( 'preBuildNav' );
-				
+								
 				this.buildNavigation();
-				
-				this.x.publish( 'postBuildNav' );
 				
 				// Listen for focus on tiles
 				// !TODO: Replace string	
@@ -277,6 +249,7 @@
 					addEvent( panels[ i ], 'blur', this.focusHandler );
 				}
 				
+                this.x.publish( this.ns + '/init/after' );
 			},
 			
 			focusHandler: function( e ) {
@@ -457,6 +430,8 @@
 			
 			buildNavigation: function() {
 				
+                this.x.publish( 'nav/build/before' );
+                
 				var text
 					, controlsWidth
 					, newStyle
@@ -516,6 +491,8 @@
 					controls.appendChild( self.nextBtn );
 					wrapper.appendChild( controlsParent );
 				}
+                
+                this.x.publish( 'nav/build/after' );
 			},
 			
 			updateNavigation: function() {
@@ -536,18 +513,25 @@
 			},
 			
 			prevFrame: function() {
-				
+
+				this.x.publish( this.ns + '/prevFrame/before' );
+                
 				var index = this.state.index;
 				
 				if ( this.options.incrementMode === 'tile' ) index--;
 				else index = index - this.options.increment;
 				
 				this.updateState( index, true );
+                
+                this.x.publish( this.ns + '/prevFrame/after' );
+                
 				return this.carousel;
 				
 			},
 			
 			nextFrame: function() {
+                
+                this.x.publish( this.ns + '/nextFrame/before' );
 				
 				var index = this.state.index;
 				
@@ -555,6 +539,9 @@
 				else index = index + this.options.increment;
 				
 				this.updateState( index, true );
+                
+                this.x.publish( this.ns + '/nextFrame/after' );
+                
 				return this.carousel;
 				
 			},
@@ -625,37 +612,7 @@
 				}
 			}
 		}
-	    
-        var carousel = x.define( 'carousel', Core.prototype );
         
-        return carousel;
-        
-        // return function( extensions, options ) {
-        //     
-        //     var x = new X;
-        //             
-        //             // @FLAG: What is the fix? | ryanfitzer on 03-05-2014 
-        //     for ( var i = 0; i < extensions.length; i++ ) {
-        //     
-        //         x.extend( extensions[ i ] );
-        //     }
-        //     
-        //     
-        //     var c = new Core( x, options );
-        //             
-        //             // @FLAG: We should only return the api methods that are needed. | ryanfitzer on 03-05-2014 
-        //             /*
-        //                 return {
-        //                     go: x.proxy( c, c.go ),
-        //                     next: x.proxy( c, c.next ),
-        //                     prev: x.proxy( c, c.prev ),
-        //                     reset: x.proxy( c, c.reset )
-        //                 }
-        //             */
-        //     return {
-        //         x: x,
-        //         init: x.proxy( c, c.init )
-        //     }
-        // }
+        return x.define( 'carousel', core );
 	}
 );

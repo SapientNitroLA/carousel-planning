@@ -1,43 +1,45 @@
-var featureA = {
-	
-	// Default
-	id: 'featureA',
-	
-	// Default
-	setup: function( api ) {
-		this.log.msg( '[' + this.id	+ ']', 'execute setup' );
-		
-		api.subscribe( 'afterInit', this.custom );
-		api.subscribe( 'preFrameChange', this.preFrameChange );
-		api.subscribe( 'postFrameChange', this.postFrameChange );
-	},
-	
-	preFrameChange: function( api ) {
-		this.log.msg( '[' + this.id	+ ']', 'pre-frame animation' );
-	},
-	
-	postFrameChange: function( api ) {
-		this.log.msg( '[' + this.id	+ ']', 'post-frame animation' );
-	},
-	
-	// Default
-	destroy: function( api ) {
-		this.log.msg( '[' + this.id	+ ']', 'execute destroy' );
-	},
-	
-	custom: function( api ) {
-		this.log.msg( '[' + this.id	+ ']', 'execute custom' );
-		
-		api.data.init = true;
-		
-		this.log.msg( '[' + this.id	+ ']', 'core.state.init:', api.state( 'init' ) );
-		api.publish( 'update' );
-	},
-	
-	log: {
-		enabled: true,
-		msg: function( msg ) {
-			console.log.apply( console, arguments );
-		}
-	}
-}
+!function( carousel ) {
+    
+    function FeatureA( options, api ) {
+    
+        this.options = options;
+        this.api = api;
+    
+        this.setup();
+    }
+
+    FeatureA.prototype = {
+        
+        setup: function() {
+            
+            console.log( 'featureA execute setup', this.options, this.api );
+            
+            this.tokens = {
+                preFrame: {
+                    after: this.api.subscribe( this.api.ns + '/prevFrame/after', this.prev.bind( this ) )
+                },
+                nextFrame: {
+                    before: this.api.subscribe( this.api.ns + '/nextFrame/after', this.next.bind( this ) )
+                }
+            }
+        },
+        
+        next: function() {
+            
+            var self = this;
+            
+            console.log( 'this.api.getState', this.api.getState( 'frameIndex' ) );
+        },
+
+        prev: function() {
+            
+            console.log( 'this.api.getState', this.api.getState( 'frameIndex' ) );
+        }
+    }
+    
+    carousel.plugin( 'featureA', function( options, api ) {
+
+        new FeatureA( options, api );
+    });
+    
+}( window.carousel );

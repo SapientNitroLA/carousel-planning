@@ -63,9 +63,9 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
 			var options = {
-				parent: document.getElementById("example-carousel"),
-				increment: 4,
-				incrementMode: 'tile',
+				parent: document.getElementById('example-carousel'),
+				increment: 2,
+				incrementMode: 'frame',
 				encapsulateControls: true,
 				wrapperDelta: 10,
 				viewportDelta: 10,
@@ -76,16 +76,15 @@
 				},
 				postFrameChange: function() {
 					//console.log("options: postFrameChange()");
-				}
+				},
+        featureA: true
 			}
       
-      // @FLAG: I think the signature should be the following. This way, the carousel object that's returned is fully configured and ready to go. Not `init` needed. | ryanfitzer on 03-05-2014 
-      // var carousel = core( options );
-      // var carousel = core( featureA );
-	
-      // carousel.init(options);
+      var myCarousel = carousel.create( options );
       
-      var myCarousel = core.create( options );
+      // setTimeout(function() {
+      //     myCarousel.nextFrame()
+      // }, 5000);
       
 		});
 	</script>
