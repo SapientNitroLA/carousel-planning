@@ -162,7 +162,7 @@
                 
                 this.cacheObj = {};
 				this.element = options.element;
-                this.options = this.x.extend( defaults, options );
+                this.options = this.x.extend( {}, defaults, options );
 				
 				// Make sure the options are integers
                 for ( var i = 0; i < defaultInts.length; i++ ) {
@@ -359,7 +359,7 @@
 					frameIndex: frameIndex,
 					prevFrameIndex: state.frameIndex
 				});
-					 
+                
 				if ( animate ) this.animate();
 				
 				return state;
@@ -401,7 +401,7 @@
 			
 			buildNavigation: function() {
 				
-                this.x.publish( 'nav/build/before' );
+                this.x.publish( this.ns + '/navigation/before' );
                 
 				var text
 					, controlsWidth
@@ -424,26 +424,18 @@
 				text = options.prevText;
 				self.prevBtn = templates.button.cloneNode( true );
 				self.prevBtn.setAttribute( 'class', prevFrame );
+                self.prevBtn.setAttribute( 'data-prev', '' );
 				self.prevBtn.innerHTML = text;
 				
 				text = options.nextText;
 				self.nextBtn = templates.button.cloneNode( true );
 				self.nextBtn.setAttribute( 'class', nextFrame );
+                self.nextBtn.setAttribute( 'data-next', '' );
 				self.nextBtn.innerHTML = text;
-					
-				// Set click events buttons
-				// Using addEvent method for IE8 support
-				addEvent( this.parentNode, 'click', function( e ) {
-					if ( e.target.nodeName == 'BUTTON' ) {
-						var method = e.target.className;
-						if ( method === 'prevFrame' || method === 'nextFrame' ) {
-							self[ method ]();
-						}
-					}
-				});
-				
+
 				// Disable buttons if there is only one frame
 				if ( state.curTileLength <= options.increment ) {
+                    
 					self.prevBtn.disabled = true;
 					self.nextBtn.disabled = true;
 				}
@@ -453,17 +445,31 @@
 				
 				// Insert controls
 				if ( !options.encapsulateControls ) {
+                    
+                    this.x.publish( this.ns + '/navigation/controls/insert/before', wrapper, self.prevBtn, self.nextBtn );
+                    
 					wrapper.parentNode.insertBefore( self.prevBtn, wrapper );
 					insertAfter( wrapper, self.nextBtn );
+                    
+                    this.x.publish( this.ns + '/navigation/controls/insert/after', wrapper, self.prevBtn, self.nextBtn );
 				
 				} else {
+                    
+                    this.x.publish( this.ns + '/navigation/controls/insert/before', controls, self.prevBtn, self.nextBtn );
+
 					controlsParent.appendChild( controls );
 					controls.appendChild( self.prevBtn );
 					controls.appendChild( self.nextBtn );
-					wrapper.appendChild( controlsParent );
+                    wrapper.appendChild( controlsParent );
+                    
+                    this.x.publish( this.ns + '/navigation/controls/insert/after', controls, self.prevBtn, self.nextBtn );
 				}
                 
-                this.x.publish( 'nav/build/after' );
+				// Set click events buttons
+				// Using addEvent method for IE8 support
+                addEvent( this.wrapper, 'click', this.handleNavigation.bind( this ) );
+                
+                this.x.publish( this.ns + '/navigation/after' );
 			},
 			
 			updateNavigation: function() {
@@ -483,6 +489,20 @@
 				else self.nextBtn.disabled = false;
 			},
 			
+            handleNavigation: function(e) {
+                
+                var method;
+                
+                if ( e.target.nodeName.toLowerCase() !== 'button' ) return;
+                
+                method = e.target.hasAttribute( 'data-next' ) ? 'nextFrame' 
+                    : e.target.hasAttribute( 'data-prev' ) ? 'prevFrame'
+                    : false
+                    ;
+                
+                if ( method ) this[ method ]();
+            },
+            
 			prevFrame: function() {
 
 				this.x.publish( this.ns + '/prevFrame/before' );
@@ -505,14 +525,14 @@
                 this.x.publish( this.ns + '/nextFrame/before' );
 				
 				var index = this.state.index;
-				
+
 				if ( this.options.incrementMode === 'tile' ) index++;
 				else index = index + this.options.increment;
-				
+
 				this.updateState( index, true );
                 
                 this.x.publish( this.ns + '/nextFrame/after' );
-                
+
 				return this.carousel;
 				
 			},

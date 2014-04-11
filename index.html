@@ -45,10 +45,25 @@
 		<li><img src="library/images/test-image-4.jpg" alt="" /></li>
 		<li><img src="library/images/test-image-5.jpg" alt="" /></li>
 	</ul>
+  
+  <hr>
+  
+	<ul id="example-carousel-2">
+		<li><img src="library/images/test-image-1.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-2.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-3.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-4.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-5.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-1.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-2.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-3.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-4.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-5.jpg" alt="" /></li>
+	</ul>
 	
   <script src="Simple Extension Model/x.js"></script>
 	<script src="library/js/carousel.js"></script>
-	<script src="library/js/core-feature-a.js"></script>
+	<script src="library/js/carousel.pagination.js"></script>
 	
 	<script>
     
@@ -61,15 +76,24 @@
 			viewportDelta: 10,
 			prevText: '<',
 			nextText: '>',
-			preFrameChange: function() {
-				//console.log("options: preFrameChange()");
-			},
-			postFrameChange: function() {
-				//console.log("options: postFrameChange()");
-			},
-      featureA: true
+      pagination: true
 		});
-
+    
+    var myCarousel2 = carousel.create({
+			element: document.getElementById( 'example-carousel-2' ),
+			increment: 2,
+			incrementMode: 'frame',
+			encapsulateControls: true,
+			wrapperDelta: 10,
+			viewportDelta: 10,
+			prevText: '<',
+			nextText: '>',
+      // pagination: 'Ryan'
+		});
+    
+    // console.log( myCarousel );
+    // console.log( myCarousel2 );
+    
 	</script>
 </body>
 </html>
