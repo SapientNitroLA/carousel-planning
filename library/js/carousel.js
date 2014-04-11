@@ -11,7 +11,7 @@
  * 
  * @example
  * SOURCE HTML STRUCTURE
- * <ul class="example-carousel">
+ * <ul class="example-carousel"> 
  * 		<li><img src="library/images/test-image-1.jpg" alt="" /></li>
  * 		<li><img src="library/images/test-image-2.jpg" alt="" /></li>
  * 		<li><img src="library/images/test-image-3.jpg" alt="" /></li>
