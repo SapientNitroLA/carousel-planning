@@ -84,6 +84,7 @@
         
         // @FLAG: The `parent` option should be present in `defaults`. Also, why is it named `parent`? Something like `element` makes more sense to me. | ryanfitzer on 03-05-2014 
 		var defaults = {
+            element: null,
 			prevText: 'Previous',
 			nextText: 'Next',
 			increment: 1,
@@ -101,7 +102,7 @@
 		
         // Define templates
         var templates = {
-            wrapper: [ 'div', 'carousel-container' ],
+            container: [ 'div', 'carousel-container' ],
             viewport: [ 'div', 'carousel-viewport' ],
             button: [ 'button' ],
             controls: [ 'div', 'carousel-controls' ],
@@ -153,14 +154,6 @@
         
         // Create carousel prototype
 		var core = {
-            
-			cacheObj: {},
-            
-			elementNode: null,
-            
-			element: null,
-            
-			parentNode: null,
 			
             // Required by XJS
 			setup: function( options ) {
@@ -169,9 +162,8 @@
 				
 				var self = this;
                 
-                // @FLAG: What's the purpose of having both `elementNode` and `element`? | ryanfitzer on 03-05-2014 
-				this.elementNode = options.parent;
-				this.element = options.parent;
+                this.cacheObj = {};
+				this.element = options.element;
                 this.options = this.x.extend( defaults, options );
 				
 				// Make sure we have integers
@@ -192,21 +184,22 @@
 					, self			= this
 					, state			= self.state
 					, carousel		= this.element
-					, nextSibling	= this.elementNode.nextSibling
-                    , wrapper       = templates.wrapper.cloneNode( true )
+                    , parentNode    = carousel.parentNode
+					, nextSibling	= carousel.nextSibling
+                    , wrapper       = templates.container.cloneNode( true )
                     , viewport      = templates.viewport.cloneNode( true )
                     , controls      = templates.controls.cloneNode( true )
 					, increment		= options.increment
 					;
                 
 				// Make the main elements avaible to `this`
-				this.parentNode = this.elementNode.parentNode;
+				this.parentNode = carousel.parentNode;
 				this.wrapper = wrapper;
 				this.carousel = carousel;
 				this.viewport = viewport;
 				
 				// Remove and build the carousel
-				carousel.parentNode.removeChild( carousel );
+				parentNode.removeChild( carousel );
 				wrapper.appendChild( viewport );
 				viewport.appendChild( carousel );
 				
@@ -586,14 +579,6 @@
 							
 				this.cache( 'hasAriaInited', true );
 				
-			},
-			
-			// For development only
-			log: {
-				enabled: true,
-				msg: function( msg ) {
-					console.log.apply( console, arguments );
-				}
 			}
 		}
         

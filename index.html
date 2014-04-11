@@ -33,20 +33,19 @@
 </head>
 <body>
 	<h1 id="title">Example Carousel</h1>
-	<div id="carousel-wrapper">
-		<ul id="example-carousel">
-			<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
-			<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
-		</ul>
-	</div>
+  
+	<ul id="example-carousel">
+		<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
+		<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
+	</ul>
 	
   <script src="Simple Extension Model/x.js"></script>
 	<script src="library/js/carousel.js"></script>
@@ -56,7 +55,7 @@
 		document.addEventListener('DOMContentLoaded', function() {
 			
       var options = {
-				parent: document.getElementById('example-carousel'),
+				element: document.getElementById('example-carousel'),
 				increment: 2,
 				incrementMode: 'frame',
 				encapsulateControls: true,
