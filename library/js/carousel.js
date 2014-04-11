@@ -75,6 +75,53 @@
 	
 		'use strict';
         
+        // Make sure to use the correct case for IE
+		var ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' )
+			, tabindex = tabindex = ieTest ? 'tabIndex' : 'tabindex'
+			;
+        
+        ieTest = null;
+        
+        // @FLAG: The `parent` option should be present in `defaults`. Also, why is it named `parent`? Something like `element` makes more sense to me. | ryanfitzer on 03-05-2014 
+		var defaults = {
+			prevText: 'Previous',
+			nextText: 'Next',
+			increment: 1,
+			incrementMode: 'frame', // tile or frame
+			encapsulateControls: false,
+			accessible: true,
+			wrapperDelta: 0,
+			viewportDelta: 0,
+			preFrameChange: null,
+			postFrameChange: null
+		};
+        
+        // Options that require integers
+        var defaultInts = [ 'increment', 'wrapperDelta', 'viewportDelta' ];
+		
+        // Define templates
+        var templates = {
+            wrapper: [ 'div', 'carousel-container' ],
+            viewport: [ 'div', 'carousel-viewport' ],
+            button: [ 'button' ],
+            controls: [ 'div', 'carousel-controls' ],
+            controlsWrapper: [ 'div', 'carousel-controls-wrapper' ]
+        }
+        
+        // Compile templates
+        for ( var template in templates ) {
+
+            if ( !templates[ template ][1] ) {
+                
+                templates[ template ] = document.createElement( templates[ template ][0] );
+                continue;
+            }
+            
+            var tempTmpl = document.createElement( templates[ template ][0] );
+            tempTmpl.setAttribute( 'class', templates[ template ][1] );
+            templates[ template ] = tempTmpl;
+        }
+        
 		// Utilities
 		function insertAfter( targetNode, newNode ) {
 			targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
@@ -103,75 +150,9 @@
 				obj.removeEventListener( evt, fn, false );
 			}
 		}
-
-		var core
-            , ieTest
-			, tabindex
-			, tmplWrapper
-			, tmplViewport
-			, tmplControls
-			, tmplPN
-			, tmplControlsParent
-			;
-		
-        // @FLAG: The `parent` option should be present in `defaults`. Also, why is it named `parent`? Something like `element` makes more sense to me. | ryanfitzer on 03-05-2014 
-		var defaults = {
-			prevText: 'Previous',
-			nextText: 'Next',
-			increment: 1,
-			incrementMode: 'frame', // tile or frame
-			encapsulateControls: false,
-			accessible: true,
-			wrapperDelta: 0,
-			viewportDelta: 0,
-			preFrameChange: null,
-			postFrameChange: null
-		};
         
-        // Options that require integers
-        var defaultInts = [ 'increment', 'wrapperDelta', 'viewportDelta' ];
-		
-		// Make sure to use the correct case for IE
-		ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' ),
-		tabindex = ieTest ? 'tabIndex' : 'tabindex';
-		ieTest = null;
-
-        // @FLAG: Maybe an object and function would be better here? This seems more configurable to me and then the compilation could be hooked into if needed | ryanfitzer on 03-05-2014 
-        /*
-            var tmpl = {
-                wrapper: [ 'div', 'carousel-viewport' ],
-                viewport: [ 'div', 'carousel-viewport' ],
-                button: [ 'button' ],
-                controls: [ 'div', 'carousel-controls' ]
-                controlsWrapper: [ 'div', 'carousel-controls-wrapper' ]
-            }
-            
-            function compileTemplates() {
-
-                for ( var item in tmpl ) {
-        
-                    tmpl[ item ] = document.createElement( tmpl[ item ][0] );
-                
-                    if ( tmpl[ item ][1] ) tmpl[ item ].setAttribute( 'class', tmpl[ item ][1] );
-                }
-            }
-        */
-        // Compile templates
-		tmplWrapper = document.createElement( 'div' );
-		tmplWrapper.setAttribute( 'class', 'carousel-container' );
-
-		tmplViewport = document.createElement( 'div' );
-		tmplViewport.setAttribute( 'class', 'carousel-viewport' );
-
-		tmplPN = document.createElement( 'button' );
-
-		tmplControls = document.createElement( 'div' );
-		tmplControls.setAttribute( 'class', 'carousel-controls' );
-
-		tmplControlsParent = document.createElement( 'div' );
-		tmplControlsParent.setAttribute( 'class', 'carousel-controls-wrapper' );
-
-		core = {
+        // Create carousel prototype
+		var core = {
             
 			cacheObj: {},
             
@@ -212,9 +193,9 @@
 					, state			= self.state
 					, carousel		= this.element
 					, nextSibling	= this.elementNode.nextSibling
-					, wrapper		= tmplWrapper
-					, viewport		= tmplViewport
-					, controls		= tmplControls
+                    , wrapper       = templates.wrapper.cloneNode( true )
+                    , viewport      = templates.viewport.cloneNode( true )
+                    , controls      = templates.controls.cloneNode( true )
 					, increment		= options.increment
 					;
                 
@@ -444,8 +425,8 @@
 					, wrapper			= self.wrapper
 					, options			= self.options
 					, increment			= options.increment
-					, controls			= tmplControls.cloneNode( true )
-					, controlsParent	= tmplControlsParent.cloneNode( true )
+					, controls			= templates.controls.cloneNode( true )
+					, controlsParent	= templates.controlsWrapper.cloneNode( true )
 					, controlsWrapper 	= options.encapsulateControls ? controls : wrapper
 					, viewport			= self.viewport
 					, viewportWidth		= state.tileWidth * options.increment + options.viewportDelta
@@ -454,12 +435,12 @@
 					;
 				
 				text = options.prevText;
-				self.prevBtn = tmplPN.cloneNode( true );
+				self.prevBtn = templates.button.cloneNode( true );
 				self.prevBtn.setAttribute( 'class', prevFrame );
 				self.prevBtn.innerHTML = text;
 				
 				text = options.nextText;
-				self.nextBtn = tmplPN.cloneNode( true );
+				self.nextBtn = templates.button.cloneNode( true );
 				self.nextBtn.setAttribute( 'class', nextFrame );
 				self.nextBtn.innerHTML = text;
 					
@@ -616,6 +597,7 @@
 			}
 		}
         
+        // Define the carousel
         return x.define( 'carousel', core );
 	}
 );

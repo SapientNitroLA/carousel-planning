@@ -1,17 +1,19 @@
 require.config({
-	//baseUrl: "library/js",
+
 	paths: {
-		'core': 'core',
+		'carousel': 'carousel',
 		'x': 'x',
-		'lodash': 'vendor/lodash'
 	}
 });
 require(
+    
 	[
-		'core'
-	]
-	, function( core ) {
-		var options = {
+		'carousel'
+	],
+    
+    function( carousel ) {
+		
+        var options = {
 			parent: document.getElementById("example-carousel"),
 			increment: 4,
 			incrementMode: 'tile',
@@ -27,8 +29,7 @@ require(
 				//console.log("options: postFrameChange()");
 			}
 		}
-		var carousel = core();
 		
-		carousel.init(options);
+        var myCarousel = carousel.create( options );
 	}
 );
