@@ -5,6 +5,7 @@ require.config({
 		'x': 'x',
 	}
 });
+
 require(
     
 	[
@@ -13,8 +14,8 @@ require(
     
     function( carousel ) {
 		
-        var options = {
-			parent: document.getElementById("example-carousel"),
+        var myCarousel = carousel.create({
+			element: document.getElementById( 'example-carousel' ),
 			increment: 4,
 			incrementMode: 'tile',
 			encapsulateControls: true,
@@ -28,8 +29,6 @@ require(
 			postFrameChange: function() {
 				//console.log("options: postFrameChange()");
 			}
-		}
-		
-        var myCarousel = carousel.create( options );
+		});
 	}
 );

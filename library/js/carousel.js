@@ -11,12 +11,12 @@
  * 
  * @example
  * SOURCE HTML STRUCTURE
- * <ul id="example-carousel" class="example-carousel">
- * 		<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
- * 		<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
- * 		<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
- * 		<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
- * 		<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
+ * <ul class="example-carousel">
+ * 		<li><img src="library/images/test-image-1.jpg" alt="" /></li>
+ * 		<li><img src="library/images/test-image-2.jpg" alt="" /></li>
+ * 		<li><img src="library/images/test-image-3.jpg" alt="" /></li>
+ * 		<li><img src="library/images/test-image-4.jpg" alt="" /></li>
+ * 		<li><img src="library/images/test-image-5.jpg" alt="" /></li>
  * </ul>
  *
  * var options = {
@@ -159,14 +159,12 @@
 			setup: function( options ) {
 
                 this.x.publish( this.ns + '/setup/before' );
-				
-				var self = this;
                 
                 this.cacheObj = {};
 				this.element = options.element;
                 this.options = this.x.extend( defaults, options );
 				
-				// Make sure we have integers
+				// Make sure the options are integers
                 for ( var i = 0; i < defaultInts.length; i++ ) {
                     this.options[ defaultInts[i] ] = parseInt( this.options[ defaultInts[i] ], 10 );
                 }
@@ -217,7 +215,7 @@
 				
 				// Listen for focus on tiles
 				// !TODO: Replace string	
-				var panels = carousel.querySelectorAll( '.carousel-panel' );
+				var panels = carousel.querySelectorAll( '.carousel-tile' );
 				
 				for( var i = 0, len = panels.length; i < len; ++i ) {
 					// Using addEvent method for IE8 support
@@ -296,7 +294,7 @@
 					;
 					
 				// !TODO: Replace string
-				this.toggleAria( tileArr, 'add', 'carousel-panel' );
+				this.toggleAria( tileArr, 'add', 'carousel-tile' );
 				
 				// Build the normalized frames array
 				for ( var sec = 0, len = tileArr.length / increment, count = 1; 
@@ -369,8 +367,9 @@
 			
 			animate: function() {
 				
-				var self = this
-					, state = self.state
+                this.x.publish( this.ns + '/animate/before' );
+                
+				var state = this.state
 					, index = state.index
 					, targetIndex = index
 					, options = this.options
@@ -383,26 +382,21 @@
 					, isLast = index === ( state.curTileLength - increment )
 					;
 				
+				// Execute preFrameChange callback
+				if ( preFrameChange ) preFrameChange.call( this, state );
 				
-				
-				// Publish animation begin and call pre-animation option
-				this.x.publish( 'preFrameChange' );
-				if ( preFrameChange ) preFrameChange.call( self, state );
-				
-				
-				carousel.setAttribute( 'class', 'state-busy' ); // !TODO: Replace string	
-				self.toggleAria( state.tileArr, 'remove' );
-				self.updateNavigation();
-				self.toggleAria( state.tileArr, 'add' );
-				self.toggleAria( state.curFrame, 'remove' );
+                carousel.setAttribute( 'class', 'state-busy' );
+				this.toggleAria( state.tileArr, 'remove' );
+				this.updateNavigation();
+				this.toggleAria( state.tileArr, 'add' );
+				this.toggleAria( state.curFrame, 'remove' );
 				state.curTile.focus();
-				carousel.className.replace( /\bstate-busy\b/, '' );
+				carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
 				
-				
-				// Publish animation end and call post-animation option
-				this.x.publish( 'postFrameChange' );
-				postFrameChange && postFrameChange.call( self, state );
-							
+				// Execute postFrameChange callback
+				postFrameChange && postFrameChange.call( this, state );
+                
+                this.x.publish( this.ns + '/animate/after' );
 			},
 			
 			buildNavigation: function() {
@@ -551,7 +545,7 @@
 					, ariaVClass = ' state-visible'
 					, rAriaHClass = /\sstate-hidden/
 					, rAriaVClass = /\sstate-visible/
-					, rSpacerClass = /carousel-panel-spacer/
+					, rSpacerClass = /carousel-tile-spacer/
 					, add = operation === 'add' ? true : false
 					, initClass = initClass ? ' ' + initClass : ''
 					, hasAriaInited = this.cache( 'hasAriaInited' )

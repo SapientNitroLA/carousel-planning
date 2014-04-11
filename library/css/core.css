@@ -24,7 +24,7 @@
 .carousel-viewport ul * > * {
   max-width: 100%;
 }
-.carousel-panel.state-focus {
+.carousel-tile.state-focus {
   border-color: #0069ff;
 }
 .carousel-controls {
@@ -43,13 +43,14 @@
   display: none;
   visibility: hidden;
 }
+
 /*
-COMPONENT CAROUSEL ACCESSIBILITY
+ACCESSIBILITY
 ---------------------------------*/
-.component-container {
+.carousel-tile {
   outline: 1px dotted transparent !important;
 }
-.component-container.state-focus {
+.carousel-tile.state-focus {
   outline-color: #0069ff !important;
 }
 
@@ -62,7 +63,4 @@ FLOAT CLEARING
     content:".";
     display:block;
     visibility:hidden;
-}
-*+html  {
-    zoom:1;
 }

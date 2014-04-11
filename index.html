@@ -5,7 +5,6 @@
 	<title>Example Carousel</title>
 	
 	<link rel="stylesheet" href="library/css/core.css" />
-	<link rel="stylesheet" href="library/css/main.css" />
 	
 	<style>
 		
@@ -35,16 +34,16 @@
 	<h1 id="title">Example Carousel</h1>
   
 	<ul id="example-carousel">
-		<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-1.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-2.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-3.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-4.jpg" alt="" /></li>
-		<li class="carousel-item"><img src="library/images/test-image-5.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-1.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-2.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-3.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-4.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-5.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-1.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-2.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-3.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-4.jpg" alt="" /></li>
+		<li><img src="library/images/test-image-5.jpg" alt="" /></li>
 	</ul>
 	
   <script src="Simple Extension Model/x.js"></script>
@@ -52,33 +51,25 @@
 	<script src="library/js/core-feature-a.js"></script>
 	
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			
-      var options = {
-				element: document.getElementById('example-carousel'),
-				increment: 2,
-				incrementMode: 'frame',
-				encapsulateControls: true,
-				wrapperDelta: 10,
-				viewportDelta: 10,
-				prevText: '<',
-				nextText: '>',
-				preFrameChange: function() {
-					//console.log("options: preFrameChange()");
-				},
-				postFrameChange: function() {
-					//console.log("options: postFrameChange()");
-				},
-        featureA: true
-			}
-      
-      var myCarousel = carousel.create( options );
-      
-      // setTimeout(function() {
-      //     myCarousel.nextFrame()
-      // }, 5000);
-      
+    
+    var myCarousel = carousel.create({
+			element: document.getElementById( 'example-carousel' ),
+			increment: 2,
+			incrementMode: 'frame',
+			encapsulateControls: true,
+			wrapperDelta: 10,
+			viewportDelta: 10,
+			prevText: '<',
+			nextText: '>',
+			preFrameChange: function() {
+				//console.log("options: preFrameChange()");
+			},
+			postFrameChange: function() {
+				//console.log("options: postFrameChange()");
+			},
+      featureA: true
 		});
+
 	</script>
 </body>
 </html>
