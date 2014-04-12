@@ -71,24 +71,25 @@
 			element: document.getElementById( 'example-carousel' ),
 			increment: 2,
 			incrementMode: 'frame',
-			encapsulateControls: true,
+			wrapControls: true,
 			wrapperDelta: 10,
 			viewportDelta: 10,
-			prevText: '<',
-			nextText: '>',
-      pagination: true
+			prevText: 'previous',
+			nextText: 'next',
+      pagination: {
+        center:true
+      }
 		});
     
     var myCarousel2 = carousel.create({
 			element: document.getElementById( 'example-carousel-2' ),
 			increment: 2,
 			incrementMode: 'frame',
-			encapsulateControls: true,
+			wrapControls: true,
 			wrapperDelta: 10,
 			viewportDelta: 10,
 			prevText: '<',
 			nextText: '>',
-      // pagination: 'Ryan'
 		});
     
     // console.log( myCarousel );

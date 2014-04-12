@@ -80,7 +80,7 @@ if (typeof Object.create != 'function') {
 
                 if ( !( member in this.options ) ) continue;
                 
-                plugins[ member ]( this.options[ member ], this.x );
+                plugins[ member ]( this.x, this.options[ member ] );
             }
         }
     }
@@ -92,6 +92,10 @@ if (typeof Object.create != 'function') {
 
         this.getState = function( key ) {
             return component.state[ key ];
+        };
+        
+        this.getOption = function( key ) {
+            return component.options[ key ];
         };
         
         this.trigger = function ( method ) {

@@ -34,7 +34,7 @@
  * @param Object options 
  * @option Number increment Number of tiles to display per frame. Default is 1.
  * @option String incrementMode Whether to move the carousel by frame or single tile. Accepted values are `frame` and `tile`. Default is `frame`.
- * @option Boolean encapsulateControls Default is `false`. If `true`, a wrapper is placed around the prev/next links and pagination and centered.
+ * @option Boolean wrapControls Default is `false`. If `true`, a wrapper is placed around the prev/next links and pagination and centered.
  * @option String prevText Default is `Previous`. Set controls previous button text.
  * @option String nextText Default is `Next`. Set controls next button text.
  * @option Number wrapperDelta Change wrapper width by this pixel value. Default is 0.
@@ -89,7 +89,7 @@
 			nextText: 'Next',
 			increment: 1,
 			incrementMode: 'frame', // tile or frame
-			encapsulateControls: false,
+			wrapControls: false,
 			accessible: true,
 			wrapperDelta: 0,
 			viewportDelta: 0,
@@ -414,7 +414,7 @@
 					, increment			= options.increment
 					, controls			= templates.controls.cloneNode( true )
 					, controlsParent	= templates.controlsWrapper.cloneNode( true )
-					, controlsWrapper 	= options.encapsulateControls ? controls : wrapper
+					, controlsWrapper 	= options.wrapControls ? controls : wrapper
 					, viewport			= self.viewport
 					, viewportWidth		= state.tileWidth * options.increment + options.viewportDelta
 					, prevFrame			= 'prevFrame'
@@ -444,7 +444,7 @@
 				if ( index === 0 ) self.prevBtn.disabled = true;
 				
 				// Insert controls
-				if ( !options.encapsulateControls ) {
+				if ( !options.wrapControls ) {
                     
                     this.x.publish( this.ns + '/navigation/controls/insert/before', wrapper, self.prevBtn, self.nextBtn );
                     
