@@ -91,8 +91,6 @@
 			incrementMode: 'frame', // tile or frame
 			wrapControls: false,
 			accessible: true,
-			wrapperDelta: 0,
-			viewportDelta: 0,
 			preFrameChange: null,
 			postFrameChange: null
 		};
@@ -124,8 +122,35 @@
         }
         
 		// Utilities
-		function insertAfter( targetNode, newNode ) {
-			targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
+        function outerWidth( element ){
+      
+          var width = element.offsetWidth
+              , style = element.currentStyle || getComputedStyle( element ); // element.currentStyle is for IE8
+              ;
+
+          width += parseInt( style.marginLeft ) + parseInt( style.marginRight );
+      
+          return width;
+        }
+        
+        function outerHeight( element ){
+      
+          var height = element.offsetHeight
+              , style = element.currentStyle || getComputedStyle( element ); // element.currentStyle is for IE8
+              ;
+
+          height += parseInt( style.marginTop ) + parseInt( style.marginBottom );
+      
+          return height;
+        }
+        
+		function insertAfter( newNode, targetNode ) {
+			
+            if ( !targetNode.parentNode ) throw new Error( 'insertAfter failed. The targetNode argument has no parentNode.' );
+            
+            targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
+            
+            return newNode;
 		}
 		
 		// Using addEvent method for IE8 support
@@ -180,7 +205,6 @@
                 
 				var options			= this.options
 					, self			= this
-					, state			= self.state
 					, carousel		= this.element
                     , parentNode    = carousel.parentNode
 					, nextSibling	= carousel.nextSibling
@@ -195,26 +219,23 @@
 				this.wrapper = wrapper;
 				this.carousel = carousel;
 				this.viewport = viewport;
-				
+
 				// Remove and build the carousel
 				parentNode.removeChild( carousel );
 				wrapper.appendChild( viewport );
 				viewport.appendChild( carousel );
 				
 				// Replace the carousel
-				if ( nextSibling ) insertAfter( nextSibling, wrapper );
+				if ( nextSibling ) insertAfter( wrapper, nextSibling );
 				else parentNode.appendChild( wrapper );
 				
 				// Build out the frames and state object
 				this.state = this.normalizeState();
-				
-				wrapper.style.padding = options.wrapperDelta + 'px';
-				viewport.style.padding = options.viewportDelta + 'px';
 								
 				this.buildNavigation();
 				
 				// Listen for focus on tiles
-				// !TODO: Replace string	
+				// TODO Replace string	
 				var panels = carousel.querySelectorAll( '.carousel-tile' );
 				
 				for( var i = 0, len = panels.length; i < len; ++i ) {
@@ -228,13 +249,12 @@
 			},
 			
 			focusHandler: function( e ) {
-				// !TODO: Replace string
-				var cls = ' state-focus';
 				
+				var cls = ' state-focus'; // TODO Replace string
+
 				// Using 'className' to support IE8
 				if ( e.type === 'focus' ) e.target.className = e.target.className + cls;
 				else e.target.className = e.target.className.replace( cls, '' );
-				
 			},
 			
 			cache: function( key, value ) {
@@ -256,14 +276,15 @@
 				var tile
 					, tileStyle
 					, tilePercent
+                    , self              = this
 					, index				= 0
 					, state				= this.state
 					, carousel			= this.carousel
 					, tileArr			= carousel.children
 					, origTiles			= tileArr
 					, firstTile			= tileArr[ 0 ]
-					, tileWidth			= firstTile.offsetWidth
-					, tileHeight		= firstTile.offsetHeight
+					, tileWidth			= outerWidth( firstTile )
+					, tileHeight		= outerHeight( firstTile )
 					, options			= this.options
 					, increment			= options.increment
 					, origTileLength	= tileArr.length
@@ -289,7 +310,13 @@
 						curFrame: [],
 						prevFrame: [],
 						frameIndex: 0,
-						prevFrameIndex: 0
+						prevFrameIndex: 0,
+                        dom: {
+            				container: this.wrapper,
+            				viewport: this.viewport,
+                            carousel: self.element,
+                            controls: {} // TODO Add all of the controls
+                        }
 					}
 					;
 					
@@ -415,10 +442,10 @@
 					, controls			= templates.controls.cloneNode( true )
 					, controlsParent	= templates.controlsWrapper.cloneNode( true )
 					, controlsWrapper 	= options.wrapControls ? controls : wrapper
-					, viewport			= self.viewport
-					, viewportWidth		= state.tileWidth * options.increment + options.viewportDelta
-					, prevFrame			= 'prevFrame'
-					, nextFrame			= 'nextFrame'
+                    // , viewportWidth        = state.tileWidth * options.increment + options.viewportDelta
+                    , viewportWidth        = outerWidth( self.viewport )
+					, prevFrame			= 'prevFrame' // TODO Replace string
+					, nextFrame			= 'nextFrame' // TODO Replace string
 					;
 				
 				text = options.prevText;
@@ -448,8 +475,8 @@
                     
                     this.x.publish( this.ns + '/navigation/controls/insert/before', wrapper, self.prevBtn, self.nextBtn );
                     
-					wrapper.parentNode.insertBefore( self.prevBtn, wrapper );
-					insertAfter( wrapper, self.nextBtn );
+					wrapper.insertBefore( self.prevBtn, self.viewport );
+					insertAfter( self.nextBtn, self.viewport );
                     
                     this.x.publish( this.ns + '/navigation/controls/insert/after', wrapper, self.prevBtn, self.nextBtn );
 				
@@ -536,6 +563,26 @@
 				return this.carousel;
 				
 			},
+            
+            jumpToFrame: function( frame ) {
+            
+                var self = this,
+                    state = self.state,
+                    frame = parseInt( frame, 10 ),
+                    increment = self.options.increment,
+                    index = ( frame * increment ) - increment;
+            
+                index = index < 0 ? 0 : index;
+                                    
+                if ( index === state.index || frame > state.curFrameLength ) {
+                    return self.carousel;
+                }
+            
+                this.updateState( index, true );
+            
+                return self.carousel;
+            
+            },
 			
 			reset: function() {
 				

@@ -1,35 +1,48 @@
 .carousel-container {
-  position: relative;
+  position:relative;
 }
 .carousel-viewport {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  position: relative;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  position:relative;
 }
 .carousel-viewport ul,
 .carousel-viewport ul li {
-  margin: 0;
-  padding: 0;
-  position: relative;
+  margin:0;
+  padding:0;
+  position:relative;
 }
 .carousel-viewport ul li {
-  float: left;
-  outline: none;
-  display: block;
-  text-align: center;
-  width: 100%;
-  /* border:1px dotted transparent; */
+  width:100%;
+  float:left;
+  display:block;
+  text-align:center;
 }
 .carousel-viewport ul * > * {
-  max-width: 100%;
-}
-.carousel-tile.state-focus {
-  border-color: #0069ff;
+  max-width:100%;
 }
 .carousel-controls {
-  position: relative;
+  position:relative;
 }
+.carousel-pagination {
+  float:left;
+  display:block;
+}
+.carousel-pagination,
+.carousel-pagination li {
+	margin:0;
+	padding:0;
+	position:relative;
+}
+.carousel-pagination li {
+	float:left;	
+	display:block;
+}
+
+/*
+ACCESSIBILITY
+---------------------------------*/
 /*
 	Render the element invisible to screen readers to make 
 	sure the content is ignored. This is used when 
@@ -37,22 +50,21 @@
 	flow for dimension calculations.
 */
 .state-hidden {
-  visibility: hidden;
+  visibility:hidden;
 }
 .state-hidden * {
-  display: none;
-  visibility: hidden;
+    display:none;
+    visibility:hidden;
 }
-
-/*
-ACCESSIBILITY
----------------------------------*/
+/*.carousel-viewport ul li {
+    outline:none;
+}
 .carousel-tile {
-  outline: 1px dotted transparent !important;
+    outline:20px dotted transparent;
 }
 .carousel-tile.state-focus {
-  outline-color: #0069ff !important;
-}
+    outline-color:#0069ff !important;
+}*/
 
 /*
 FLOAT CLEARING
