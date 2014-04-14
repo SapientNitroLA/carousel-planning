@@ -2,6 +2,7 @@
     
     var doc = document
         , selected = ' selected'
+        , rBusy = /\bstate-busy\b/
         ;
     
     var defaults = {
@@ -166,25 +167,29 @@
                 controls.setAttribute( 'style', controlsStyle );
             }
             
-            addEvent( this.pagination, 'click', function(e) {
-                
-                var element = e.target
-                    , frame = parseInt( element.getAttribute( 'data-frame' ), 10 )
-                    ;
-                
-                if ( isNaN( frame ) ) return;
-                
-                // Try both for IE8 support
-                if ( 'returnValue' in e ) e.returnValue = false;
-                else e.preventDefault();
-                
-                // if ( self.carousel.hasClass( 'state-busy' ) || element.hasClass( 'selected' ) ) return false;
+            addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
+        },
+        
+        handlePagination: function(e) {
+            
+            var element = e.target
+                , frame = parseInt( element.getAttribute( 'data-frame' ), 10 )
+                , currentFrameIndex = this.api.getState( 'prevFrameIndex' )
+                ;
+            
+            if ( isNaN( frame ) ) return;
+            
+            // Try both for IE8 support
+            if ( 'preventDefault' in e ) e.preventDefault();
+            if ( 'returnValue' in e ) e.returnValue = false;
+            
+            if ( currentFrameIndex === frame ) return false;
+            if ( this.api.getState( 'dom' ).carousel.className.match( rBusy ) ) return false;
 
-                // loop && frame++;  
+            // loop && frame++;  
 
-                self.api.trigger( 'jumpToFrame', frame );
-                
-            });
+            this.api.trigger( 'jumpToFrame', frame );
+            
         },
         
         updatePagination: function() {
