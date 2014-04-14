@@ -44,35 +44,14 @@
  * 
  * @name carousel
  */
+define(
 
-
-!function(
-    root,
-    factory
-) {
+	[
+		'vendor/x',
+	],
     
-	if ( typeof define === 'function' && define.amd ) {
-		// AMD. Register as an anonymous module.
-		define(
-		
-			[
-				'x',
-			],
-			
-			factory
-			
-		);
-	} else {
-		// Browser globals
-		root.carousel = factory(
-            root.x
-		);
-	}
-
-}(
-    this,
-	function( x ) {
-	
+    function( x ) {
+        
 		'use strict';
         
         // Make sure to use the correct case for IE
@@ -82,7 +61,6 @@
         
         ieTest = null;
         
-        // @FLAG: The `parent` option should be present in `defaults`. Also, why is it named `parent`? Something like `element` makes more sense to me. | ryanfitzer on 03-05-2014 
 		var defaults = {
             element: null,
 			prevText: 'Previous',
@@ -479,6 +457,11 @@
 				// Disable prev button
 				if ( index === 0 ) self.prevBtn.disabled = true;
 				
+                this.state.dom.prevBtn = this.prevBtn;
+                this.state.dom.nextBtn = this.nextBtn;
+                this.state.dom.controlsWrapper = this.controlsWrapper;
+                this.state.dom.controls = this.controls;
+                
 				// Insert controls
 				if ( !options.wrapControls ) {
                     
@@ -654,5 +637,4 @@
         
         // Define the carousel
         return x.define( 'carousel', core );
-	}
-);
+});

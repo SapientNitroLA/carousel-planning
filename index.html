@@ -24,19 +24,18 @@
       background:none;
     }
     .carousel-pagination a {
+      color:#fff;
+      padding:0 5px;
       background:blue;
       display:inline-block;
-      padding:0 5px;
     }
     .carousel-pagination a.selected {
       background:red;
     }
-/*    img {
-      width: 95%;
-      margin-left: 5px;
-      margin-right: 5px;
-      
-    }*/
+    
+    .carousel-controls {
+      margin:0 auto;
+    }
 	</style>
 	
 </head>
@@ -71,36 +70,6 @@
 		<li><img src="library/images/test-image-5.jpg" alt="" /></li>
 	</ul>
 	
-  <script src="Simple Extension Model/x.js"></script>
-	<script src="library/js/carousel.js"></script>
-	<script src="library/js/carousel.pagination.js"></script>
-	
-	<script>
-    
-    var myCarousel = carousel.create({
-      element: document.getElementById( 'example-carousel' ),
-      increment: 2,
-      incrementMode: 'frame',
-      nextText: 'next',
-      prevText: 'previous',
-      wrapControls: true,
-          pagination: {
-            center: true // TODO handle centering when wrapControls is false. Should it simply not be done? Should wrapControls be forced to true?
-          }
-    });
-    
-    var myCarousel2 = carousel.create({
-      element: document.getElementById( 'example-carousel-2' ),
-      increment: 2,
-      incrementMode: 'frame',
-      wrapControls: true,
-      prevText: '<',
-      nextText: '>',
-    });
-    
-    // console.log( myCarousel );
-    // console.log( myCarousel2 );
-    
-	</script>
+  <script src="library/js/vendor/require.js" data-main="library/js/demo.js"></script>
 </body>
 </html>
