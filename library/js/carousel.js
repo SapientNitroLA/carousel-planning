@@ -422,7 +422,7 @@
 				
 				// Execute postFrameChange callback
 				postFrameChange && postFrameChange.call( this, state );
-                
+
                 this.x.publish( this.ns + '/animate/after' );
 			},
 			

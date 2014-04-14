@@ -1,6 +1,8 @@
 !function( carousel ) {
     
-    var doc = document;
+    var doc = document
+        , selected = ' selected'
+        ;
     
     var defaults = {
         center: true,
@@ -88,6 +90,11 @@
                 this.api.ns + '/navigation/controls/insert/after',
                 this.buildPagination.bind( this )
             );
+            
+            this.api.subscribe(
+                this.api.ns + '/animate/after',
+                this.updatePagination.bind( this )
+            );
         },
         
         handleOptions: function() {
@@ -173,11 +180,27 @@
                 
                 // if ( self.carousel.hasClass( 'state-busy' ) || element.hasClass( 'selected' ) ) return false;
 
-                // loop && frame++;
+                // loop && frame++;  
 
                 self.api.trigger( 'jumpToFrame', frame );
                 
             });
+        },
+        
+        updatePagination: function() {
+            
+            var rSelected = /\sselected\b/
+                , newFrameIndex = this.api.getState( 'frameIndex' )
+                , oldFrameIndex = this.api.getState( 'prevFrameIndex' )
+                , newFrame = this.paginationLinks[ newFrameIndex ]
+                , oldFrame = this.paginationLinks[ oldFrameIndex ]
+                ;
+
+            oldFrame.className = oldFrame.className.replace( rSelected, '' );
+            oldFrame.removeAttribute( 'title', '' );
+            
+            newFrame.className += selected;
+            newFrame.setAttribute( 'title', this.options.frameCurrentText );
         }
     }
     
