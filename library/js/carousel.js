@@ -230,7 +230,7 @@
 				else parentNode.appendChild( wrapper );
 				
 				// Build out the frames and state object
-				this.state = this.normalizeState();
+				this.normalizeState();
 								
 				this.buildNavigation();
 				
@@ -273,6 +273,8 @@
 			
 			normalizeState: function() {
 				
+                this.x.publish( this.ns + '/normalizeState/before' );
+                
 				var tile
 					, tileStyle
 					, tilePercent
@@ -312,14 +314,19 @@
 						frameIndex: 0,
 						prevFrameIndex: 0,
                         dom: {
-            				container: this.wrapper,
-            				viewport: this.viewport,
+            				container: self.wrapper,
+            				viewport: self.viewport,
                             carousel: self.element,
-                            controls: {} // TODO Add all of the controls
+                            controlsWrapper: self.controlsWrapper,
+                            controls: self.controls,
+                            prevBtn: self.prevBtn,
+                            nextBtn: self.nextBtn
                         }
 					}
 					;
-					
+				
+                this.state = state;
+                	
 				// !TODO: Replace string
 				this.toggleAria( tileArr, 'add', 'carousel-tile' );
 				
@@ -354,8 +361,7 @@
 					carousel.appendChild( tileArr[ 0 ] );
 				}
 				
-				return state;
-				
+                this.x.publish( this.ns + '/normalizeState/after' );
 			},
 			
 			updateState: function( index, animate ) {
@@ -448,6 +454,9 @@
 					, nextFrame			= 'nextFrame' // TODO Replace string
 					;
 				
+                this.controls = controls;
+                this.controlsWrapper = controlsWrapper;
+                
 				text = options.prevText;
 				self.prevBtn = templates.button.cloneNode( true );
 				self.prevBtn.setAttribute( 'class', prevFrame );

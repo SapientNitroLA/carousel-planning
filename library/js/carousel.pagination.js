@@ -82,9 +82,18 @@
         
         setup: function() {
 
+            var self = this;
+            
             this.api.subscribe(
                 this.api.ns + '/setup/after',
                 this.handleOptions.bind( this )
+            );
+            
+            this.api.subscribe(
+                this.api.ns + '/normalizeState/after',
+                function() {
+                    self.dom = self.api.getState( 'dom' );
+                }
             );
             
             this.api.subscribe(
@@ -131,7 +140,7 @@
                 , controlsWrap      = controls.parentNode
                 , btnNextParent     = btnNext.parentNode
                 , curFrameLength    = this.api.getState( 'curFrameLength' )
-                , viewportWidth     = outerWidth( this.api.getState( 'dom' ).viewport )
+                , viewportWidth     = outerWidth( this.dom.viewport )
                 ;
 
             this.pagination = btnNextParent.insertBefore( pagination, btnNext );
@@ -184,7 +193,7 @@
             if ( 'returnValue' in e ) e.returnValue = false;
             
             if ( currentFrameIndex === frame ) return false;
-            if ( this.api.getState( 'dom' ).carousel.className.match( rBusy ) ) return false;
+            if ( this.dom.carousel.className.match( rBusy ) ) return false;
 
             // loop && frame++;  
 
