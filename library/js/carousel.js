@@ -197,6 +197,8 @@ define(
 				this.wrapper = wrapper;
 				this.carousel = carousel;
 				this.viewport = viewport;
+                
+                this.wrapper.setAttribute( 'class', this.wrapper.className + ' ' + options.wrapperClass );
 
 				// Remove and build the carousel
 				parentNode.removeChild( carousel );

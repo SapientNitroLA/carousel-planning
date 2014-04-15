@@ -9,6 +9,7 @@ require(
 		
         var myCarousel = carousel.create({
             element: document.getElementById( 'example-carousel' ),
+            wrapperClass: 'test-1 test-2',
             increment: 2,
             incrementMode: 'frame',
             nextText: 'next',
@@ -21,6 +22,7 @@ require(
     
         var myCarousel2 = carousel.create({
             element: document.getElementById( 'example-carousel-2' ),
+            wrapperClass: 'test-3 test-4',
             increment: 2,
             incrementMode: 'frame',
             wrapControls: true,
