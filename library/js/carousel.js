@@ -339,7 +339,7 @@ define(
 					
 				for ( var i = 0; i < tileArr.length; i++ ) {
 					tileArr[ 0 ].setAttribute( 'style', tileStyle );
-					tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
+                    // tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
 					carousel.appendChild( tileArr[ 0 ] );
 				}
 				
