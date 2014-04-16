@@ -179,7 +179,7 @@ define(
         
             handlePagination: function(e) {
             
-                var element = e.target
+                var element = e.target || e.srcElement // IE uses srcElement
                     , frame = parseInt( element.getAttribute( 'data-frame' ), 10 )
                     , currentFrameIndex = this.api.getState( 'prevFrameIndex' )
                     ;

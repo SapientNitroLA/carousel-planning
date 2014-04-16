@@ -230,11 +230,13 @@ define(
 			
 			focusHandler: function( e ) {
 				
-				var cls = ' state-focus'; // TODO Replace string
-
+				var cls = ' state-focus' // TODO Replace string
+                    , target = e.target || e.srcElement // IE uses srcElement
+                    ;
+// return console.dir(e);
 				// Using 'className' to support IE8
-				if ( e.type === 'focus' ) e.target.className = e.target.className + cls;
-				else e.target.className = e.target.className.replace( cls, '' );
+				if ( e.type === 'focus' ) target.className = target.className + cls;
+				else target.className = target.className.replace( cls, '' );
 			},
 			
 			cache: function( key, value ) {
@@ -512,12 +514,15 @@ define(
 			
             handleNavigation: function(e) {
                 
-                var method;
+                var method
+                    , target = e.target || e.srcElement // IE uses srcElement
+                    ;
+                // console.dir(e.srcElement);
+                // return;
+                if ( target.nodeName.toLowerCase() !== 'button' ) return;
                 
-                if ( e.target.nodeName.toLowerCase() !== 'button' ) return;
-                
-                method = e.target.hasAttribute( 'data-next' ) ? 'nextFrame' 
-                    : e.target.hasAttribute( 'data-prev' ) ? 'prevFrame'
+                method = target.hasAttribute( 'data-next' ) ? 'nextFrame' 
+                    : target.hasAttribute( 'data-prev' ) ? 'prevFrame'
                     : false
                     ;
                 
@@ -565,7 +570,7 @@ define(
                     frame = parseInt( frame, 10 ),
                     increment = self.options.increment,
                     index = ( frame * increment ) - increment;
-            
+
                 index = index < 0 ? 0 : index;
                                     
                 if ( index === state.index || frame > state.curFrameLength ) {

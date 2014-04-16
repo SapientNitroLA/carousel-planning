@@ -19,9 +19,6 @@
   display:block;
   text-align:center;
 }
-.carousel-viewport ul * > * {
-  max-width:100%;
-}
 .carousel-controls {
   position:relative;
 }
