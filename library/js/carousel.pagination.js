@@ -26,13 +26,16 @@ define(
         // Utilities
         function outerWidth( element ){
       
-          var width = element.offsetWidth
-              , style = element.currentStyle || getComputedStyle( element ); // element.currentStyle is for IE8
+          var style = element.currentStyle || getComputedStyle( element ) // element.currentStyle is for IE8
+              , width = element.offsetWidth
+              , marginLeft = parseInt( style.marginLeft )
+              , marginRight = parseInt( style.marginRight )
               ;
-
-          width += parseInt( style.marginLeft ) + parseInt( style.marginRight );
+          
+          marginLeft = isNaN( marginLeft ) ? 0 : marginLeft;
+          marginRight = isNaN( marginRight ) ? 0 : marginRight;
       
-          return width;
+          return width + marginLeft + marginRight;
         }
     
     	// Using addEvent method for IE8 support
@@ -110,7 +113,6 @@ define(
                 var current
                     , pageLinks
                     , isSelected
-                    // , controlsWidth
                     , pageLinkWidth
                     , paginationWidth
                     , controlsStyle
@@ -170,7 +172,10 @@ define(
                 // Center controls beneath carousel
                 if ( !( this.options.center && this.options.wrapControls ) ) return;
 
-                controlsWidth = outerWidth( this.dom.prevBtn ) + outerWidth( this.pagination ) + outerWidth( this.dom.nextBtn );
+                controlsWidth = outerWidth( this.dom.prevBtn )
+                    + outerWidth( this.pagination )
+                    + outerWidth( this.dom.nextBtn );
+                    
                 controlsStyle = 'position:relative;';
                 controlsStyle += 'width:' + controlsWidth + 'px;';
                 // controlsStyle += 'left:' + ( viewportWidth - controlsWidth ) / 2 + 'px;'

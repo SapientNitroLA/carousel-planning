@@ -233,7 +233,7 @@ define(
 				var cls = ' state-focus' // TODO Replace string
                     , target = e.target || e.srcElement // IE uses srcElement
                     ;
-// return console.dir(e);
+
 				// Using 'className' to support IE8
 				if ( e.type === 'focus' ) target.className = target.className + cls;
 				else target.className = target.className.replace( cls, '' );
@@ -257,7 +257,7 @@ define(
 				
                 this.x.publish( this.ns + '/normalizeState/before' );
                 
-				var tile
+				var tiles
 					, tileStyle
 					, tilePercent
                     , self              = this
@@ -316,8 +316,22 @@ define(
 				for ( var sec = 0, len = tileArr.length / increment, count = 1; 
 						sec < len; 
 						sec++, count++ ) {
-					tile = Array.prototype.slice.call( tileArr, increment * sec, increment * count );
-					state.frameArr.push( tile );
+
+                    // This is crashing IE8 due to tileArr being a host object (HTMLCollection) instead of a JavaScript object
+                    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior
+                    // Every way I try to get around it, including the MDN shim, still causes IE8 to crash
+					tiles = Array.prototype.slice.call( tileArr, increment * sec, increment * count );
+                    
+                    // var tiles = [];
+                    // for ( var i = increment * sec, ii = 0, end = increment * count; i < end; i++, ii++) {
+                    //     console.log(i);
+                    //     console.log(ii);
+                    //     console.log(end);
+                    //     console.log(' ');
+                    //     tiles[ii] = tileArr[i];
+                    // }
+                    
+                    state.frameArr.push( tiles );
 				};
 				
 				state.index				= index;
@@ -517,8 +531,7 @@ define(
                 var method
                     , target = e.target || e.srcElement // IE uses srcElement
                     ;
-                // console.dir(e.srcElement);
-                // return;
+
                 if ( target.nodeName.toLowerCase() !== 'button' ) return;
                 
                 method = target.hasAttribute( 'data-next' ) ? 'nextFrame' 

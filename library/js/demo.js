@@ -19,7 +19,7 @@ require(
               center: true // TODO handle centering when wrapControls is false. Should it simply not be done? Should wrapControls be forced to true?
             }
         });
-            
+    
         var myCarousel2 = carousel.create({
             element: document.getElementById( 'example-carousel-2' ),
             wrapperClass: 'test-3 test-4',
