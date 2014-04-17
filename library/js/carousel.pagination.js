@@ -186,16 +186,17 @@ define(
             
                 var element = e.target || e.srcElement // IE uses srcElement
                     , frame = parseInt( element.getAttribute( 'data-frame' ), 10 )
-                    , currentFrameIndex = this.api.getState( 'prevFrameIndex' )
+                    , currentFrameIndex = this.api.getState( 'frameIndex' )
+                    , currentFrameNumber = this.api.getState( 'frameNumber' )
                     ;
-            
+
                 if ( isNaN( frame ) ) return;
             
                 // Try both for IE8 support
                 if ( 'preventDefault' in e ) e.preventDefault();
                 if ( 'returnValue' in e ) e.returnValue = false;
             
-                if ( currentFrameIndex === frame ) return false;
+                if ( currentFrameNumber === frame ) return false;
                 if ( this.dom.carousel.className.match( rBusy ) ) return false;
 
                 // loop && frame++;  

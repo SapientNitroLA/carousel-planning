@@ -294,7 +294,9 @@ define(
 						curFrame: [],
 						prevFrame: [],
 						frameIndex: 0,
+                        frameNumber: 1,
 						prevFrameIndex: 0,
+						prevFrameNumber: 1,
                         dom: {
             				container: self.wrapper,
             				viewport: self.viewport,
@@ -342,7 +344,9 @@ define(
 				state.curTileLength		= state.tileArr.length;
 				state.curFrameLength	= Math.ceil( state.curTileLength / increment );
 				state.frameIndex		= Math.ceil( state.index / increment );
+				state.frameNumber		= state.frameIndex + 1;
 				state.prevFrameIndex	= state.frameIndex;
+				state.prevFrameNumber	= state.prevFrameIndex + 1;
 				state.curFrame			= state.frameArr[ state.frameIndex ];
 				state.tileDelta			= ( increment * state.curFrameLength ) - state.curTileLength;
 				
@@ -366,15 +370,17 @@ define(
 					, state				= self.state
 					, ops				= self.options
 					, increment			= ops.increment
-					, prevFrameIndex	= state.frameIndex
+                    , prevFrameIndex    = state.frameIndex
+					, prevFrameNumber	= state.frameIndex + 1
 					, index				= index > state.curTileLength - increment ? state.curTileLength - increment
 											: index < 0 ? 0
 											: index
 					, frameIndex		= Math.ceil( index / increment )
+					, frameNumber		= frameIndex + 1
 					, isFirstFrame		= index === 0
 					, isLastFrame		= index === state.curTileLength - increment
 					;
-							
+			
 				this.x.extend( this.state, {
 					index: index,
 					offset: state.tileWidth * index,
@@ -386,7 +392,9 @@ define(
 					curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, increment + index ),
 					prevFrame: state.curFrame,
 					frameIndex: frameIndex,
-					prevFrameIndex: state.frameIndex
+					frameNumber: frameNumber,
+					prevFrameIndex: state.frameIndex,
+					prevFrameNumber: state.frameNumber
 				});
                 
 				if ( animate ) this.animate();
