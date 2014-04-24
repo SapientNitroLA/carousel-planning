@@ -78,7 +78,7 @@ define(
 		
         // Define templates
         var templates = {
-            container: [ 'div', 'carousel-container' ],
+            wrapper: [ 'div', 'carousel-wrapper' ],
             viewport: [ 'div', 'carousel-viewport' ],
             button: [ 'button' ],
             controls: [ 'div', 'carousel-controls' ],
@@ -186,7 +186,7 @@ define(
 					, carousel		= this.element
                     , parentNode    = carousel.parentNode
 					, nextSibling	= carousel.nextSibling
-                    , wrapper       = templates.container.cloneNode( true )
+                    , wrapper       = templates.wrapper.cloneNode( true )
                     , viewport      = templates.viewport.cloneNode( true )
                     , controls      = templates.controls.cloneNode( true )
 					, increment		= options.increment
@@ -284,7 +284,10 @@ define(
 						origTileLength: origTileLength,
 						curTileLength: curTileLength,
 						tileWidth: tileWidth,
+                        tilePercent: 100,
 						tileHeight: tileHeight,
+                        trackWidth: tileWidth * tileArr.length,
+                        trackPercent: 100 * tileArr.length,
 						curTile: false,
 						prevTile: false,
 						frameArr: [],
@@ -298,7 +301,7 @@ define(
 						prevFrameIndex: 0,
 						prevFrameNumber: 1,
                         dom: {
-            				container: self.wrapper,
+            				wrapper: self.wrapper,
             				viewport: self.viewport,
                             carousel: self.element,
                             controlsWrapper: self.controlsWrapper,
@@ -352,16 +355,22 @@ define(
 				
 				this.toggleAria( state.curFrame, 'remove' );
 				
-				tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000;
-				tileStyle = 'width: ' + tilePercent + '%; ';
-					
-				for ( var i = 0; i < tileArr.length; i++ ) {
-					tileArr[ 0 ].setAttribute( 'style', tileStyle );
-                    // tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
-					carousel.appendChild( tileArr[ 0 ] );
-				}
+                // tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000;
+                // tileStyle = 'width: ' + tilePercent + '%; ';
+                //     
+                // for ( var i = 0; i < tileArr.length; i++ ) {
+                //     tileArr[ i ].setAttribute( 'style', tileStyle );
+                //                     // tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
+                //                     // carousel.appendChild( tileArr[ 0 ] );
+                // }
 				
                 this.x.publish( this.ns + '/normalizeState/after' );
+                
+                //call calculate - updates state (publish)
+                //dom styler - applies calculations (subscribed)
+                this.setDimensions(increment);
+                
+                this.updateDimensions();
 			},
 			
 			updateState: function( index, animate ) {
@@ -401,6 +410,40 @@ define(
 				
 				return state;
 			},
+            
+            updateDimensions: function() {
+                
+                var state = this.state
+                    , tileArr = state.tileArr
+                    , tileStyle = 'width: ' + state.tilePercent + '%'
+                    , trackStyle = 'width: ' + state.trackPercent + '%'
+                    ;
+                
+                this.carousel.setAttribute( 'style', trackStyle );
+                
+                for ( var i = 0; i< tileArr.length; i++ ) {
+                    
+                    tileArr[ i ].setAttribute( 'style', tileStyle );
+                }
+                
+            },
+            
+            setDimensions: function( increment ) {
+                
+                var state = this.state
+                    , numTiles = state.tileArr.length
+                    , percentIncrement = 100 / increment
+                    , trackPercent = percentIncrement * numTiles
+                    , tilePercent = 100 / ((trackPercent / 100) * increment)
+                    ;
+                console.log(state);
+
+                state.trackPercent = trackPercent;
+                state.tilePercent = tilePercent;
+                
+                // make pixel values?
+                state.trackWidth = state.tileWidth * numTiles;
+            },
 			
 			animate: function() {
 				
@@ -413,10 +456,13 @@ define(
 					, carousel = this.element
 					, increment = options.increment
 					, tileWidth = state.tileWidth
+                    , tilePercent = state.tilePercent
 					, preFrameChange = options.preFrameChange
 					, postFrameChange = options.postFrameChange
 					, isFirst = index === 0
 					, isLast = index === ( state.curTileLength - increment )
+                    , translateAmt = tilePercent * targetIndex
+                    , transformStr = 'translateX(-' + translateAmt + '%)'
 					;
 				
 				// Execute preFrameChange callback
@@ -425,9 +471,16 @@ define(
                 carousel.setAttribute( 'class', 'state-busy' );
 				this.toggleAria( state.tileArr, 'remove' );
 				this.updateNavigation();
+
+                //animate
+                carousel.style.transform = transformStr;
+                
+                // carousel.setAttribute('transform','translateX(100px)');
+                // carousel.setAttribute( 'style', 'background:red;' );
+                
 				this.toggleAria( state.tileArr, 'add' );
 				this.toggleAria( state.curFrame, 'remove' );
-				state.curTile.focus();
+                // state.curTile.focus();
 				carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
 				
 				// Execute postFrameChange callback

@@ -1,4 +1,4 @@
-.carousel-container {
+.carousel-wrapper {
   position:relative;
 }
 .carousel-viewport {
@@ -50,7 +50,7 @@ ACCESSIBILITY
   visibility:hidden;
 }
 .state-hidden * {
-    display:none;
+/*    display:none;*/
     visibility:hidden;
 }
 /*.carousel-viewport ul li {
