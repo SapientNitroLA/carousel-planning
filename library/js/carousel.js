@@ -32,7 +32,7 @@
  * 
  * 
  * @param Object options 
- * @option Number increment Number of tiles to display per frame. Default is 1.
+ * @option Number tilesPerFrame Number of tiles to display per frame. Default is 1.
  * @option String incrementMode Whether to move the carousel by frame or single tile. Accepted values are `frame` and `tile`. Default is `frame`.
  * @option Boolean wrapControls Default is `false`. If `true`, a wrapper is placed around the prev/next links and pagination and centered.
  * @option String prevText Default is `Previous`. Set controls previous button text.
@@ -65,7 +65,7 @@ define(
             element: null,
 			prevText: 'Previous',
 			nextText: 'Next',
-			increment: 1,
+			tilesPerFrame: 1,
 			incrementMode: 'frame', // tile or frame
 			wrapControls: false,
 			accessible: true,
@@ -74,7 +74,7 @@ define(
 		};
         
         // Options that require integers
-        var defaultInts = [ 'increment', 'wrapperDelta', 'viewportDelta' ];
+        var defaultInts = [ 'tilesPerFrame', 'wrapperDelta', 'viewportDelta' ];
 		
         // Define templates
         var templates = {
@@ -155,6 +155,25 @@ define(
 			}
 		}
         
+        function repeat(callback, interval, repeats, immediate) {
+            var timer
+                , trigger
+                ;
+            
+            trigger = function () {
+                callback();
+                --repeats || clearInterval(timer);
+            };
+
+            interval = interval <= 0 ? 1000 : interval; // default: 1000ms
+            repeats  = parseInt(repeats, 10) || 0;      // default: repeat forever
+            timer    = setInterval(trigger, interval);
+
+            if( !!immediate ) { // Coerce boolean
+                trigger();
+            }
+        }
+        
         // Create carousel prototype
 		var core = {
 			
@@ -189,7 +208,7 @@ define(
                     , wrapper       = templates.wrapper.cloneNode( true )
                     , viewport      = templates.viewport.cloneNode( true )
                     , controls      = templates.controls.cloneNode( true )
-					, increment		= options.increment
+					, tilesPerFrame		= options.tilesPerFrame
 					;
                 
 				// Make the main elements avaible to `this`
@@ -270,10 +289,10 @@ define(
 					, tileWidth			= outerWidth( firstTile )
 					, tileHeight		= outerHeight( firstTile )
 					, options			= this.options
-					, increment			= options.increment
+					, tilesPerFrame			= options.tilesPerFrame
 					, origTileLength	= tileArr.length
 					, curTileLength		= origTileLength
-					, frameLength		= Math.ceil( curTileLength / increment )
+					, frameLength		= Math.ceil( curTileLength / tilesPerFrame )
 					, state = {
 						index: index,
 						offset: 0,
@@ -293,7 +312,7 @@ define(
 						frameArr: [],
 						origFrameLength: frameLength,
 						curFrameLength: frameLength,
-						frameWidth: increment * tileWidth,
+						frameWidth: tilesPerFrame * tileWidth,
 						curFrame: [],
 						prevFrame: [],
 						frameIndex: 0,
@@ -318,17 +337,17 @@ define(
 				this.toggleAria( tileArr, 'add', 'carousel-tile' );
 				
 				// Build the normalized frames array
-				for ( var sec = 0, len = tileArr.length / increment, count = 1; 
+				for ( var sec = 0, len = tileArr.length / tilesPerFrame, count = 1; 
 						sec < len; 
 						sec++, count++ ) {
 
                     // This is crashing IE8 due to tileArr being a host object (HTMLCollection) instead of a JavaScript object
                     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior
                     // Every way I try to get around it, including the MDN shim, still causes IE8 to crash
-					tiles = Array.prototype.slice.call( tileArr, increment * sec, increment * count );
+					tiles = Array.prototype.slice.call( tileArr, tilesPerFrame * sec, tilesPerFrame * count );
                     
                     // var tiles = [];
-                    // for ( var i = increment * sec, ii = 0, end = increment * count; i < end; i++, ii++) {
+                    // for ( var i = tilesPerFrame * sec, ii = 0, end = tilesPerFrame * count; i < end; i++, ii++) {
                     //     console.log(i);
                     //     console.log(ii);
                     //     console.log(end);
@@ -345,17 +364,17 @@ define(
 				state.tileObj			= state.tileArr;
 				state.curTile			= state.tileObj[ state.index ];
 				state.curTileLength		= state.tileArr.length;
-				state.curFrameLength	= Math.ceil( state.curTileLength / increment );
-				state.frameIndex		= Math.ceil( state.index / increment );
+				state.curFrameLength	= Math.ceil( state.curTileLength / tilesPerFrame );
+				state.frameIndex		= Math.ceil( state.index / tilesPerFrame );
 				state.frameNumber		= state.frameIndex + 1;
 				state.prevFrameIndex	= state.frameIndex;
 				state.prevFrameNumber	= state.prevFrameIndex + 1;
 				state.curFrame			= state.frameArr[ state.frameIndex ];
-				state.tileDelta			= ( increment * state.curFrameLength ) - state.curTileLength;
+				state.tileDelta			= ( tilesPerFrame * state.curFrameLength ) - state.curTileLength;
 				
 				this.toggleAria( state.curFrame, 'remove' );
 				
-                // tilePercent = ( parseInt( ( 100 / this.options.increment ) * 1000 ) ) / 1000;
+                // tilePercent = ( parseInt( ( 100 / this.options.tilesPerFrame ) * 1000 ) ) / 1000;
                 // tileStyle = 'width: ' + tilePercent + '%; ';
                 //     
                 // for ( var i = 0; i < tileArr.length; i++ ) {
@@ -368,7 +387,7 @@ define(
                 
                 //call calculate - updates state (publish)
                 //dom styler - applies calculations (subscribed)
-                this.setDimensions(increment);
+                this.calcDimensions(tilesPerFrame);
                 
                 this.updateDimensions();
 			},
@@ -378,16 +397,16 @@ define(
 				var self				= this
 					, state				= self.state
 					, ops				= self.options
-					, increment			= ops.increment
+					, tilesPerFrame			= ops.tilesPerFrame
                     , prevFrameIndex    = state.frameIndex
 					, prevFrameNumber	= state.frameIndex + 1
-					, index				= index > state.curTileLength - increment ? state.curTileLength - increment
+					, index				= index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
 											: index < 0 ? 0
 											: index
-					, frameIndex		= Math.ceil( index / increment )
+					, frameIndex		= Math.ceil( index / tilesPerFrame )
 					, frameNumber		= frameIndex + 1
 					, isFirstFrame		= index === 0
-					, isLastFrame		= index === state.curTileLength - increment
+					, isLastFrame		= index === state.curTileLength - tilesPerFrame
 					;
 			
 				this.x.extend( this.state, {
@@ -398,7 +417,7 @@ define(
 					curTile: isLastFrame && state.tileDelta && ops.incrementMode === 'frame'
 								? state.tileArr[ index + state.tileDelta ]
 								: state.tileArr[ index ],
-					curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, increment + index ),
+					curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, tilesPerFrame + index ),
 					prevFrame: state.curFrame,
 					frameIndex: frameIndex,
 					frameNumber: frameNumber,
@@ -428,15 +447,14 @@ define(
                 
             },
             
-            setDimensions: function( increment ) {
+            calcDimensions: function( tilesPerFrame ) {
                 
                 var state = this.state
                     , numTiles = state.tileArr.length
-                    , percentIncrement = 100 / increment
+                    , percentIncrement = 100 / tilesPerFrame
                     , trackPercent = percentIncrement * numTiles
-                    , tilePercent = 100 / ((trackPercent / 100) * increment)
+                    , tilePercent = 100 / ((trackPercent / 100) * tilesPerFrame)
                     ;
-                console.log(state);
 
                 state.trackPercent = trackPercent;
                 state.tilePercent = tilePercent;
@@ -444,51 +462,93 @@ define(
                 // make pixel values?
                 state.trackWidth = state.tileWidth * numTiles;
             },
-			
+            
 			animate: function() {
 				
                 this.x.publish( this.ns + '/animate/before' );
                 
-				var state = this.state
+				var self = this
+                    , state = this.state
 					, index = state.index
 					, targetIndex = index
 					, options = this.options
 					, carousel = this.element
-					, increment = options.increment
+					, tilesPerFrame = options.tilesPerFrame
 					, tileWidth = state.tileWidth
                     , tilePercent = state.tilePercent
 					, preFrameChange = options.preFrameChange
 					, postFrameChange = options.postFrameChange
 					, isFirst = index === 0
-					, isLast = index === ( state.curTileLength - increment )
+					, isLast = index === ( state.curTileLength - tilesPerFrame )
+                    , seconds = 1
                     , translateAmt = tilePercent * targetIndex
                     , transformStr = 'translateX(-' + translateAmt + '%)'
+                    , translateStr = 'transform ' + seconds + 's'
+                    , numFrames = Math.ceil( (seconds * 1000) / 60 )  
+                    , origin = state.prevIndex * tilePercent
+                    , distance = origin - translateAmt
+                    , frameDist = distance / numFrames
 					;
 				
+                var listener = function(e) {
+                    
+                    self.toggleAria( state.tileArr, 'add' );
+                    self.toggleAria( state.curFrame, 'remove' );
+                    
+                    state.curTile.focus();
+    				carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
+				
+    				// Execute postFrameChange callback
+    				postFrameChange && postFrameChange.call( self, state );
+
+                    self.x.publish( self.ns + '/transition/end' );
+                    self.x.publish( self.ns + '/animate/after' );
+                };
+                
 				// Execute preFrameChange callback
 				if ( preFrameChange ) preFrameChange.call( this, state );
 				
-                carousel.setAttribute( 'class', 'state-busy' );
+                // carousel.setAttribute( 'class', 'state-busy' );
 				this.toggleAria( state.tileArr, 'remove' );
 				this.updateNavigation();
-
-                //animate
-                carousel.style.transform = transformStr;
                 
-                // carousel.setAttribute('transform','translateX(100px)');
-                // carousel.setAttribute( 'style', 'background:red;' );
+                if ( 'transition' in carousel.style ) {
+                    
+                    carousel.style.transition = translateStr;
+                    
+                    this.x.subscribe( this.ns + '/transition/end', function() {
+                        
+                        carousel.removeEventListener( 'transitionend', listener, false );
+                    });
+                    
+                    carousel.addEventListener( 'transitionend', listener, false );
+                    
+                    carousel.style.transform = transformStr;
+                }
+                else {  // ie 9 javascript animate
+                    
+                    repeat( function() {
+                        
+                        origin -= frameDist;
+                                                
+                        if ( origin < 0 ) {
+                            
+                            carousel.style.msTransform = 'translateX(0px)';
+                            return;
+                        }
+                        
+                        carousel.style.msTransform = 'translateX(-' + origin + '%)';
                 
-				this.toggleAria( state.tileArr, 'add' );
-				this.toggleAria( state.curFrame, 'remove' );
-                // state.curTile.focus();
-				carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
-				
-				// Execute postFrameChange callback
-				postFrameChange && postFrameChange.call( this, state );
-
-                this.x.publish( this.ns + '/animate/after' );
+                    }, 16 , numFrames, true );
+                    
+                    setTimeout(function() {
+                                                
+                        listener();
+                        
+                    }, ( 300 * seconds ) );
+                }
 			},
-			
+            
 			buildNavigation: function() {
 				
                 this.x.publish( this.ns + '/navigation/before' );
@@ -501,11 +561,11 @@ define(
 					, index				= state.index
 					, wrapper			= self.wrapper
 					, options			= self.options
-					, increment			= options.increment
+					, tilesPerFrame			= options.tilesPerFrame
 					, controls			= templates.controls.cloneNode( true )
 					, controlsParent	= templates.controlsWrapper.cloneNode( true )
 					, controlsWrapper 	= options.wrapControls ? controls : wrapper
-                    // , viewportWidth        = state.tileWidth * options.increment + options.viewportDelta
+                    // , viewportWidth        = state.tileWidth * options.tilesPerFrame + options.viewportDelta
                     , viewportWidth        = outerWidth( self.viewport )
 					, prevFrame			= 'prevFrame' // TODO Replace string
 					, nextFrame			= 'nextFrame' // TODO Replace string
@@ -527,7 +587,7 @@ define(
 				self.nextBtn.innerHTML = text;
 
 				// Disable buttons if there is only one frame
-				if ( state.curTileLength <= options.increment ) {
+				if ( state.curTileLength <= options.tilesPerFrame ) {
                     
 					self.prevBtn.disabled = true;
 					self.nextBtn.disabled = true;
@@ -577,7 +637,7 @@ define(
 					, index = state.index
 					, options = self.options
 					, isFirst = index === 0
-					, isLast = index + this.options.increment >= state.curTileLength
+					, isLast = index + this.options.tilesPerFrame >= state.curTileLength
 					;
 					
 				if ( isFirst ) self.prevBtn.disabled = true;
@@ -610,7 +670,7 @@ define(
 				var index = this.state.index;
 				
 				if ( this.options.incrementMode === 'tile' ) index--;
-				else index = index - this.options.increment;
+				else index = index - this.options.tilesPerFrame;
 				
 				this.updateState( index, true );
                 
@@ -627,7 +687,7 @@ define(
 				var index = this.state.index;
 
 				if ( this.options.incrementMode === 'tile' ) index++;
-				else index = index + this.options.increment;
+				else index = index + this.options.tilesPerFrame;
 
 				this.updateState( index, true );
                 
@@ -642,8 +702,8 @@ define(
                 var self = this,
                     state = self.state,
                     frame = parseInt( frame, 10 ),
-                    increment = self.options.increment,
-                    index = ( frame * increment ) - increment;
+                    tilesPerFrame = self.options.tilesPerFrame,
+                    index = ( frame * tilesPerFrame ) - tilesPerFrame;
 
                 index = index < 0 ? 0 : index;
                                     

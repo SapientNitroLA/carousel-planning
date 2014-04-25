@@ -97,7 +97,7 @@ define(
                 );
             
                 this.api.subscribe(
-                    this.api.ns + '/animate/after',
+                    this.api.ns + '/animate/before',
                     this.updatePagination.bind( this )
                 );
             },
