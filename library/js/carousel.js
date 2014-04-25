@@ -515,6 +515,7 @@ define(
                 if ( 'transition' in carousel.style ) {
                     
                     carousel.style.transition = translateStr;
+                    carousel.style.WebkitTransition = '-webkit-' + translateStr;
                     
                     this.x.subscribe( this.ns + '/transition/end', function() {
                         
@@ -524,6 +525,7 @@ define(
                     carousel.addEventListener( 'transitionend', listener, false );
                     
                     carousel.style.transform = transformStr;
+                    carousel.style.webkitTransform = transformStr;
                 }
                 else {  // ie 9 javascript animate
                     
