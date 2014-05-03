@@ -229,7 +229,62 @@ define(
                 }
         
                 return arguments[0];
-            }
+            },
+            
+            outerWidth: function outerWidth( element ){
+      
+              var width = element.offsetWidth
+                  , style = element.currentStyle || getComputedStyle( element ); // element.currentStyle is for IE8
+                  ;
+
+              width += parseInt( style.marginLeft ) + parseInt( style.marginRight );
+      
+              return width;
+            },
+        
+            outerHeight: function outerHeight( element ){
+      
+              var height = element.offsetHeight
+                  , style = element.currentStyle || getComputedStyle( element ); // element.currentStyle is for IE8
+                  ;
+
+              height += parseInt( style.marginTop ) + parseInt( style.marginBottom );
+      
+              return height;
+            },
+        
+    		insertAfter: function insertAfter( newNode, targetNode ) {
+			
+                if ( !targetNode.parentNode ) throw new Error( 'insertAfter failed. The targetNode argument has no parentNode.' );
+            
+                targetNode.parentNode.insertBefore( newNode, targetNode.nextSibling );
+            
+                return newNode;
+    		},
+		
+    		// Using addEvent method for IE8 support
+    		// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
+    		addEvent: function addEvent( obj, evt, fn, capture ) {
+    			if ( obj.attachEvent ) {
+    				obj[ "e" + evt + fn ] = fn;
+    				obj[ evt + fn ] = function() { obj[ 'e' + evt + fn ]( window.event ); }
+    				obj.attachEvent( 'on' + evt, obj[ evt + fn ] );
+    			} else if ( obj.addEventListener ) {
+    				if ( !capture ) capture = false;
+    				obj.addEventListener( evt, fn, capture );
+    			}
+    		},
+		
+    		// Using removeEvent method for IE8 support
+    		// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
+            removeEvent: function removeEvent( obj, evt, fn ) {
+    			if ( obj.detachEvent ) {
+    				obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
+    				obj[ evt + fn ] = null;
+    			} else {
+    				obj.removeEventListener( evt, fn, false );
+    			}
+    		}
         }
     
         return X;

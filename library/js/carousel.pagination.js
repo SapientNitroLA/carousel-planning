@@ -23,45 +23,6 @@ define(
     
         tmplPagination.setAttribute( 'class', 'carousel-pagination' );
     
-        // Utilities
-        function outerWidth( element ){
-      
-          var style = element.currentStyle || getComputedStyle( element ) // element.currentStyle is for IE8
-              , width = element.offsetWidth
-              , marginLeft = parseInt( style.marginLeft )
-              , marginRight = parseInt( style.marginRight )
-              ;
-          
-          marginLeft = isNaN( marginLeft ) ? 0 : marginLeft;
-          marginRight = isNaN( marginRight ) ? 0 : marginRight;
-      
-          return width + marginLeft + marginRight;
-        }
-    
-    	// Using addEvent method for IE8 support
-    	// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
-    	function addEvent( obj, evt, fn, capture ) {
-    		if ( obj.attachEvent ) {
-    			obj[ "e" + evt + fn ] = fn;
-    			obj[ evt + fn ] = function() { obj[ 'e' + evt + fn ]( window.event ); }
-    			obj.attachEvent( 'on' + evt, obj[ evt + fn ] );
-    		} else if ( obj.addEventListener ) {
-    			if ( !capture ) capture = false;
-    			obj.addEventListener( evt, fn, capture );
-    		}
-    	}
-	
-    	// Using removeEvent method for IE8 support
-    	// Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
-        function removeEvent( obj, evt, fn ) {
-    		if ( obj.detachEvent ) {
-    			obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
-    			obj[ evt + fn ] = null;
-    		} else {
-    			obj.removeEventListener( evt, fn, false );
-    		}
-    	}
-    
         /**
          * Constructor
          */
@@ -133,7 +94,7 @@ define(
                     , controlsWrap      = controls.parentNode
                     , btnNextParent     = btnNext.parentNode
                     , curFrameLength    = this.api.getState( 'curFrameLength' )
-                    , viewportWidth     = outerWidth( this.dom.viewport )
+                    , viewportWidth     = this.api.outerWidth( this.dom.viewport )
                     ;
 
                 this.pagination = btnNextParent.insertBefore( pagination, btnNext );
@@ -160,7 +121,7 @@ define(
             
                 this.updateCSS();
             
-                addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
+                this.api.addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
             },
         
             updateCSS: function() {
@@ -172,9 +133,9 @@ define(
                 // Center controls beneath carousel
                 if ( !( this.options.center && this.options.wrapControls ) ) return;
 
-                controlsWidth = outerWidth( this.dom.prevBtn )
-                    + outerWidth( this.pagination )
-                    + outerWidth( this.dom.nextBtn );
+                controlsWidth = this.api.outerWidth( this.dom.prevBtn )
+                    + this.api.outerWidth( this.pagination )
+                    + this.api.outerWidth( this.dom.nextBtn );
                     
                 controlsStyle = 'position:relative;';
                 controlsStyle += 'width:' + controlsWidth + 'px;';
