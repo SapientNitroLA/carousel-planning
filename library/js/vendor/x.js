@@ -69,7 +69,7 @@ define(
             
                 return new aliasFn();
             }
-        }
+        };
     
         // Provide component's prototype API
         var protoAPI = {
@@ -87,12 +87,12 @@ define(
                     plugins[ member ]( this.x, this.options[ member ] );
                 }
             }
-        }
+        };
     
         function X( component ) {
 
-            this.channels = {}
-            this.tokenUid = -1
+            this.channels = {};
+            this.tokenUid = -1;
 
             this.getState = function( key ) {
                 return component.state[ key ];
@@ -104,13 +104,13 @@ define(
         
             this.trigger = function ( method ) {
             
-                var func = component[ method ]
+                var func = component[ method ];
             
-                if ( !func ) { return; };
+                if ( !func ) { return; }
             
                 return func.apply( component, [].slice.call( arguments, 1 ) );
-            }
-        };
+            };
+        }
     
         X.define = function( namespace, proto ) {
         
@@ -127,7 +127,7 @@ define(
             
                 // Pass in constructor arguments to new component
                 this.setup.apply( this, arguments );
-            }
+            };
         
             // Provide the component with static API
             for ( var member in staticAPI ) {
@@ -146,7 +146,7 @@ define(
         
             // Return the statc component
             return F;
-        }
+        };
     
         X.prototype = {
         
@@ -230,7 +230,7 @@ define(
         
                 return arguments[0];
             }
-        }
+        };
     
         return X;
     }
