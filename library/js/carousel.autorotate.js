@@ -13,36 +13,6 @@ define(
             rotateInterval: 5000, //5 secs
             stopEvent: 'none'
         };
-    
-        // Utilities
-    
-        // Using addEvent method for IE8 support
-        // Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
-        function addEvent( obj, evt, fn, capture ) {
-            
-            if ( obj.attachEvent ) {
-                obj[ "e" + evt + fn ] = fn;
-                obj[ evt + fn ] = function() { obj[ 'e' + evt + fn ]( window.event ); };
-                obj.attachEvent( 'on' + evt, obj[ evt + fn ] );
-                
-            } else if ( obj.addEventListener ) {
-                if ( !capture ) capture = false;
-                obj.addEventListener( evt, fn, capture );
-            }
-        }
-	
-        // Using removeEvent method for IE8 support
-        // Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
-        function removeEvent( obj, evt, fn ) {
-            
-            if ( obj.detachEvent ) {
-                obj.detachEvent( 'on' + evt, obj[ evt + fn ] );
-                obj[ evt + fn ] = null;
-                
-            } else {
-                obj.removeEventListener( evt, fn, false );
-            }
-        }
 
         /**
          * Constructor
@@ -100,28 +70,28 @@ define(
                     
                     if ( this.options.stopEvent === 'hover' ) {
                         
-                        addEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
+                        this.api.addEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
                         
                     } else if ( this.options.stopEvent === 'click' ) {
                         
-                        addEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
+                        this.api.addEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
                     }
                 }
             },
         
             stopRotation: function() {
-                console.log(this);
+
                 clearTimeout( this.timer );
                 
                 this.carousel.autorotate = false;
                 
                 if ( this.options.stopEvent === 'hover' ) {
                                     
-                    removeEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
+                    this.api.removeEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
                     
                 } else if ( this.options.stopEvent === 'click' ) {
                     
-                    removeEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
+                    this.api.removeEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
                 }
                 
                 console.log('autorotate stopped');
