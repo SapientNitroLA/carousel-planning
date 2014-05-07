@@ -104,7 +104,7 @@ define(
         function outerWidth( element ) {
 
           var width = element.offsetWidth
-              , style = element.currentStyle || getComputedStyle( element ); // element.currentStyle is for IE8
+              , style = getComputedStyle( element ) || element.currentStyle; // element.currentStyle is for IE8
               ;
 
           width += parseInt( style.marginLeft ) + parseInt( style.marginRight );
@@ -115,7 +115,7 @@ define(
         function outerHeight( element ) {
 
           var height = element.offsetHeight
-              , style = element.currentStyle || getComputedStyle( element ); // element.currentStyle is for IE8
+              , style = getComputedStyle( element ) || element.currentStyle; // element.currentStyle is for IE8
               ;
 
           height += parseInt( style.marginTop ) + parseInt( style.marginBottom );
