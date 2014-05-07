@@ -1,7 +1,7 @@
 define(
 
     [
-        'carousel'
+        'vendor/carousel'
     ],
 
     function( carousel ) {
@@ -133,13 +133,11 @@ define(
                 // Center controls beneath carousel
                 if ( !( this.options.center && this.options.wrapControls ) ) return;
 
-                controlsWidth = this.api.outerWidth( this.dom.prevBtn )
-                    + this.api.outerWidth( this.pagination )
-                    + this.api.outerWidth( this.dom.nextBtn );
+                controlsWidth = this.api.outerWidth( this.dom.controls );
 
-                controlsStyle = 'position:relative;';
+                controlsStyle = 'position:relative; left:50%;';
                 controlsStyle += 'width:' + controlsWidth + 'px;';
-                // controlsStyle += 'left:' + ( viewportWidth - controlsWidth ) / 2 + 'px;'
+                controlsStyle += 'margin-left:-' + controlsWidth / 2 + 'px;'
                 this.dom.controls.setAttribute( 'style', controlsStyle );
             },
 
