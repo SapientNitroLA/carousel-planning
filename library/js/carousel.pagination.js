@@ -1,7 +1,7 @@
 define(
 
     [
-        'vendor/carousel'
+        'carousel'
     ],
 
     function( carousel ) {
