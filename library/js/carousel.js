@@ -70,7 +70,8 @@ define(
             wrapControls: false,
             accessible: true,
             preFrameChange: null,
-            postFrameChange: null
+            postFrameChange: null,
+            ready: null
         };
 
         // Options that require integers
@@ -255,6 +256,11 @@ define(
                     addEvent( panels[ i ], 'focus', this.focusHandler );
                     // Using addEvent method for IE8 support
                     addEvent( panels[ i ], 'blur', this.focusHandler );
+                }
+
+                if ( options.ready ) {
+
+                    options.ready.call( this, this.state );
                 }
 
                 this.x.publish( this.ns + '/init/after' );
@@ -508,7 +514,7 @@ define(
                     self.toggleAria( state.tileArr, 'add' );
                     self.toggleAria( state.curFrame, 'remove' );
 
-                    state.curTile.focus();
+                    //state.curTile.focus();
                     carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
 
                     // Execute postFrameChange callback
