@@ -3,7 +3,9 @@ require(
 	[
 		'carousel',
         'carousel.pagination',
-        'carousel.autorotate'
+        'carousel.autorotate',
+        //'carousel.loop',
+        'carousel.responsive'
 	],
     
     function( carousel ) {
@@ -11,8 +13,8 @@ require(
         var myCarousel = carousel.create({
             element: document.getElementById( 'example-carousel' ),
             wrapperClass: 'test-1 test-2',
-            tilesPerFrame: 2,
-            incrementMode: 'frame',
+            tilesPerFrame: 3,
+            incrementMode: 'tile',
             nextText: 'next',
             prevText: 'previous',
             wrapControls: true,
@@ -21,7 +23,12 @@ require(
             },
             autorotate: {
                 stopEvent: 'hover'
-            }
+            },
+            loop: {
+                carousel: document.getElementById( 'example-carousel' ),
+                tilesPerFrame: 3
+            },
+            responsive: true
         });
     
         // var myCarousel2 = carousel.create({
@@ -48,7 +55,8 @@ require(
             autorotate: {
                 rotateInterval: 2000,
                 stopEvent: 'click'
-            }
+            },
+            loop: false
         });
 	}
 );

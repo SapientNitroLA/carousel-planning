@@ -40,16 +40,19 @@ define(
                     this.api.ns + '/init/after',
                     function() {
                         
-                        var isAr = ( ( typeof self.api.getOption( 'autorotate' ) === 'boolean' && self.api.getOption( 'autorotate' ) === true ) || typeof self.api.getOption( 'autorotate' ) === 'object' ) ? true : false;
+                        var pluginAttr = self.api.getOption( 'autorotate' );
+                        var pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
                         
                         self.carousel = {
                             dom: self.api.getState( 'dom' ),
                             tilesPerFrame: self.api.getOption( 'tilesPerFrame' ),
                             curTileLength: self.api.getState( 'curTileLength' ),
-                            autorotate: isAr
+                            autorotate: pluginOn
                         };
                         
-                        self.startRotation.call( self );
+                        if ( pluginOn ) {
+                            self.startRotation.call( self );
+                        }
                     }
                 );
                 
@@ -61,21 +64,18 @@ define(
             },
         
             startRotation: function() {
-
-                if ( this.carousel.autorotate ) {
                     
-                    this.rotateCarousel();
+                this.rotateCarousel();
+            
+                this.funcs.stop = this.stopRotation.bind( this );
                 
-                    this.funcs.stop = this.stopRotation.bind( this );
+                if ( this.options.stopEvent === 'hover' ) {
                     
-                    if ( this.options.stopEvent === 'hover' ) {
-                        
-                        this.api.addEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
-                        
-                    } else if ( this.options.stopEvent === 'click' ) {
-                        
-                        this.api.addEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
-                    }
+                    this.api.addEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
+                    
+                } else if ( this.options.stopEvent === 'click' ) {
+                    
+                    this.api.addEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
                 }
             },
         
@@ -94,7 +94,7 @@ define(
                     this.api.removeEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
                 }
                 
-                console.log('autorotate stopped');
+                //console.log('autorotate stopped');
             },
             
             rotateCarousel: function() {

@@ -84,7 +84,7 @@ define(
             button: [ 'button' ],
             controls: [ 'div', 'carousel-controls' ],
             controlsWrapper: [ 'div', 'carousel-controls-wrapper' ]
-        }
+        };
 
         // Compile templates
         for ( var template in templates ) {
@@ -183,8 +183,6 @@ define(
             // Required by XJS
             setup: function( options ) {
 
-                this.x.publish( this.ns + '/setup/before' );
-
                 this.cacheObj = {};
                 this.element = options.element;
                 this.options = this.x.extend( {}, defaults, options );
@@ -205,8 +203,6 @@ define(
                 // Setup plugins
                 this.setupPlugins();
 
-                this.x.publish( this.ns + '/setup/after' );
-
                 this.init();
             },
 
@@ -222,10 +218,10 @@ define(
                     , wrapper       = templates.wrapper.cloneNode( true )
                     , viewport      = templates.viewport.cloneNode( true )
                     , controls      = templates.controls.cloneNode( true )
-                    , tilesPerFrame     = options.tilesPerFrame
+                    , tilesPerFrame = options.tilesPerFrame
                     ;
 
-                // Make the main elements avaible to `this`
+                // Make the main elements available to `this`
                 this.parentNode = carousel.parentNode;
                 this.wrapper = wrapper;
                 this.carousel = carousel;
@@ -251,7 +247,7 @@ define(
                 // TODO Replace string
                 var panels = carousel.querySelectorAll( '.carousel-tile' );
 
-                for( var i = 0, len = panels.length; i < len; ++i ) {
+                for ( var i = 0, len = panels.length; i < len; ++i ) {
                     // Using addEvent method for IE8 support
                     addEvent( panels[ i ], 'focus', this.focusHandler );
                     // Using addEvent method for IE8 support
@@ -290,6 +286,18 @@ define(
                 return cache;
 
             },
+            
+            updateOptions: function( optsObj ) {
+                
+                //console.log(optsObj.toString());
+                
+                if ( typeof optsObj === 'object' ) this.x.extend( this.options, optsObj );
+                else return;
+                
+                //console.log(this.options, optsObj, this.state);
+                
+                this.updateState( this.state.index, false, true );
+            },
 
             normalizeState: function() {
 
@@ -305,10 +313,8 @@ define(
                     , tileArr           = carousel.children
                     , origTiles         = tileArr
                     , firstTile         = tileArr[ 0 ]
-                    , tileWidth         = outerWidth( firstTile )
-                    , tileHeight        = outerHeight( firstTile )
                     , options           = this.options
-                    , tilesPerFrame         = options.tilesPerFrame
+                    , tilesPerFrame     = options.tilesPerFrame
                     , origTileLength    = tileArr.length
                     , curTileLength     = origTileLength
                     , frameLength       = Math.ceil( curTileLength / tilesPerFrame )
@@ -321,17 +327,12 @@ define(
                         tileArr: tileArr,
                         origTileLength: origTileLength,
                         curTileLength: curTileLength,
-                        tileWidth: tileWidth,
                         tilePercent: 100,
-                        tileHeight: tileHeight,
-                        trackWidth: tileWidth * tileArr.length,
-                        trackPercent: 100 * tileArr.length,
                         curTile: false,
                         prevTile: false,
                         frameArr: [],
                         origFrameLength: frameLength,
                         curFrameLength: frameLength,
-                        frameWidth: tilesPerFrame * tileWidth,
                         curFrame: [],
                         prevFrame: [],
                         frameIndex: 0,
@@ -353,70 +354,23 @@ define(
                 this.state = state;
 
                 // !TODO: Replace string
-                this.toggleAria( tileArr, 'add', 'carousel-tile' );
+                this.toggleAria( tileArr, 'add', 'carousel-tile' ); //init tile classes (all tiles hidden by default)
 
                 // Build the normalized frames array
-                for ( var sec = 0, len = tileArr.length / tilesPerFrame, count = 1;
-                        sec < len;
-                        sec++, count++ ) {
-
-                    // This is crashing IE8 due to tileArr being a host object (HTMLCollection) instead of a JavaScript object
-                    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior
-                    // Every way I try to get around it, including the MDN shim, still causes IE8 to crash
-                    tiles = Array.prototype.slice.call( tileArr, tilesPerFrame * sec, tilesPerFrame * count );
-
-                    // var tiles = [];
-                    // for ( var i = tilesPerFrame * sec, ii = 0, end = tilesPerFrame * count; i < end; i++, ii++) {
-                    //     console.log(i);
-                    //     console.log(ii);
-                    //     console.log(end);
-                    //     console.log(' ');
-                    //     tiles[ii] = tileArr[i];
-                    // }
-
-                    state.frameArr.push( tiles );
-                };
-
-                state.index             = index;
-                state.offset            = state.index ? state.frameWidth : state.offset;
-                state.tileArr           = tileArr;
-                state.tileObj           = state.tileArr;
-                state.curTile           = state.tileObj[ state.index ];
-                state.curTileLength     = state.tileArr.length;
-                state.curFrameLength    = Math.ceil( state.curTileLength / tilesPerFrame );
-                state.frameIndex        = Math.ceil( state.index / tilesPerFrame );
-                state.frameNumber       = state.frameIndex + 1;
-                state.prevFrameIndex    = state.frameIndex;
-                state.prevFrameNumber   = state.prevFrameIndex + 1;
-                state.curFrame          = state.frameArr[ state.frameIndex ];
-                state.tileDelta         = ( tilesPerFrame * state.curFrameLength ) - state.curTileLength;
-
-                this.toggleAria( state.curFrame, 'remove' );
-
-                // tilePercent = ( parseInt( ( 100 / this.options.tilesPerFrame ) * 1000 ) ) / 1000;
-                // tileStyle = 'width: ' + tilePercent + '%; ';
-                //
-                // for ( var i = 0; i < tileArr.length; i++ ) {
-                //     tileArr[ i ].setAttribute( 'style', tileStyle );
-                //                     // tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
-                //                     // carousel.appendChild( tileArr[ 0 ] );
-                // }
+                this.updateState( index, false, true );
 
                 this.x.publish( this.ns + '/normalizeState/after' );
-
-                //call calculate - updates state (publish)
-                //dom styler - applies calculations (subscribed)
-                this.calcDimensions(tilesPerFrame);
-
-                this.updateDimensions();
             },
 
-            updateState: function( index, animate ) {
+            updateState: function( index, animate, genFrames ) {
+                
+                this.x.publish( this.ns + '/updateState/before' );
 
-                var self                = this
+                var tiles, thisFrame, frameStart, frameEnd, carEnd
+                    , self              = this
                     , state             = self.state
-                    , ops               = self.options
-                    , tilesPerFrame         = ops.tilesPerFrame
+                    , options           = self.options
+                    , tilesPerFrame     = options.tilesPerFrame
                     , prevFrameIndex    = state.frameIndex
                     , prevFrameNumber   = state.frameIndex + 1
                     , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
@@ -427,24 +381,125 @@ define(
                     , isFirstFrame      = index === 0
                     , isLastFrame       = index === state.curTileLength - tilesPerFrame
                     ;
+                    
+                genFrames = ( typeof genFrames === 'boolean' ) ? genFrames : false;
+                
+                if ( genFrames ) {
 
-                this.x.extend( this.state, {
-                    index: index,
-                    offset: state.tileWidth * index,
-                    prevIndex: state.index,
-                    prevTile: state.curTile,
-                    curTile: isLastFrame && state.tileDelta && ops.incrementMode === 'frame'
-                                ? state.tileArr[ index + state.tileDelta ]
-                                : state.tileArr[ index ],
-                    curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, tilesPerFrame + index ),
-                    prevFrame: state.curFrame,
-                    frameIndex: frameIndex,
-                    frameNumber: frameNumber,
-                    prevFrameIndex: state.frameIndex,
-                    prevFrameNumber: state.frameNumber
-                });
+                    this.toggleAria( state.tileArr, 'add' ); //hide all tiles
+                    
+                    state.frameArr = [];
+                    
+                    for ( var sec = 0, len = state.tileArr.length / options.tilesPerFrame, count = 1;
+                            sec < len;
+                            sec++, count++ ) {
 
+                        // This is crashing IE8 due to tileArr being a host object (HTMLCollection) instead of a JavaScript object
+                        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior
+                        // Every way I try to get around it, including the MDN shim, still causes IE8 to crash
+                        tiles = Array.prototype.slice.call( state.tileArr, options.tilesPerFrame * sec, options.tilesPerFrame * count );
+
+                        // var tiles = [];
+                        // for ( var i = tilesPerFrame * sec, ii = 0, end = tilesPerFrame * count; i < end; i++, ii++) {
+                        //     console.log(i);
+                        //     console.log(ii);
+                        //     console.log(end);
+                        //     console.log(' ');
+                        //     tiles[ii] = tileArr[i];
+                        // }
+
+                        state.frameArr.push( tiles );
+                    }
+                    
+                    //console.log('state.frameArr', state.frameArr);
+
+                    state.offset            = state.index ? state.frameWidth : state.offset;
+                    state.tileObj           = state.tileArr;
+                    state.curTile           = state.tileObj[ state.index ];
+                    state.curTileLength     = state.tileArr.length;
+                    state.curFrameLength    = Math.ceil( state.curTileLength / options.tilesPerFrame );
+                    state.frameIndex        = Math.ceil( state.index / options.tilesPerFrame );
+                    state.frameNumber       = state.frameIndex + 1;
+                    state.prevFrameIndex    = state.frameIndex;
+                    state.prevFrameNumber   = state.prevFrameIndex + 1;
+                    state.curFrame          = state.frameArr[ state.frameIndex ];
+                    state.tileDelta         = ( options.tilesPerFrame * state.curFrameLength ) - state.curTileLength;
+                    state.tileWidth         = outerWidth( state.tileObj[0] );
+                    state.tileHeight        = outerHeight( state.tileObj[0] );
+                    state.trackWidth        = state.tileWidth * state.curTileLength;
+                    state.trackPercent      = 100 * state.curTileLength;
+                    state.frameWidth        = options.tilesPerFrame * state.tileWidth;
+                    
+                    // Determine current frame based on increment mode
+                    if ( options.incrementMode === 'frame' ) { //frame increment
+                        
+                        thisFrame = state.curFrame;
+                    }
+                    else { //tile increment
+                        
+                        thisFrame = [];
+                        
+                        frameEnd = state.index + options.tilesPerFrame;
+                        carEnd = state.curTileLength;
+                        
+                        if ( frameEnd > carEnd ) {
+                            frameStart = carEnd - options.tilesPerFrame;
+                            index = frameStart;
+                            animate = true;
+                            frameEnd = carEnd;
+                        }
+                        else {
+                            frameStart = state.index;
+                        }
+                        
+                        for ( var i = frameStart; i < frameEnd; i++ ) {
+                            thisFrame.push( state.tileObj[ i ] );
+                        }
+                    }
+                    
+                    this.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
+
+                    // tilePercent = ( parseInt( ( 100 / options.tilesPerFrame ) * 1000 ) ) / 1000;
+                    // tileStyle = 'width: ' + tilePercent + '%; ';
+                    //
+                    // for ( var i = 0; i < tileArr.length; i++ ) {
+                    //     tileArr[ i ].setAttribute( 'style', tileStyle );
+                    //                     // tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
+                    //                     // carousel.appendChild( tileArr[ 0 ] );
+                    // }
+                }
+                
+                // Only update state object if index has changed
+                if ( index !== state.index ) {
+                    
+                    this.x.extend( state, {
+                        index: index,
+                        offset: state.tileWidth * index,
+                        prevIndex: state.index,
+                        prevTile: state.curTile,
+                        curTile: isLastFrame && state.tileDelta && options.incrementMode === 'frame'
+                                    ? state.tileArr[ index + state.tileDelta ]
+                                    : state.tileArr[ index ],
+                        curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, tilesPerFrame + index ),
+                        prevFrame: state.curFrame,
+                        frameIndex: frameIndex,
+                        frameNumber: frameNumber,
+                        prevFrameIndex: state.frameIndex,
+                        prevFrameNumber: state.frameNumber
+                    });
+                }
+
+                if ( genFrames ) {
+                    //call calculate - updates state (publish)
+                    //dom styler - applies calculations (subscribed)
+                    this.calcDimensions( options.tilesPerFrame );
+
+                    this.updateDimensions();
+                }
+                
                 if ( animate ) this.animate();
+                
+                this.x.publish( this.ns + '/updateState/after' );
 
                 return state;
             },
@@ -453,15 +508,15 @@ define(
 
                 var state = this.state
                     , tileArr = state.tileArr
-                    , tileStyle = 'width: ' + state.tilePercent + '%'
-                    , trackStyle = 'width: ' + state.trackPercent + '%'
+                    , tileStyle = state.tilePercent + '%'
+                    , trackStyle = state.trackPercent + '%'
                     ;
 
-                this.carousel.setAttribute( 'style', trackStyle );
+                this.carousel.style.width = trackStyle;
 
                 for ( var i = 0; i< tileArr.length; i++ ) {
 
-                    tileArr[ i ].setAttribute( 'style', tileStyle );
+                    tileArr[ i ].style.width = tileStyle;
                 }
 
             },
@@ -576,9 +631,16 @@ define(
                 }
             },
 
-            buildNavigation: function() {
+            buildNavigation: function( update ) {
 
                 this.x.publish( this.ns + '/navigation/before' );
+                
+                update = ( typeof update === 'boolean' ) ? update : false;
+                
+                if ( update ) {
+                    // Double parentNode necessary since controlsWrapper element is getting overwritten with controls element
+                    this.controlsWrapper.parentNode.parentNode.removeChild( this.controlsWrapper.parentNode );
+                }
 
                 var text
                     , controlsWidth
@@ -588,12 +650,12 @@ define(
                     , index             = state.index
                     , wrapper           = self.wrapper
                     , options           = self.options
-                    , tilesPerFrame         = options.tilesPerFrame
+                    , tilesPerFrame     = options.tilesPerFrame
                     , controls          = templates.controls.cloneNode( true )
                     , controlsParent    = templates.controlsWrapper.cloneNode( true )
                     , controlsWrapper   = options.wrapControls ? controls : wrapper
                     // , viewportWidth        = state.tileWidth * options.tilesPerFrame + options.viewportDelta
-                    , viewportWidth        = outerWidth( self.viewport )
+                    , viewportWidth     = outerWidth( self.viewport )
                     , prevFrame         = 'prevFrame' // TODO Replace string
                     , nextFrame         = 'nextFrame' // TODO Replace string
                     ;
@@ -652,7 +714,7 @@ define(
 
                 // Set click events buttons
                 // Using addEvent method for IE8 support
-                addEvent( this.wrapper, 'click', this.handleNavigation.bind( this ) );
+                if ( !update ) addEvent( this.wrapper, 'click', this.handleNavigation.bind( this ) );
 
                 this.x.publish( this.ns + '/navigation/after' );
             },
@@ -778,7 +840,7 @@ define(
                     , hasAriaInited = this.cache( 'hasAriaInited' )
                     ;
 
-                for ( ; i < length; i++ ) {
+                for ( var i = 0; i < length; i++ ) {
 
                     item = itemArray[ i ];
                     classes = item.className + initClass;
