@@ -665,6 +665,7 @@ define(
                     , viewportWidth     = outerWidth( self.viewport )
                     , prevFrame         = 'prevFrame' // TODO Replace string
                     , nextFrame         = 'nextFrame' // TODO Replace string
+                    , hasNavInited      = this.cache( 'hasNavInited' )
                     ;
 
                 this.controls = controls;
@@ -719,14 +720,18 @@ define(
                     this.x.publish( this.ns + '/navigation/controls/insert/after', controls, self.prevBtn, self.nextBtn );
                 }
 
-                // Set click events buttons
-                // Using addEvent method for IE8 support
+                // Publish navigation update
                 if ( update ) {
                     this.x.publish( this.ns + '/navigation/update' );
                 }
-                else {
+
+                // Set click events buttons
+                // Using addEvent method for IE8 support
+                if ( !hasNavInited ) {
                     addEvent( this.wrapper, 'click', this.handleNavigation.bind( this ) );
                 }
+
+                this.cache( 'hasNavInited', true );
 
                 this.x.publish( this.ns + '/navigation/after' );
             },
@@ -873,7 +878,6 @@ define(
                 }
 
                 this.cache( 'hasAriaInited', true );
-
             }
         }
 
