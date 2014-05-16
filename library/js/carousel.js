@@ -71,7 +71,8 @@ define(
             accessible: true,
             preFrameChange: null,
             postFrameChange: null,
-            ready: null
+            ready: null,
+            wrapperClass: ''
         };
 
         // Options that require integers
@@ -210,24 +211,25 @@ define(
 
                 this.x.publish( this.ns + '/init/before' );
 
-                var options         = this.options
-                    , self          = this
-                    , carousel      = this.element
-                    , parentNode    = carousel.parentNode
-                    , nextSibling   = carousel.nextSibling
-                    , wrapper       = templates.wrapper.cloneNode( true )
-                    , viewport      = templates.viewport.cloneNode( true )
-                    , controls      = templates.controls.cloneNode( true )
-                    , tilesPerFrame = options.tilesPerFrame
+                var options             = this.options
+                    , self              = this
+                    , carousel          = this.element
+                    , parentNode        = carousel.parentNode
+                    , nextSibling       = carousel.nextSibling
+                    , wrapper           = templates.wrapper.cloneNode( true )
+                    , viewport          = templates.viewport.cloneNode( true )
+                    , controls          = templates.controls.cloneNode( true )
+                    , tilesPerFrame     = options.tilesPerFrame
                     ;
-
+                
+                // Save original tiles per frame data
+                this.options.origTilesPerFrame = tilesPerFrame;
+                    
                 // Make the main elements available to `this`
                 this.parentNode = carousel.parentNode;
                 this.wrapper = wrapper;
                 this.carousel = carousel;
                 this.viewport = viewport;
-
-                this.wrapper.setAttribute( 'class', this.wrapper.className + ' ' + options.wrapperClass );
 
                 // Remove and build the carousel
                 parentNode.removeChild( carousel );
@@ -241,7 +243,7 @@ define(
                 // Build out the frames and state object
                 this.normalizeState();
 
-                this.buildNavigation();
+                //this.buildNavigation();
 
                 // Listen for focus on tiles
                 // TODO Replace string
@@ -296,7 +298,7 @@ define(
                 
                 //console.log(this.options, optsObj, this.state);
                 
-                this.updateState( this.state.index, false, true );
+                this.updateState( this.state.index, false, true ); //don't animate, but generate new frame array
             },
 
             normalizeState: function() {
@@ -339,6 +341,7 @@ define(
                         frameNumber: 1,
                         prevFrameIndex: 0,
                         prevFrameNumber: 1,
+                        origWrapperClass: self.wrapper.className,
                         dom: {
                             wrapper: self.wrapper,
                             viewport: self.viewport,
@@ -429,6 +432,8 @@ define(
                     state.trackWidth        = state.tileWidth * state.curTileLength;
                     state.trackPercent      = 100 * state.curTileLength;
                     state.frameWidth        = options.tilesPerFrame * state.tileWidth;
+
+                    state.dom.wrapper.setAttribute( 'class', state.origWrapperClass + ' ' + options.wrapperClass );
                     
                     // Determine current frame based on increment mode
                     if ( options.incrementMode === 'frame' ) { //frame increment
@@ -445,7 +450,7 @@ define(
                         if ( frameEnd > carEnd ) {
                             frameStart = carEnd - options.tilesPerFrame;
                             index = frameStart;
-                            animate = true;
+                            animate = true; //index has changed, so move carousel back to new index
                             frameEnd = carEnd;
                         }
                         else {
@@ -495,6 +500,8 @@ define(
                     this.calcDimensions( options.tilesPerFrame );
 
                     this.updateDimensions();
+
+                    this.buildNavigation( true );
                 }
                 
                 if ( animate ) this.animate();
@@ -637,7 +644,7 @@ define(
                 
                 update = ( typeof update === 'boolean' ) ? update : false;
                 
-                if ( update ) {
+                if ( update && this.controlsWrapper ) {
                     // Double parentNode necessary since controlsWrapper element is getting overwritten with controls element
                     this.controlsWrapper.parentNode.parentNode.removeChild( this.controlsWrapper.parentNode );
                 }
@@ -714,7 +721,12 @@ define(
 
                 // Set click events buttons
                 // Using addEvent method for IE8 support
-                if ( !update ) addEvent( this.wrapper, 'click', this.handleNavigation.bind( this ) );
+                if ( update ) {
+                    this.x.publish( this.ns + '/navigation/update' );
+                }
+                else {
+                    addEvent( this.wrapper, 'click', this.handleNavigation.bind( this ) );
+                }
 
                 this.x.publish( this.ns + '/navigation/after' );
             },
@@ -840,7 +852,7 @@ define(
                     , hasAriaInited = this.cache( 'hasAriaInited' )
                     ;
 
-                for ( var i = 0; i < length; i++ ) {
+                for ( ; i < length; i++ ) {
 
                     item = itemArray[ i ];
                     classes = item.className + initClass;

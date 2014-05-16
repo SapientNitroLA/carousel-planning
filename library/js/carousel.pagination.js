@@ -6,6 +6,8 @@ define(
 
     function( carousel ) {
 
+        'use strict';
+
         var doc = document
             , selected = ' selected'
             , rBusy = /\bstate-busy\b/
@@ -15,7 +17,7 @@ define(
             center: true,
             frameText: 'Page {number} of {total}',
             frameCurrentText: 'Current Page'
-        }
+        };
 
         var tmplPagination = doc.createElement( 'ul' )
             , tmplFrameLink = '<li><a class="carousel-frame{selected}" data-frame="{number}" href="#" title="{current}">{frameText}</a></li>'
@@ -29,19 +31,25 @@ define(
         function Pagination( api, options ) {
 
             this.api = api;
-            this.options = this.api.extend( {}, defaults, options );;
+            this.options = this.api.extend( {}, defaults, options );
 
             this.setup();
         }
 
         Pagination.prototype = {
 
+            timer: undefined,
+
+            funcs: {},
+
             setup: function() {
 
                 var self = this;
 
+                this.funcs.updatePagination = this.updatePagination.bind( this );
+
                 this.api.subscribe(
-                    this.api.ns + '/setup/after',
+                    this.api.ns + '/init/before',
                     this.handleOptions.bind( this )
                 );
 
@@ -59,7 +67,15 @@ define(
 
                 this.api.subscribe(
                     this.api.ns + '/animate/before',
-                    this.updatePagination.bind( this )
+                    this.funcs.updatePagination
+                );
+
+                this.api.subscribe(
+                    this.api.ns + '/navigation/update',
+                    function() {
+                        self.funcs.updatePagination();
+                        self.updateCSS.bind( self );
+                    }
                 );
             },
 
@@ -105,14 +121,14 @@ define(
                     isSelected = frameIndex === i;
                     selected = isSelected ? selected : '';
                     current = isSelected ? options.frameCurrentText : '';
-                    frameText = options.frameText.replace( rNumber, p ).replace( rTotal, curFrameLength );
+                    //frameText = options.frameText.replace( rNumber, p ).replace( rTotal, curFrameLength );
 
                     frameLinks.push(
                         frameLink.replace( rNumber, p )
                             .replace( rCurrent, current )
                             .replace( rSelected, selected )
                             .replace( rTotal, curFrameLength )
-                            .replace( rFrameText, frameText )
+                            //.replace( rFrameText, frameText )
                     );
                 }
 
@@ -127,18 +143,17 @@ define(
             updateCSS: function() {
 
                 var controlsWidth
-                    , controlsStyle
                     ;
 
                 // Center controls beneath carousel
                 if ( !( this.options.center && this.options.wrapControls ) ) return;
 
                 controlsWidth = this.api.outerWidth( this.dom.controls );
-
-                controlsStyle = 'position:relative; left:50%;';
-                controlsStyle += 'width:' + controlsWidth + 'px;';
-                controlsStyle += 'margin-left:-' + controlsWidth / 2 + 'px;'
-                this.dom.controls.setAttribute( 'style', controlsStyle );
+                
+                this.dom.controls.style.position = 'relative';
+                this.dom.controls.style.left = '50%';
+                //this.dom.controls.style.width = controlsWidth + 'px';
+                this.dom.controls.style.marginLeft = '-' + controlsWidth / 2 + 'px';
             },
 
             handlePagination: function(e) {
@@ -166,6 +181,8 @@ define(
 
             updatePagination: function() {
 
+                clearTimeout( this.timer );
+
                 var rSelected = /\sselected\b/
                     , newFrameIndex = this.api.getState( 'frameIndex' )
                     , oldFrameIndex = this.api.getState( 'prevFrameIndex' )
@@ -173,16 +190,23 @@ define(
                     , oldFrame = this.paginationLinks[ oldFrameIndex ]
                     ;
 
-                oldFrame.className = oldFrame.className.replace( rSelected, '' );
-                oldFrame.removeAttribute( 'title', '' );
+                if ( oldFrame ) {
 
-                newFrame.className += selected;
-                newFrame.setAttribute( 'title', this.options.frameCurrentText );
+                    oldFrame.className = oldFrame.className.replace( rSelected, '' );
+                    oldFrame.removeAttribute( 'title', '' );
+                }
+
+                if ( newFrame ) {
+
+                    newFrame.className += selected;
+                    newFrame.setAttribute( 'title', this.options.frameCurrentText );
+                }
             }
-        }
+        };
 
         carousel.plugin( 'pagination', function( options, api ) {
 
             new Pagination( options, api );
         });
-});
+    }
+);

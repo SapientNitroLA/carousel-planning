@@ -8,7 +8,6 @@ define(
         
         'use strict';
         
-        var doc = document;
         var defaults = {
             rotateInterval: 5000, //5 secs
             stopEvent: 'none'
@@ -43,14 +42,15 @@ define(
                         var pluginAttr = self.api.getOption( 'autorotate' );
                         var pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
                         
-                        self.carousel = {
-                            dom: self.api.getState( 'dom' ),
-                            tilesPerFrame: self.api.getOption( 'tilesPerFrame' ),
-                            curTileLength: self.api.getState( 'curTileLength' ),
-                            autorotate: pluginOn
-                        };
-                        
                         if ( pluginOn ) {
+                            
+                            self.carousel = {
+                                dom: self.api.getState( 'dom' ),
+                                tilesPerFrame: self.api.getOption( 'tilesPerFrame' ),
+                                curTileLength: self.api.getState( 'curTileLength' ),
+                                autorotate: pluginOn
+                            };
+                            
                             self.startRotation.call( self );
                         }
                     }
