@@ -71,7 +71,7 @@ define(
                 );
 
                 this.api.subscribe(
-                    this.api.ns + '/navigation/update',
+                    this.api.ns + '/navigation/rebuild/after',
                     function() {
                         self.funcs.updatePagination();
                         self.updateCSS.bind( self );
@@ -93,6 +93,7 @@ define(
                     , pageLinkWidth
                     , paginationWidth
                     , controlsStyle
+                    , frameText
                     , self        = this
                     , state       = this.state
                     , options     = this.options
@@ -121,14 +122,14 @@ define(
                     isSelected = frameIndex === i;
                     selected = isSelected ? selected : '';
                     current = isSelected ? options.frameCurrentText : '';
-                    //frameText = options.frameText.replace( rNumber, p ).replace( rTotal, curFrameLength );
+                    frameText = options.frameText.replace( rNumber, p ).replace( rTotal, curFrameLength );
 
                     frameLinks.push(
                         frameLink.replace( rNumber, p )
                             .replace( rCurrent, current )
                             .replace( rSelected, selected )
                             .replace( rTotal, curFrameLength )
-                            //.replace( rFrameText, frameText )
+                            .replace( rFrameText, frameText )
                     );
                 }
 
@@ -136,6 +137,8 @@ define(
                 this.paginationLinks = pagination.querySelectorAll( 'a' );
 
                 this.updateCSS();
+                
+                this.updatePagination();
 
                 this.api.addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
             },
