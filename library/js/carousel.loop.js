@@ -22,17 +22,15 @@ define(
         }
 
         Loop.prototype = {
-            
-            updatePosition: false,
-        
+                    
             setup: function() {
 
                 var self = this;
-                                
-                // this.api.subscribe( this.api.nsPlugin + '/setup', function(data){ console.log(data) } );
                 
-                // this.api.publish( this.api.nsPlugin + '/setup', 'hello');
+                this.paginationArr = [];
+                this.updatePosition = false;
                 
+                // Carousel subscribers
                 this.api.subscribe(
                     
                     this.api.ns + '/buildFrames/before',
@@ -67,6 +65,17 @@ define(
                 this.api.subscribe(
                     this.api.ns + '/animate/after',
                     this.reposition.bind( this )
+                );
+                
+                // Plugin subscribers
+                this.api.subscribe(
+                    'pagination/buildPagination/before',
+                    this.loadPagination.bind( this )
+                );
+                
+                this.api.subscribe(
+                    'pagination/updatePagination/before',
+                    this.updatePagination.bind( this )
                 );
             },
         
@@ -111,17 +120,26 @@ define(
                     tileArr.push( newLi );
                 }
                 
+                for ( i = tilesPerFrame; i < origTileLength + tilesPerFrame; i++ ) {
+                    
+                    this.paginationArr.push( i );
+                }
+                
+                // Store first and last paginations indexes in local object
+                this.firstPageIndex = tilesPerFrame;
+                this.lastPageIndex = i - 1;
+                
                 updateObj = {
                     index: tilesPerFrame,
                     tileArr: tileArr
-                }
+                };
 
                 this.api.trigger( 'updateState', updateObj );
             },
             
             checkLoop: function( origIndex, newIndex ) {
                 
-                console.log(origIndex, newIndex);
+                //console.log(origIndex, newIndex);
 
                 var updateObj       = {},
                     tilesPerFrame   = this.carousel.tilesPerFrame,
@@ -170,6 +188,57 @@ define(
                 if ( this.updatePosition ) {
                     this.api.trigger( 'syncState', this.carousel.index, false );
                     this.updatePosition = false;
+                }
+            },
+            
+            loadPagination: function() {
+                
+                this.api.trigger( 'cache', 'pagination/paginationArr', this.paginationArr );
+            },
+            
+            updatePagination: function() {
+                
+                var oldFrameIndex, newFrameIndex;
+                var prevIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' );
+                var thisIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                this.api.getState( 'frameIndex' ) : this.api.getState( 'index' );
+                                
+                console.log(prevIndex, thisIndex, this.firstPageIndex, this.lastPageIndex );
+                
+                if ( prevIndex < this.firstPageIndex ) {
+                    
+                    oldFrameIndex = this.firstPageIndex + prevIndex + this.carousel.tilesPerFrame;
+                    this.api.trigger( 'cache', 'pagination/oldFrameIndex', oldFrameIndex );
+                }
+                
+                else if ( prevIndex > this.lastPageIndex ) {
+                    
+                    oldFrameIndex = this.firstPageIndex + ( prevIndex - this.lastPageIndex - 1 );
+                    this.api.trigger( 'cache', 'pagination/oldFrameIndex', oldFrameIndex );
+                }
+                
+                else {
+                    // Reset any cached var value
+                    this.api.trigger( 'cache', 'pagination/oldFrameIndex', 'undefined' );
+                }
+                
+                if ( thisIndex < this.firstPageIndex ) {
+                    
+                    newFrameIndex = this.firstPageIndex + thisIndex + this.carousel.tilesPerFrame;
+                    this.api.trigger( 'cache', 'pagination/newFrameIndex', newFrameIndex );
+                }
+                
+                else if ( thisIndex > this.lastPageIndex ) {
+                    
+                    newFrameIndex = this.firstPageIndex + ( thisIndex - this.lastPageIndex - 1 );
+                    console.log('newFrameIndex2', newFrameIndex);
+                    this.api.trigger( 'cache', 'pagination/newFrameIndex', newFrameIndex );
+                }
+                
+                else {
+                    // Reset any cached var value
+                    this.api.trigger( 'cache', 'pagination/newFrameIndex', 'undefined' );
                 }
             }
         };

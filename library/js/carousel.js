@@ -507,8 +507,6 @@ define(
                     if ( frameEnd > carEnd ) {
                         
                         frameStart = carEnd - tilesPerFrame;
-                        index = frameStart;
-                        animate = true; //index has changed, so move carousel back to new index
                         frameEnd = carEnd;
                     }
                     
@@ -592,7 +590,7 @@ define(
                 
                 if ( 'transition' in carousel.style ) {
                     
-                    // Prevent animation of reposition
+                    // Prevent animation of re-position
                     carousel.style.transition = '';
                     carousel.style.WebkitTransition = '';
                     
@@ -780,7 +778,7 @@ define(
                 self.nextBtn.innerHTML = text;
 
                 // Disable buttons if there is only one frame
-                if ( !options.preventNavDisable && state.curTileLength <= options.tilesPerFrame ) {
+                if ( state.curTileLength <= options.tilesPerFrame ) {
 
                     self.prevBtn.disabled = true;
                     self.nextBtn.disabled = true;
@@ -918,7 +916,8 @@ define(
                     options = self.options,
                     frame = parseInt( frame, 10 ),
                     tilesPerFrame = self.options.tilesPerFrame,
-                    index = ( options.incrementMode === 'frame' ) ? ( frame * tilesPerFrame ) - tilesPerFrame : frame - 1;
+                    index = ( options.incrementMode === 'frame' ) ? 
+                            ( frame * tilesPerFrame ) - tilesPerFrame : frame;
 
                 index = index < 0 ? 0 : index;
 

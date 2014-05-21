@@ -11,11 +11,12 @@ define(
         var doc = document
             , selected = ' selected'
             , rBusy = /\bstate-busy\b/
+            , pluginName = 'pagination'
             ;
 
         var defaults = {
             center: true,
-            frameText: 'Page {number} of {total}',
+            frameText: 'Page {pageNumber} of {total}',
             frameCurrentText: 'Current Page'
         };
 
@@ -38,13 +39,15 @@ define(
 
         Pagination.prototype = {
 
-            funcs: {},
-
             setup: function() {
 
                 var self = this;
 
-                this.funcs.updatePagination = this.updatePagination.bind( this );
+                this.funcs = {
+                    updatePagination: this.updatePagination.bind( this )
+                };
+                
+                this.pluginName = pluginName;
 
                 this.api.subscribe(
                     this.api.ns + '/init/before',
@@ -85,6 +88,10 @@ define(
 
             buildPagination: function( controls, btnPrev, btnNext ) {
 
+                this.api.publish( this.pluginName + '/buildPagination/before' );
+                
+                var paginationArr = this.api.trigger( 'cache', this.pluginName + '/paginationArr', this.paginationArr );
+
                 var current
                     , pageLinks
                     , isSelected
@@ -93,18 +100,19 @@ define(
                     , controlsStyle
                     , frameText
                     , selectedClass
+                    , paginationLength
                     , self              = this
                     , state             = this.state
                     , options           = this.options
                     , frameLinks        = []
                     , frameLink         = tmplFrameLink
-                    , rNumber           = /\{number\}/g
+                    , rNumber           = /\{number\}/
+                    , rPageNumber       = /\{pageNumber\}/
                     , rTotal            = /\{total\}/
                     , rCurrent          = /\{current\}/
                     , selected          = ' selected'
                     , rSelected         = /\{selected\}/
                     , rFrameText        = /\{frameText\}/
-                    // , loop           = this.options.loop
                     , frameIndex        = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
                                           this.api.getState( 'frameIndex' ) : this.api.getState( 'index' )
                     , pagination        = tmplPagination.cloneNode( true )
@@ -113,22 +121,38 @@ define(
                     , curFrameLength    = this.api.getState( 'curFrameLength' )
                     , curTileLength     = this.api.getState( 'curTileLength' )
                     , viewportWidth     = this.api.outerWidth( this.dom.viewport )
-                    //, tileClass         = this.api.getOption( 'tileClass' )
-                    , paginationLength  = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ? curFrameLength : curTileLength;
                     ;
 
+                if ( this.api.getObjType( paginationArr ) === '[object Array]' ) {
+                    
+                    paginationLength = paginationArr.length;
+                }
+                
+                else {
+                    
+                    paginationLength  = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ? curFrameLength : curTileLength;
+                    
+                    paginationArr = [];
+                    
+                    for ( var i = 0; i < paginationLength; i++ ) {
+                        
+                        paginationArr.push( i );
+                    }
+                }
+                
+                this.paginationArr = paginationArr;
                 this.pagination = btnNextParent.insertBefore( pagination, btnNext );
 
                 // build pagination links
                 for ( var i = 0, p = 1; i < paginationLength; i++, p++ ) {
                     
-                    isSelected = frameIndex === i;
+                    isSelected = frameIndex === paginationArr[ i ];
                     selectedClass = isSelected ? selected : '';
                     current = isSelected ? options.frameCurrentText : '';
-                    frameText = options.frameText.replace( rNumber, p ).replace( rTotal, paginationLength );
+                    frameText = options.frameText.replace( rPageNumber, p ).replace( rTotal, paginationLength );
 
                     frameLinks.push(
-                        frameLink.replace( rNumber, p )
+                        frameLink.replace( rNumber, paginationArr[ i ] )
                             .replace( rCurrent, current )
                             .replace( rSelected, selectedClass )
                             .replace( rTotal, paginationLength )
@@ -142,6 +166,8 @@ define(
                 this.updateCSS();
 
                 this.api.addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
+                
+                this.api.publish( this.pluginName + '/buildPagination/after' );
             },
 
             updateCSS: function() {
@@ -176,7 +202,7 @@ define(
                 if ( 'preventDefault' in e ) e.preventDefault();
                 if ( 'returnValue' in e ) e.returnValue = false;
 
-                if ( currentFrameNumber === frame ) return false;
+                if ( currentFrameIndex === frame ) return false;
                 if ( this.dom.carousel.className.match( rBusy ) ) return false;
 
                 // loop && frame++;
@@ -186,15 +212,34 @@ define(
             },
 
             updatePagination: function() {
-
-                var rSelected = /\sselected\b/
-                    , newFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                      this.api.getState( 'frameIndex' ) : this.api.getState( 'index' )
-                    , oldFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                      this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' )
-                    , newFrame = this.paginationLinks[ newFrameIndex ]
-                    , oldFrame = this.paginationLinks[ oldFrameIndex ]
-                    ;
+                
+                this.api.publish( this.pluginName + '/updatePagination/before' );
+                
+                var oldFrame, newFrame;
+                var rSelected = /\sselected\b/;
+                var oldFrameIndex = this.api.trigger( 'cache', this.pluginName + '/oldFrameIndex' );
+                var newFrameIndex = this.api.trigger( 'cache', this.pluginName + '/newFrameIndex' );
+                
+                console.log(oldFrameIndex, newFrameIndex);
+                
+                if ( this.api.getObjType( oldFrameIndex ) !== '[object Number]' ) {
+                    
+                    oldFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                      this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' );
+                }
+                
+                if ( this.api.getObjType( newFrameIndex ) !== '[object Number]' ) {
+                    
+                    newFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                      this.api.getState( 'frameIndex' ) : this.api.getState( 'index' );
+                }
+                
+                oldFrameIndex = this.paginationArr.indexOf( oldFrameIndex );
+                newFrameIndex = this.paginationArr.indexOf( newFrameIndex );
+                newFrame = this.paginationLinks[ newFrameIndex ];
+                oldFrame = this.paginationLinks[ oldFrameIndex ];
+                
+                //console.log(oldFrameIndex, newFrameIndex);
 
                 if ( oldFrame ) {
 
@@ -207,10 +252,12 @@ define(
                     newFrame.className += selected;
                     newFrame.setAttribute( 'title', this.options.frameCurrentText );
                 }
+                
+                this.api.publish( this.pluginName + '/updatePagination/after' );
             }
         };
 
-        carousel.plugin( 'pagination', function( options, api ) {
+        carousel.plugin( pluginName, function( options, api ) {
 
             new Pagination( options, api );
         });
