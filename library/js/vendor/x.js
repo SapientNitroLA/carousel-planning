@@ -83,6 +83,8 @@ define(
                 for ( var member in plugins ) {
 
                     if ( !( member in this.options ) ) continue;
+                    
+                    this.x.nsPlugin = member;
 
                     plugins[ member ]( this.x, this.options[ member ] );
                 }

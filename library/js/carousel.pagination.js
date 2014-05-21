@@ -38,8 +38,6 @@ define(
 
         Pagination.prototype = {
 
-            timer: undefined,
-
             funcs: {},
 
             setup: function() {
@@ -94,41 +92,46 @@ define(
                     , paginationWidth
                     , controlsStyle
                     , frameText
-                    , self        = this
-                    , state       = this.state
-                    , options     = this.options
-                    , frameLinks  = []
-                    , frameLink   = tmplFrameLink
-                    , rNumber     = /\{number\}/g
-                    , rTotal      = /\{total\}/
-                    , rCurrent    = /\{current\}/
-                    , selected    = ' selected'
-                    , rSelected   = /\{selected\}/
-                    , rFrameText  = /\{frameText\}/
-                    // , loop        = this.options.loop
-                    , frameIndex  = this.api.getState( 'frameIndex' )
-                    , pagination  = tmplPagination.cloneNode( true )
+                    , selectedClass
+                    , self              = this
+                    , state             = this.state
+                    , options           = this.options
+                    , frameLinks        = []
+                    , frameLink         = tmplFrameLink
+                    , rNumber           = /\{number\}/g
+                    , rTotal            = /\{total\}/
+                    , rCurrent          = /\{current\}/
+                    , selected          = ' selected'
+                    , rSelected         = /\{selected\}/
+                    , rFrameText        = /\{frameText\}/
+                    // , loop           = this.options.loop
+                    , frameIndex        = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                          this.api.getState( 'frameIndex' ) : this.api.getState( 'index' )
+                    , pagination        = tmplPagination.cloneNode( true )
                     , controlsWrap      = controls.parentNode
                     , btnNextParent     = btnNext.parentNode
                     , curFrameLength    = this.api.getState( 'curFrameLength' )
+                    , curTileLength     = this.api.getState( 'curTileLength' )
                     , viewportWidth     = this.api.outerWidth( this.dom.viewport )
+                    //, tileClass         = this.api.getOption( 'tileClass' )
+                    , paginationLength  = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ? curFrameLength : curTileLength;
                     ;
 
                 this.pagination = btnNextParent.insertBefore( pagination, btnNext );
 
                 // build pagination links
-                for ( var i = 0, p = 1; i < curFrameLength; i++, p++ ) {
-
+                for ( var i = 0, p = 1; i < paginationLength; i++, p++ ) {
+                    
                     isSelected = frameIndex === i;
-                    selected = isSelected ? selected : '';
+                    selectedClass = isSelected ? selected : '';
                     current = isSelected ? options.frameCurrentText : '';
-                    frameText = options.frameText.replace( rNumber, p ).replace( rTotal, curFrameLength );
+                    frameText = options.frameText.replace( rNumber, p ).replace( rTotal, paginationLength );
 
                     frameLinks.push(
                         frameLink.replace( rNumber, p )
                             .replace( rCurrent, current )
-                            .replace( rSelected, selected )
-                            .replace( rTotal, curFrameLength )
+                            .replace( rSelected, selectedClass )
+                            .replace( rTotal, paginationLength )
                             .replace( rFrameText, frameText )
                     );
                 }
@@ -137,8 +140,6 @@ define(
                 this.paginationLinks = pagination.querySelectorAll( 'a' );
 
                 this.updateCSS();
-                
-                this.updatePagination();
 
                 this.api.addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
             },
@@ -163,8 +164,10 @@ define(
 
                 var element = e.target || e.srcElement // IE uses srcElement
                     , frame = parseInt( element.getAttribute( 'data-frame' ), 10 )
-                    , currentFrameIndex = this.api.getState( 'frameIndex' )
-                    , currentFrameNumber = this.api.getState( 'frameNumber' )
+                    , currentFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                          this.api.getState( 'frameIndex' ) : this.api.getState( 'index' )
+                    , currentFrameNumber = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                           this.api.getState( 'frameNumber' ) : this.api.getState( 'index' ) + 1
                     ;
 
                 if ( isNaN( frame ) ) return;
@@ -184,11 +187,11 @@ define(
 
             updatePagination: function() {
 
-                clearTimeout( this.timer );
-
                 var rSelected = /\sselected\b/
-                    , newFrameIndex = this.api.getState( 'frameIndex' )
-                    , oldFrameIndex = this.api.getState( 'prevFrameIndex' )
+                    , newFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                      this.api.getState( 'frameIndex' ) : this.api.getState( 'index' )
+                    , oldFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                      this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' )
                     , newFrame = this.paginationLinks[ newFrameIndex ]
                     , oldFrame = this.paginationLinks[ oldFrameIndex ]
                     ;

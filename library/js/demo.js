@@ -21,10 +21,10 @@ require(
             pagination: {
               center: true // TODO handle centering when wrapControls is false. Should it simply not be done? Should wrapControls be forced to true?
             },
-            autorotate: {
-                stopEvent: 'hover'
-            },
-            loop: true,
+            // autorotate: {
+            //     stopEvent: 'click'
+            // },
+            loop: true
             //responsive: true
         });
     
@@ -51,7 +51,7 @@ require(
         //     },
         //     autorotate: {
         //         rotateInterval: 2000,
-        //         stopEvent: 'click'
+        //         stopEvent: 'hover'
         //     },
         //     loop: false
         // });

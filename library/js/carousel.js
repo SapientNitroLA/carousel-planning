@@ -73,7 +73,8 @@ define(
             postFrameChange: null,
             ready: null,
             wrapperClass: '',
-            preventNavDisable: false
+            preventNavDisable: false,
+            tileClass: 'carousel-tile'
         };
 
         // Options that require integers
@@ -185,7 +186,7 @@ define(
             
         function getObjType( obj ) {
             
-           return Object.prototype.toString.call( obj ).toString();
+           return Object.prototype.toString.call( obj );
         }
 
         // Create carousel prototype
@@ -257,8 +258,7 @@ define(
                 this.buildNavigation();
 
                 // Listen for focus on tiles
-                // TODO Replace string
-                var panels = carousel.querySelectorAll( '.carousel-tile' );
+                var panels = carousel.querySelectorAll( '.' + options.tileClass );
 
                 for ( var i = 0, len = panels.length; i < len; ++i ) {
                     // Using addEvent method for IE8 support
@@ -305,6 +305,7 @@ define(
                 this.x.publish( this.ns + '/reinit/before' );
                 
                 this.buildFrames();
+                
                 this.rebuildNavigation();
                 
                 this.x.publish( this.ns + '/reinit/after' );
@@ -326,6 +327,7 @@ define(
                 
                     return this.options;
                 }
+                
                 else {
                     return false;
                 }
@@ -337,18 +339,13 @@ define(
                 
                 if ( getObjType( stateObj ) === '[object Object]' ) {
                     
-                    //syncIndex = ( typeof stateObj.index === 'number' && stateObj.index !== this.state.index ) ? true : false;
-                    
                     this.x.extend( this.state, stateObj );
                     
-                    // if ( syncIndex ) {
-                    //     this.syncState();
-                    // }
-                    
-                    console.log(this.state);
+                    // console.log(this.state);
                 
                     return this.state;
                 }
+                
                 else {
                     return false;
                 }
@@ -409,8 +406,7 @@ define(
 
                 this.state = state;
 
-                // !TODO: Replace string
-                this.toggleAria( tileArr, 'add', 'carousel-tile' ); //init tile classes (all tiles hidden by default)
+                this.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
 
                 // Build the normalized frames array
                 this.buildFrames();
@@ -493,14 +489,14 @@ define(
                 this.updateDimensions();
                 
                 // Update position of carousel based on index
-                //carousel.style.left = '-' + state.offset + 'px';
-                this.updatePosition();
+                this.updatePosition( state.index );
                 
                 // Determine current frame based on increment mode
                 if ( options.incrementMode === 'frame' ) { //frame increment
                     
                     thisFrame = state.curFrame;
                 }
+                
                 else { //tile increment
                     
                     thisFrame = [];
@@ -515,6 +511,7 @@ define(
                         animate = true; //index has changed, so move carousel back to new index
                         frameEnd = carEnd;
                     }
+                    
                     else {
                         frameStart = state.index;
                     }
@@ -574,8 +571,10 @@ define(
                     if ( animate ) {
                         this.animate();
                     }
+                    
+                    // Even if no animation, make sure carousel correctly positioned
                     else {
-                        this.updatePosition();
+                        this.updatePosition( state.index );
                     }
                     
                     this.x.publish( this.ns + '/syncState/after', origIndex, index );
@@ -584,15 +583,16 @@ define(
                 }
             },
             
-            updatePosition: function() {
+            updatePosition: function( index ) {
               
-                var translateAmt = this.state.tilePercent * this.state.index;
-                var transformStr = 'translateX(-' + translateAmt + '%)';
                 var carousel = this.element;
                 var state = this.state;
+                var translateAmt = state.tilePercent * index;
+                var transformStr = 'translateX(-' + translateAmt + '%)';
                 
                 if ( 'transition' in carousel.style ) {
                     
+                    // Prevent animation of reposition
                     carousel.style.transition = '';
                     carousel.style.WebkitTransition = '';
                     
@@ -915,13 +915,14 @@ define(
 
                 var self = this,
                     state = self.state,
+                    options = self.options,
                     frame = parseInt( frame, 10 ),
                     tilesPerFrame = self.options.tilesPerFrame,
-                    index = ( frame * tilesPerFrame ) - tilesPerFrame;
+                    index = ( options.incrementMode === 'frame' ) ? ( frame * tilesPerFrame ) - tilesPerFrame : frame - 1;
 
                 index = index < 0 ? 0 : index;
 
-                if ( index === state.index || frame > state.curFrameLength ) {
+                if ( ( options.incrementMode === 'tile' && index === state.index ) || ( options.incrementMode === 'frame' && frame > state.curFrameLength ) ) {
                     return self.carousel;
                 }
 

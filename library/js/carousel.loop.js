@@ -28,6 +28,10 @@ define(
             setup: function() {
 
                 var self = this;
+                                
+                // this.api.subscribe( this.api.nsPlugin + '/setup', function(data){ console.log(data) } );
+                
+                // this.api.publish( this.api.nsPlugin + '/setup', 'hello');
                 
                 this.api.subscribe(
                     
@@ -71,7 +75,7 @@ define(
                 // Add clones to create full chronological set of frames.
                 // This could be pretty heavy and could be changed to just
                 // fill out the incomplete frame instead.
-                var thisLi, newLi;
+                var thisLi, newLi, updateObj;
                 var clones = [];
                 var tileHTMLColl = this.carousel.tileArr;
                 var tileArr = Array.prototype.slice.call( tileHTMLColl );
@@ -106,8 +110,13 @@ define(
                     carousel.appendChild( newLi );
                     tileArr.push( newLi );
                 }
+                
+                updateObj = {
+                    index: tilesPerFrame,
+                    tileArr: tileArr
+                }
 
-                this.api.trigger( 'updateState', { index:tilesPerFrame, tileArr:tileArr } );
+                this.api.trigger( 'updateState', updateObj );
             },
             
             checkLoop: function( origIndex, newIndex ) {
@@ -135,6 +144,7 @@ define(
                         console.log('isFirstFrame');
                         index = curTileLength - ( tilesPerFrame * 2 );
                     }
+                    
                     else if ( isLastFrame ) {
                         console.log('isLastFrame');
                         index = tilesPerFrame;
@@ -148,6 +158,7 @@ define(
                     };
                     
                     this.carousel.index = index;
+                    
                     this.updatePosition = true;
  
                     this.api.trigger( 'updateState', updateObj );
