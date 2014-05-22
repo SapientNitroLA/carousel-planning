@@ -195,7 +195,7 @@ define(
                     , currentFrameNumber = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
                                            this.api.getState( 'frameNumber' ) : this.api.getState( 'index' ) + 1
                     ;
-
+console.log(frame, currentFrameIndex, currentFrameNumber);
                 if ( isNaN( frame ) ) return;
 
                 // Try both for IE8 support
@@ -225,13 +225,13 @@ define(
                 if ( this.api.getObjType( oldFrameIndex ) !== '[object Number]' ) {
                     
                     oldFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                      this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' );
+                                    this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' );
                 }
                 
                 if ( this.api.getObjType( newFrameIndex ) !== '[object Number]' ) {
                     
                     newFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                      this.api.getState( 'frameIndex' ) : this.api.getState( 'index' );
+                                    this.api.getState( 'frameIndex' ) : this.api.getState( 'index' );
                 }
                 
                 oldFrameIndex = this.paginationArr.indexOf( oldFrameIndex );

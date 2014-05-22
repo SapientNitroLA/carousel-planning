@@ -93,6 +93,10 @@ define(
                 var curTileLength = origTileLength;
                 var carousel = this.carousel.dom.carousel;
                 var tilesPerFrame = this.carousel.tilesPerFrame;
+                var paginationStart = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                      1 : tilesPerFrame;
+                var paginationLength = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                       Math.ceil( ( origTileLength + tilesPerFrame ) / tilesPerFrame ) : origTileLength + tilesPerFrame;
                 
                 while ( curTileLength % tilesPerFrame !== 0 ) {
                     
@@ -120,14 +124,16 @@ define(
                     tileArr.push( newLi );
                 }
                 
-                for ( i = tilesPerFrame; i < origTileLength + tilesPerFrame; i++ ) {
+                for ( i = paginationStart; i < paginationLength; i++ ) {
                     
                     this.paginationArr.push( i );
                 }
                 
                 // Store first and last paginations indexes in local object
-                this.firstPageIndex = tilesPerFrame;
-                this.lastPageIndex = i - 1;
+                this.firstPageIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                      1 : tilesPerFrame;
+                this.lastPageIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                                     Math.ceil( ( tilesPerFrame + origTileLength ) / tilesPerFrame ) - 1 : i - 1;
                 
                 updateObj = {
                     index: tilesPerFrame,
@@ -208,7 +214,7 @@ define(
                 
                 if ( prevIndex < this.firstPageIndex ) {
                     
-                    oldFrameIndex = this.firstPageIndex + prevIndex + this.carousel.tilesPerFrame;
+                    oldFrameIndex = this.lastPageIndex - ( this.firstPageIndex - prevIndex ) + 1;
                     this.api.trigger( 'cache', 'pagination/oldFrameIndex', oldFrameIndex );
                 }
                 
@@ -225,7 +231,7 @@ define(
                 
                 if ( thisIndex < this.firstPageIndex ) {
                     
-                    newFrameIndex = this.firstPageIndex + thisIndex + this.carousel.tilesPerFrame;
+                    newFrameIndex = this.lastPageIndex - ( this.firstPageIndex - thisIndex ) + 1;
                     this.api.trigger( 'cache', 'pagination/newFrameIndex', newFrameIndex );
                 }
                 

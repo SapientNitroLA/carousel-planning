@@ -917,7 +917,7 @@ define(
                     frame = parseInt( frame, 10 ),
                     tilesPerFrame = self.options.tilesPerFrame,
                     index = ( options.incrementMode === 'frame' ) ? 
-                            ( frame * tilesPerFrame ) - tilesPerFrame : frame;
+                            frame * tilesPerFrame : frame;
 
                 index = index < 0 ? 0 : index;
 
