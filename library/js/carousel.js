@@ -292,7 +292,9 @@ define(
                     , query = cache[ key ] !== 'undefined' ? cache[ key ] : undefined
                     ;
 
-                if ( typeof value !== 'boolean' && !value ) return query;
+                if ( typeof value === 'undefined' ) {
+                    return query;
+                }
 
                 cache[ key ] = value;
 
@@ -529,7 +531,7 @@ define(
                 // Don't update state during tile transition
                 if ( !this.cache( 'animating' ) ) {
                 
-                    this.x.publish( this.ns + '/syncState/before', index );
+                    this.x.publish( this.ns + '/syncState/before', this.state.index, index );
 
                     var self                = this
                         , state             = self.state

@@ -9,6 +9,8 @@ define(
         'use strict';
         
         var defaults = {};
+        var dataAttr = 'data-crsl-tile';
+        var pluginOn = false;
 
         /**
          * Constructor
@@ -30,6 +32,10 @@ define(
                 this.paginationArr = [];
                 this.updatePosition = false;
                 
+                this.funcs = {
+                    updatePagination: this.updatePagination.bind( this )
+                };
+                
                 // Carousel subscribers
                 this.api.subscribe(
                     
@@ -38,7 +44,7 @@ define(
                     function() {
                         
                         var pluginAttr = self.api.getOption( 'loop' );
-                        var pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
+                        pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
 
                         if ( pluginOn ) {
                             
@@ -47,6 +53,7 @@ define(
                                 dom: self.api.getState( 'dom' ),
                                 tilesPerFrame: self.api.getOption( 'tilesPerFrame' ),
                                 tileArr: self.api.getState( 'tileArr' ),
+                                incrementMode: self.api.getOption( 'incrementMode' ),
                                 loop: pluginOn
                             };
                             
@@ -75,16 +82,15 @@ define(
                 
                 this.api.subscribe(
                     'pagination/updatePagination/before',
-                    this.updatePagination.bind( this )
+                    this.funcs.updatePagination
                 );
             },
         
             createLoopDom: function() {
+                
+                if ( !pluginOn ) return;
                     
-                // Add clones to create full chronological set of frames.
-                // This could be pretty heavy and could be changed to just
-                // fill out the incomplete frame instead.
-                var thisLi, newLi, updateObj;
+                var thisLi, newLi, updateObj, dataIndex;
                 var clones = [];
                 var tileHTMLColl = this.carousel.tileArr;
                 var tileArr = Array.prototype.slice.call( tileHTMLColl );
@@ -93,22 +99,34 @@ define(
                 var curTileLength = origTileLength;
                 var carousel = this.carousel.dom.carousel;
                 var tilesPerFrame = this.carousel.tilesPerFrame;
-                var paginationStart = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                      1 : tilesPerFrame;
-                var paginationLength = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                var incrementMode = this.carousel.incrementMode;
+                var paginationStart = ( incrementMode === 'frame' ) ? 1 : tilesPerFrame;
+                var paginationLength = ( incrementMode === 'frame' ) ?
                                        Math.ceil( ( origTileLength + tilesPerFrame ) / tilesPerFrame ) : origTileLength + tilesPerFrame;
                 
+                // Tag tiles before cloning                       
+                for ( var i = 0; i < tileArr.length; i++ ) {
+                    
+                    dataIndex = ( incrementMode === 'frame' ) ? Math.floor( i / tilesPerFrame ) : i;
+                    tileArr[i].setAttribute( dataAttr, dataIndex );
+                }
+                
+                // Add clones to create full chronological set of frames
+                // This could be pretty heavy and could be changed to just fill out the incomplete frame instead
                 while ( curTileLength % tilesPerFrame !== 0 ) {
                     
-                    for ( var i = 0; i < origTileLength; i++, curTileLength++ ) {
-                        tileArr.push( origTiles[i].cloneNode(true) );
+                    for ( i = 0; i < origTileLength; i++, curTileLength++ ) {
+ 
+                        newLi = origTiles[i].cloneNode( true );
+                        carousel.appendChild( newLi );
+                        tileArr.push( newLi );
                     }
                 }
                 
                 // Add a clone of the last frame to the beginning
                 for ( var i = tilesPerFrame - 1, j = 0; i >= 0; i--, j++ ) {
                     
-                    newLi = tileArr[ origTileLength - 1 - i ].cloneNode(true);
+                    newLi = tileArr[ origTileLength - 1 - i ].cloneNode( true );
                     carousel.insertBefore( newLi, carousel.children[ 0 + j ] );
                     clones.push( newLi );
                 }
@@ -117,22 +135,22 @@ define(
                 clones = [];
                                
                 // Add a clone of the first frame to the end
-                for ( var i = 0; i < tilesPerFrame; i++ ) {
+                for ( i = 0; i < tilesPerFrame; i++ ) {
                     
-                    newLi = origTiles[i].cloneNode(true);
+                    newLi = origTiles[i].cloneNode( true );
                     carousel.appendChild( newLi );
                     tileArr.push( newLi );
                 }
                 
+                // Load pagination array
                 for ( i = paginationStart; i < paginationLength; i++ ) {
                     
                     this.paginationArr.push( i );
                 }
                 
                 // Store first and last paginations indexes in local object
-                this.firstPageIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                      1 : tilesPerFrame;
-                this.lastPageIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
+                this.firstPageIndex = ( incrementMode === 'frame' ) ? 1 : tilesPerFrame;
+                this.lastPageIndex = ( incrementMode === 'frame' ) ?
                                      Math.ceil( ( tilesPerFrame + origTileLength ) / tilesPerFrame ) - 1 : i - 1;
                 
                 updateObj = {
@@ -145,15 +163,14 @@ define(
             
             checkLoop: function( origIndex, newIndex ) {
                 
-                //console.log(origIndex, newIndex);
-
+                if ( !pluginOn ) return;
+                
                 var updateObj       = {},
                     tilesPerFrame   = this.carousel.tilesPerFrame,
                     prevFrameIndex  = this.api.getState( 'frameIndex' ),
                     prevFrame       = this.api.getState( 'prevFrame' ),
                     curFrame        = this.api.getState( 'curFrame' ),
                     curFrameLength  = this.api.getState( 'curFrameLength' ),
-                    //currIndex       = this.api.getState( 'index' ),
                     curTileLength   = this.api.getState( 'curTileLength' ),
                     frameLength     = Math.ceil( curTileLength / tilesPerFrame ),
                     index           = newIndex,
@@ -191,7 +208,8 @@ define(
             
             reposition: function() {
                 
-                if ( this.updatePosition ) {
+                if ( pluginOn && this.updatePosition ) {
+
                     this.api.trigger( 'syncState', this.carousel.index, false );
                     this.updatePosition = false;
                 }
@@ -199,46 +217,23 @@ define(
             
             loadPagination: function() {
                 
+                if ( !pluginOn ) return;
+                
                 this.api.trigger( 'cache', 'pagination/paginationArr', this.paginationArr );
             },
             
             updatePagination: function() {
                 
-                var oldFrameIndex, newFrameIndex;
-                var prevIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' );
-                var thisIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                this.api.getState( 'frameIndex' ) : this.api.getState( 'index' );
-                                
-                console.log(prevIndex, thisIndex, this.firstPageIndex, this.lastPageIndex );
+                if ( !pluginOn ) return;
                 
-                if ( prevIndex < this.firstPageIndex ) {
-                    
-                    oldFrameIndex = this.lastPageIndex - ( this.firstPageIndex - prevIndex ) + 1;
-                    this.api.trigger( 'cache', 'pagination/oldFrameIndex', oldFrameIndex );
-                }
+                var newFrame, newFrameIndex;
+                var thisIndex = this.api.getState( 'index' );
+
+                newFrame = this.carousel.tileArr[ thisIndex ];
                 
-                else if ( prevIndex > this.lastPageIndex ) {
-                    
-                    oldFrameIndex = this.firstPageIndex + ( prevIndex - this.lastPageIndex - 1 );
-                    this.api.trigger( 'cache', 'pagination/oldFrameIndex', oldFrameIndex );
-                }
-                
-                else {
-                    // Reset any cached var value
-                    this.api.trigger( 'cache', 'pagination/oldFrameIndex', 'undefined' );
-                }
-                
-                if ( thisIndex < this.firstPageIndex ) {
-                    
-                    newFrameIndex = this.lastPageIndex - ( this.firstPageIndex - thisIndex ) + 1;
-                    this.api.trigger( 'cache', 'pagination/newFrameIndex', newFrameIndex );
-                }
-                
-                else if ( thisIndex > this.lastPageIndex ) {
-                    
-                    newFrameIndex = this.firstPageIndex + ( thisIndex - this.lastPageIndex - 1 );
-                    console.log('newFrameIndex2', newFrameIndex);
+                if ( newFrame ) {
+
+                    newFrameIndex = parseInt( newFrame.getAttribute( dataAttr ), 10 );
                     this.api.trigger( 'cache', 'pagination/newFrameIndex', newFrameIndex );
                 }
                 

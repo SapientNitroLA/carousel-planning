@@ -75,7 +75,7 @@ define(
                     this.api.ns + '/navigation/rebuild/after',
                     function() {
                         self.funcs.updatePagination();
-                        self.updateCSS.bind( self );
+                        self.centerControls.bind( self );
                     }
                 );
             },
@@ -163,14 +163,14 @@ define(
                 this.pagination.insertAdjacentHTML( 'afterbegin', frameLinks.join('') );
                 this.paginationLinks = pagination.querySelectorAll( 'a' );
 
-                this.updateCSS();
+                this.centerControls();
 
                 this.api.addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
                 
                 this.api.publish( this.pluginName + '/buildPagination/after' );
             },
 
-            updateCSS: function() {
+            centerControls: function() {
 
                 var controlsWidth
                     ;
@@ -195,7 +195,7 @@ define(
                     , currentFrameNumber = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
                                            this.api.getState( 'frameNumber' ) : this.api.getState( 'index' ) + 1
                     ;
-console.log(frame, currentFrameIndex, currentFrameNumber);
+
                 if ( isNaN( frame ) ) return;
 
                 // Try both for IE8 support
@@ -215,40 +215,40 @@ console.log(frame, currentFrameIndex, currentFrameNumber);
                 
                 this.api.publish( this.pluginName + '/updatePagination/before' );
                 
-                var oldFrame, newFrame;
-                var rSelected = /\sselected\b/;
-                var oldFrameIndex = this.api.trigger( 'cache', this.pluginName + '/oldFrameIndex' );
+                var newFrame, pageLink, linkClass;
+                var rSelected = /\s?selected\b/;
                 var newFrameIndex = this.api.trigger( 'cache', this.pluginName + '/newFrameIndex' );
                 
-                console.log(oldFrameIndex, newFrameIndex);
+                //console.log(newFrameIndex, this.api.getObjType( newFrameIndex ), this.api.getObjType( newFrameIndex ) === '[object Number]');
                 
-                if ( this.api.getObjType( oldFrameIndex ) !== '[object Number]' ) {
-                    
-                    oldFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                    this.api.getState( 'prevFrameIndex' ) : this.api.getState( 'prevIndex' );
-                }
-                
+                // No cached new index value, so get current index from state object
                 if ( this.api.getObjType( newFrameIndex ) !== '[object Number]' ) {
                     
                     newFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
                                     this.api.getState( 'frameIndex' ) : this.api.getState( 'index' );
                 }
                 
-                oldFrameIndex = this.paginationArr.indexOf( oldFrameIndex );
-                newFrameIndex = this.paginationArr.indexOf( newFrameIndex );
                 newFrame = this.paginationLinks[ newFrameIndex ];
-                oldFrame = this.paginationLinks[ oldFrameIndex ];
                 
-                //console.log(oldFrameIndex, newFrameIndex);
+                // Turn off all pagination links
+                for ( var i = 0; i < this.paginationLinks.length; i++ ) {
 
-                if ( oldFrame ) {
-
-                    oldFrame.className = oldFrame.className.replace( rSelected, '' );
-                    oldFrame.removeAttribute( 'title', '' );
+                    pageLink = this.paginationLinks[ i ];
+                    linkClass = pageLink.className;
+                    
+                    // If currently selected link, turn off and stop loop
+                    if ( linkClass.match( rSelected ) ) {
+                        
+                        linkClass = linkClass.replace( rSelected, '' );
+                        pageLink.className = linkClass;
+                        pageLink.removeAttribute( 'title' );
+                        break;
+                    }
                 }
-
+                
+                // Turn current pagination link on
                 if ( newFrame ) {
-
+                    
                     newFrame.className += selected;
                     newFrame.setAttribute( 'title', this.options.frameCurrentText );
                 }
