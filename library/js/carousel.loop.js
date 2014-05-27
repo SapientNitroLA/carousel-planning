@@ -56,6 +56,27 @@ define(
                                 incrementMode: self.api.getOption( 'incrementMode' ),
                                 loop: pluginOn
                             };
+                
+                            self.api.subscribe(
+                                self.api.ns + '/syncState/after',
+                                self.checkLoop.bind( self )
+                            );
+
+                            self.api.subscribe(
+                                self.api.ns + '/animate/after',
+                                self.reposition.bind( self )
+                            );
+
+                            // Plugin subscribers
+                            self.api.subscribe(
+                                'pagination/buildPagination/before',
+                                self.loadPagination.bind( self )
+                            );
+
+                            self.api.subscribe(
+                                'pagination/updatePagination/before',
+                                self.funcs.updatePagination
+                            );
                             
                             self.api.trigger( 'updateOptions', { preventNavDisable:true } ); //prevent disabling of prev/next buttons
 
@@ -63,32 +84,9 @@ define(
                         }
                     }
                 );
-                
-                this.api.subscribe(
-                    this.api.ns + '/syncState/after',
-                    this.checkLoop.bind( this )
-                );
-                
-                this.api.subscribe(
-                    this.api.ns + '/animate/after',
-                    this.reposition.bind( this )
-                );
-                
-                // Plugin subscribers
-                this.api.subscribe(
-                    'pagination/buildPagination/before',
-                    this.loadPagination.bind( this )
-                );
-                
-                this.api.subscribe(
-                    'pagination/updatePagination/before',
-                    this.funcs.updatePagination
-                );
             },
         
             createLoopDom: function() {
-                
-                if ( !pluginOn ) return;
                     
                 var thisLi, newLi, updateObj, dataIndex;
                 var clones = [];
@@ -163,8 +161,6 @@ define(
             
             checkLoop: function( origIndex, newIndex ) {
                 
-                if ( !pluginOn ) return;
-                
                 var updateObj       = {},
                     tilesPerFrame   = this.carousel.tilesPerFrame,
                     prevFrameIndex  = this.api.getState( 'frameIndex' ),
@@ -208,7 +204,7 @@ define(
             
             reposition: function() {
                 
-                if ( pluginOn && this.updatePosition ) {
+                if ( this.updatePosition ) {
 
                     this.api.trigger( 'syncState', this.carousel.index, false );
                     this.updatePosition = false;
@@ -217,14 +213,10 @@ define(
             
             loadPagination: function() {
                 
-                if ( !pluginOn ) return;
-                
                 this.api.trigger( 'cache', 'pagination/paginationArr', this.paginationArr );
             },
             
             updatePagination: function() {
-                
-                if ( !pluginOn ) return;
                 
                 var newFrame, newFrameIndex;
                 var thisIndex = this.api.getState( 'index' );
@@ -248,4 +240,5 @@ define(
 
             new Loop( options, api );
         });
-});
+    }
+);

@@ -223,7 +223,8 @@ define(
 
                 this.x.publish( this.ns + '/init/before' );
 
-                var options             = this.options
+                var supportsTransitions, transitionEvent
+                    , options           = this.options
                     , self              = this
                     , carousel          = this.element
                     , parentNode        = carousel.parentNode
@@ -251,6 +252,16 @@ define(
                 // Replace the carousel
                 if ( nextSibling ) insertAfter( wrapper, nextSibling );
                 else parentNode.appendChild( wrapper );
+                
+                // Determine CSS transition support
+                supportsTransitions = ( 'transition' in carousel.style || 'WebkitTransition' in carousel.style ) ? true : false;
+                this.cache( 'supportsTransitions', supportsTransitions );
+                
+                if ( supportsTransitions ) {
+                    
+                    transitionEvent = ( 'transition' in carousel.style ) ? 'transitionend' : 'webkitTransitionEnd';
+                    this.cache( 'transitionEvent', transitionEvent );
+                }
 
                 // Build out the frames and state object
                 this.initState();
@@ -336,8 +347,6 @@ define(
             },
             
             updateState: function( stateObj ) {
-                
-                var syncIndex;
                 
                 if ( getObjType( stateObj ) === '[object Object]' ) {
                     
@@ -527,7 +536,7 @@ define(
             },
 
             syncState: function( index, animate ) {
-                
+
                 // Don't update state during tile transition
                 if ( !this.cache( 'animating' ) ) {
                 
@@ -584,14 +593,16 @@ define(
             },
             
             updatePosition: function( index ) {
-              
+
                 var carousel = this.element;
                 var state = this.state;
                 var translateAmt = state.tilePercent * index;
                 var transformStr = 'translateX(-' + translateAmt + '%)';
+                var supportsTransitions = this.cache( 'supportsTransitions' );
+                var transitionEvent = this.cache( 'transitionEvent' );
                 
-                if ( 'transition' in carousel.style ) {
-                    
+                if ( supportsTransitions ) {
+
                     // Prevent animation of re-position
                     carousel.style.transition = '';
                     carousel.style.WebkitTransition = '';
@@ -602,7 +613,7 @@ define(
 
                 // IE9
                 else if ( 'msTransform' in carousel.style ) {
-                    
+
                     carousel.style.msTransform = transformStr;
                 }
                 
@@ -670,10 +681,12 @@ define(
                     , origin = state.prevIndex * tilePercent
                     , distance = origin - translateAmt
                     , frameDist = distance / numFrames
+                    , supportsTransitions = this.cache( 'supportsTransitions' )
+                    , transitionEvent = this.cache( 'transitionEvent' )
                     ;
 
                 var listener = function(e) {
-
+                    
                     self.toggleAria( state.tileArr, 'add' );
                     self.toggleAria( state.curFrame, 'remove' );
 
@@ -697,17 +710,17 @@ define(
                 this.updateNavigation();
 
                 // Use CSS transitions
-                if ( 'transition' in carousel.style ) {
+                if ( supportsTransitions ) {
 
                     carousel.style.transition = translateStr;
                     carousel.style.WebkitTransition = '-webkit-' + translateStr;
 
                     this.x.subscribe( this.ns + '/transition/end', function() {
 
-                        carousel.removeEventListener( 'transitionend', listener, false );
+                        carousel.removeEventListener( transitionEvent, listener, false );
                     });
 
-                    carousel.addEventListener( 'transitionend', listener, false );
+                    carousel.addEventListener( transitionEvent, listener, false );
 
                     carousel.style.transform = transformStr;
                     carousel.style.webkitTransform = transformStr;
@@ -993,4 +1006,5 @@ define(
 
         // Define the carousel
         return x.define( 'carousel', core );
-});
+    }
+);
