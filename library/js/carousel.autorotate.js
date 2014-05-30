@@ -8,10 +8,14 @@ define(
         
         'use strict';
         
+        var subToken;
         var defaults = {
             rotateInterval: 5000, //5 secs
             stopEvent: 'none'
         };
+        var pluginNS = 'autorotate';
+        var pluginOn = false;
+        var pluginStopped = true;
 
         /**
          * Constructor
@@ -36,12 +40,16 @@ define(
                 
                 // Subscribe to carousel init event
                 this.api.subscribe(
+
                     this.api.ns + '/init/after',
+
                     function() {
+
+                        self.funcs.stop = self.stopRotation.bind( self ); //define bound stopRotation method
                         
-                        var pluginAttr = self.api.getOption( 'autorotate' );
-                        var pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
-                        
+                        var pluginAttr = self.api.getOption( pluginNS );
+                        pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
+
                         if ( pluginOn ) {
                             
                             self.carousel = {
@@ -51,23 +59,38 @@ define(
                                 autorotate: pluginOn
                             };
                             
+                            // Subscribe to carousel nextFrame/after event
+                            subToken = self.api.subscribe(
+                                self.api.ns + '/nextFrame/after',
+                                self.rotateCarousel.bind( self )
+                            );
+
+                            self.api.subscribe(
+                                self.api.ns + '/cache/after',
+                                self.checkCache.bind( self )
+                            );
+
                             self.startRotation.call( self );
                         }
                     }
                 );
-                
-                // Subscribe to carousel nextFrame/after event
-                this.api.subscribe(
-                    this.api.ns + '/nextFrame/after',
-                    this.rotateCarousel.bind( this )
-                );
             },
         
+            checkCache: function( key, value ) {
+
+                var targetStr = pluginNS + '/stopRotation';
+
+                if ( key === targetStr && value === true ) {
+
+                    this.stopRotation.call( this );
+                }
+            },
+
             startRotation: function() {
                     
                 this.rotateCarousel();
-            
-                this.funcs.stop = this.stopRotation.bind( this );
+
+                pluginStopped = false;
                 
                 if ( this.options.stopEvent === 'hover' ) {
                     
@@ -81,27 +104,31 @@ define(
         
             stopRotation: function() {
 
-                clearTimeout( this.timer );
-                
-                this.carousel.autorotate = false;
-                
-                if ( this.options.stopEvent === 'hover' ) {
-                                    
-                    this.api.removeEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
+                if ( !pluginStopped ) {
+
+                    clearTimeout( this.timer );
+
+                    this.api.unsubscribe( subToken );
+
+                    this.carousel.autorotate = false;
+                    pluginOn = false;
+                    pluginStopped = true;
                     
-                } else if ( this.options.stopEvent === 'click' ) {
-                    
-                    this.api.removeEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
+                    if ( this.options.stopEvent === 'hover' ) {
+
+                        this.api.removeEvent( this.carousel.dom.wrapper, 'mouseover', this.funcs.stop );
+
+                    } else if ( this.options.stopEvent === 'click' ) {
+
+                        this.api.removeEvent( this.carousel.dom.wrapper, 'click', this.funcs.stop );
+                    }
                 }
-                
-                //console.log('autorotate stopped');
             },
             
             rotateCarousel: function() {
                 
                 var self = this;
                 var isLast = self.api.getState( 'index' ) + self.carousel.tilesPerFrame >= self.carousel.curTileLength;
-                //console.log(self.api.getState( 'index' ), self.carousel.curTileLength, self.carousel.tilesPerFrame, isLast);
                 
                 clearTimeout( this.timer );
                 
@@ -116,11 +143,12 @@ define(
                         
                     }, self.options.rotateInterval );
                 }
-            }
+            },
         };
     
-        carousel.plugin( 'autorotate', function( options, api ) {
+        carousel.plugin( pluginNS, function( options, api ) {
 
             new Autorotate( options, api );
         });
-});
+    }
+);

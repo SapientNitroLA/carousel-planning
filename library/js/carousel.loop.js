@@ -8,9 +8,13 @@ define(
         
         'use strict';
         
+        var origTileDom;
         var defaults = {};
         var dataAttr = 'data-crsl-tile';
+        var origTileIdPre = 'orig-tile-';
+        var pluginNS = 'loop';
         var pluginOn = false;
+        var pluginInited = false;
 
         /**
          * Constructor
@@ -29,7 +33,6 @@ define(
 
                 var self = this;
                 
-                this.paginationArr = [];
                 this.updatePosition = false;
                 
                 this.funcs = {
@@ -43,9 +46,10 @@ define(
                     
                     function() {
                         
-                        var pluginAttr = self.api.getOption( 'loop' );
+                        var pluginAttr = self.api.getOption( pluginNS );
                         pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
 
+                        // If plugin on, load local object and set up subscribers
                         if ( pluginOn ) {
                             
                             self.carousel = {
@@ -56,41 +60,69 @@ define(
                                 incrementMode: self.api.getOption( 'incrementMode' ),
                                 loop: pluginOn
                             };
-                
-                            self.api.subscribe(
-                                self.api.ns + '/syncState/after',
-                                self.checkLoop.bind( self )
-                            );
-
-                            self.api.subscribe(
-                                self.api.ns + '/animate/after',
-                                self.reposition.bind( self )
-                            );
-
-                            // Plugin subscribers
-                            self.api.subscribe(
-                                'pagination/buildPagination/before',
-                                self.loadPagination.bind( self )
-                            );
-
-                            self.api.subscribe(
-                                'pagination/updatePagination/before',
-                                self.funcs.updatePagination
-                            );
                             
-                            self.api.trigger( 'updateOptions', { preventNavDisable:true } ); //prevent disabling of prev/next buttons
+                            if ( !pluginInited ) {
+
+                                origTileDom = self.carousel.tileArr;
+
+                                self.api.subscribe(
+                                    self.api.ns + '/syncState/after',
+                                    self.checkLoop.bind( self )
+                                );
+
+                                self.api.subscribe(
+                                    self.api.ns + '/animate/after',
+                                    self.reposition.bind( self )
+                                );
+
+                                self.api.subscribe(
+                                    self.api.ns + '/reinit/before',
+                                    self.resetLoopDom.bind( self )
+                                );
+
+                                // Plugin subscribers
+                                self.api.subscribe(
+                                    'pagination/buildPagination/before',
+                                    self.loadPagination.bind( self )
+                                );
+
+                                self.api.subscribe(
+                                    'pagination/updatePagination/before',
+                                    self.funcs.updatePagination
+                                );
+
+                                self.api.trigger( 'updateOptions', { preventNavDisable:true } ); //prevent disabling of prev/next buttons
+
+                                pluginInited = true;
+                            }
 
                             self.createLoopDom.call( self );
                         }
                     }
                 );
             },
+
+            resetLoopDom: function() {
+
+                var carousel = this.carousel.dom.carousel;
+                var carChildren = carousel.children;
+                var tileArr = Array.prototype.slice.call( carChildren );
+
+                for ( var i = 0; i <  tileArr.length; i++ ) {
+
+                    // Remove all but original tiles
+                    if ( !tileArr[i].hasAttribute( 'id' ) || tileArr[i].getAttribute( 'id' ).indexOf( origTileIdPre ) === -1 ) {
+
+                        carousel.removeChild( tileArr[i] );
+                    }
+                }
+            },
         
             createLoopDom: function() {
                     
-                var thisLi, newLi, updateObj, dataIndex;
+                var newLi, updateObj, dataIndex;
                 var clones = [];
-                var tileHTMLColl = this.carousel.tileArr;
+                var tileHTMLColl = origTileDom;
                 var tileArr = Array.prototype.slice.call( tileHTMLColl );
                 var origTiles = tileArr;
                 var origTileLength = tileArr.length;
@@ -101,12 +133,15 @@ define(
                 var paginationStart = ( incrementMode === 'frame' ) ? 1 : tilesPerFrame;
                 var paginationLength = ( incrementMode === 'frame' ) ?
                                        Math.ceil( ( origTileLength + tilesPerFrame ) / tilesPerFrame ) : origTileLength + tilesPerFrame;
+
+                this.paginationArr = [];
                 
                 // Tag tiles before cloning                       
                 for ( var i = 0; i < tileArr.length; i++ ) {
                     
                     dataIndex = ( incrementMode === 'frame' ) ? Math.floor( i / tilesPerFrame ) : i;
                     tileArr[i].setAttribute( dataAttr, dataIndex );
+                    tileArr[i].setAttribute( 'id', origTileIdPre + i ); //identifies original tiles
                 }
                 
                 // Add clones to create full chronological set of frames
@@ -116,6 +151,7 @@ define(
                     for ( i = 0; i < origTileLength; i++, curTileLength++ ) {
  
                         newLi = origTiles[i].cloneNode( true );
+                        newLi.removeAttribute( 'id' );
                         carousel.appendChild( newLi );
                         tileArr.push( newLi );
                     }
@@ -125,6 +161,7 @@ define(
                 for ( var i = tilesPerFrame - 1, j = 0; i >= 0; i--, j++ ) {
                     
                     newLi = tileArr[ origTileLength - 1 - i ].cloneNode( true );
+                    newLi.removeAttribute( 'id' );
                     carousel.insertBefore( newLi, carousel.children[ 0 + j ] );
                     clones.push( newLi );
                 }
@@ -136,6 +173,7 @@ define(
                 for ( i = 0; i < tilesPerFrame; i++ ) {
                     
                     newLi = origTiles[i].cloneNode( true );
+                    newLi.removeAttribute( 'id' );
                     carousel.appendChild( newLi );
                     tileArr.push( newLi );
                 }
@@ -163,14 +201,10 @@ define(
                 
                 var updateObj       = {},
                     tilesPerFrame   = this.carousel.tilesPerFrame,
-                    prevFrameIndex  = this.api.getState( 'frameIndex' ),
                     prevFrame       = this.api.getState( 'prevFrame' ),
-                    curFrame        = this.api.getState( 'curFrame' ),
                     curFrameLength  = this.api.getState( 'curFrameLength' ),
                     curTileLength   = this.api.getState( 'curTileLength' ),
-                    frameLength     = Math.ceil( curTileLength / tilesPerFrame ),
                     index           = newIndex,
-                    frameIndex      = Math.ceil( index / tilesPerFrame ),
                     isFirstFrame    = index === 0,
                     isLastFrame     = index === curTileLength - tilesPerFrame,
                     shouldLoopReset = ( isFirstFrame || isLastFrame );
@@ -178,12 +212,12 @@ define(
                 if ( shouldLoopReset ) {
                                     
                     if ( isFirstFrame ) {
-                        console.log('isFirstFrame');
+                        //console.log('isFirstFrame');
                         index = curTileLength - ( tilesPerFrame * 2 );
                     }
                     
                     else if ( isLastFrame ) {
-                        console.log('isLastFrame');
+                        //console.log('isLastFrame');
                         index = tilesPerFrame;
                     }
                     
@@ -212,31 +246,35 @@ define(
             },
             
             loadPagination: function() {
-                
+
                 this.api.trigger( 'cache', 'pagination/paginationArr', this.paginationArr );
             },
             
             updatePagination: function() {
                 
-                var newFrame, newFrameIndex;
-                var thisIndex = this.api.getState( 'index' );
+                var newFrameIndex, thisFrame, updateVal;
+                var newFrame = [];
+                //var thisIndex = this.api.getState( 'index' );
+                var curFrame = this.api.getState( 'curFrame' );
 
-                newFrame = this.carousel.tileArr[ thisIndex ];
-                
-                if ( newFrame ) {
+                for ( var i = 0; i < curFrame.length; i++ ) {
 
-                    newFrameIndex = parseInt( newFrame.getAttribute( dataAttr ), 10 );
-                    this.api.trigger( 'cache', 'pagination/newFrameIndex', newFrameIndex );
+                    thisFrame = curFrame[ i ];
+
+                    if ( thisFrame ) {
+
+                        newFrameIndex = parseInt( thisFrame.getAttribute( dataAttr ), 10 );
+                        newFrame.push( newFrameIndex );
+                    }
                 }
                 
-                else {
-                    // Reset any cached var value
-                    this.api.trigger( 'cache', 'pagination/newFrameIndex', 'undefined' );
-                }
+                updateVal = ( newFrame && newFrame.length > 0 ) ? newFrame : 'undefined';
+
+                this.api.trigger( 'cache', 'pagination/newFrameIndex', updateVal );
             }
         };
     
-        carousel.plugin( 'loop', function( options, api ) {
+        carousel.plugin( pluginNS, function( options, api ) {
 
             new Loop( options, api );
         });
