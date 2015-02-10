@@ -1,35 +1,5 @@
-<style>
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 0 0 15px;
-        border: 0;
-        background-color: #eee;
-        border: 1px solid #ccc;
-    }
-    table table,
-    .last {
-        border: 0;
-        margin
-    }
-    table th,
-    table td {
-        padding: 7px 15px;
-        line-height: 1.5;
-    }
-    table th {
-        background-color: cornflowerblue;
-        color: white;
-        text-align: left;
-        border: 0;
-    }
-    table td {
-        padding-left: 25px;
-    }
-</style>
-
-
 **Quick Links**
+
 - [Features](#features)
 - [Usage](#usage)
 - [Plugins](#plugins)
@@ -66,12 +36,12 @@ var thisCarousel = carousel.create( options );
 
 ### Options ###
 
-<table>
-<thead>
+<table width="100%">
+<!-- <thead>
     <tr>
-        <th>options</th>
+        <th align="left">options</th>
     </tr>
-</thead>
+</thead> -->
 <tbody>
     <tr>
         <td>
@@ -163,12 +133,12 @@ var thisCarousel = carousel.create( options );
 
 ### State ###
 
-<table>
-<thead>
+<table width="100%">
+<!-- <thead>
     <tr>
-        <th>state</th>
+        <th align="left">state</th>
     </tr>
-</thead>
+</thead> -->
 <tbody>
     <tr>
         <td>
@@ -267,7 +237,7 @@ var thisCarousel = carousel.create( options );
             Type: object<br>
             Object containing all constituent DOM elements.
 
-            <table>
+            <table width="100%">
             <tr>
                 <td>
                     <strong>wrapper</strong><br>
@@ -325,10 +295,10 @@ var thisCarousel = carousel.create( options );
 
 ### Methods ###
 
-<table>
+<table width="100%">
 <thead>
     <tr>
-        <th>create( options )</th>
+        <th align="left">create( options )</th>
     </tr>
 </thead>
 <tbody>
@@ -336,7 +306,7 @@ var thisCarousel = carousel.create( options );
         <td>
             Initializes the carousel.
 
-            <table>
+            <table width="100%">
             <tr>
                 <td class="last">
                     <strong>options</strong><br>
@@ -350,10 +320,10 @@ var thisCarousel = carousel.create( options );
 </tbody>
 </table>
 
-<table>
+<table width="100%">
 <thead>
     <tr>
-        <th>getOption( key )</th>
+        <th align="left">getOption( key )</th>
     </tr>
 </thead>
 <tbody>
@@ -361,7 +331,7 @@ var thisCarousel = carousel.create( options );
         <td>
             Returns the requested value from the options object.
 
-            <table>
+            <table width="100%">
             <tr>
                 <td class="last">
                     <strong>key</strong><br>
@@ -375,10 +345,10 @@ var thisCarousel = carousel.create( options );
 </tbody>
 </table>
 
-<table>
+<table width="100%">
 <thead>
     <tr>
-        <th>getState( key )</th>
+        <th align="left">getState( key )</th>
     </tr>
 </thead>
 <tbody>
@@ -386,7 +356,7 @@ var thisCarousel = carousel.create( options );
         <td>
             Returns the requested value from the state object.
 
-            <table>
+            <table width="100%">
             <tr>
                 <td class="last">
                     <strong>key</strong><br>
