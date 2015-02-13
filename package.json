@@ -1,9 +1,21 @@
 {
-  "volo": {
-    "baseDir": "library/js/vendor",
-    "dependencies": {
-      "lodash": "github:lodash/lodash/2.4.1#dist/lodash.js",
-      "lodash.min": "github:lodash/lodash/2.4.1#dist/lodash.min.js"
-    }
+  "name": "Carousel",
+  "version": "0.1.0",
+  "description": "Outline an approach to creating an reusable, extensible carousel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:SapientNitroLA/carousel-planning.git"
+  },
+  "keywords": [
+    "carousel"
+  ],
+  "author": "SapientNitroLA",
+  "license": "ISC",
+  "devDependencies": {
+    "intern": "^2.2.2"
   }
 }

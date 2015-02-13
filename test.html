@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Carousel Test</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+	
+	<link rel="stylesheet" href="library/css/core.css" />
+	
+	<style>
+		.prevFrame {
+			float: left;
+		}
+		.nextFrame {
+			float: right;
+		}
+		.carousel-container {
+			clear: both;
+		}
+		li {
+			background-color: rgba(255,0,0,0.25);
+		}
+    .carousel-viewport ul li img {
+      max-width:100%;
+    }
+    .carousel-pagination li {
+      margin:0 5px;
+      background:none;
+    }
+    .carousel-pagination a {
+      color:#fff;
+      padding:0 5px;
+      background:blue;
+      display:inline-block;
+    }
+    .carousel-pagination a.selected {
+      background:red;
+    }
+    .carousel-controls {
+      margin:0 auto;
+    }
+    /* TEMP */
+    body {
+      overflow:hidden;
+      text-align:center;
+    }
+    html {
+      overflow:hidden;
+    }
+    .carousel-wrapper {
+      width:45%;
+      margin:0 auto;
+    }
+    .carousel-viewport ul li {
+/*      -webkit-transition:2s all ease-in-out;
+      transition:2s all ease-in-out;*/
+    }
+    .state-visible {
+/*      left:0%;*/
+    }
+    .state-hidden {
+      visibility:visible;
+/*      left:100%;*/
+    }
+    .carousel-viewport li {
+/*      box-sizing:border-box;*/
+/*      border: 2px solid red;*/
+    }
+	</style>
+	
+</head>
+<body>
+	<h1 id="title">Carousel Test</h1>
+  
+  <ul id="carousel-test">
+    <li><p>1</p></li>
+    <li><p>2</p></li>
+    <li><p>3</p></li>
+    <li><p>4</p></li>
+    <li><p>5</p></li>
+  </ul>
+
+  <!-- <p>&nbsp;</p>
+
+  <div id="feedback"></div>
+
+  <p>&nbsp;</p>
+
+  <form>
+    <button id="create">Create Carousel</button>
+  </form> -->
+
+  <script src="library/js/vendor/require.js" data-main="library/js/test.js"></script>
+</body>
+</html>
