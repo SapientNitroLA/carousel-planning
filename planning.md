@@ -10,9 +10,6 @@ This repo is for a vanilla, but flexible, all-purpose carousel which can be used
 
 It is compatible with Chrome, Firefox, Safari, and down to IE9.
 
-## Features ##
-
-
 ## Usage ##
 
 Assuming that carousel.js is injected into your script as `carousel`, the following code is all that's needed to initialize carousel:
@@ -295,81 +292,6 @@ var thisCarousel = carousel.create( options );
 
 ### Methods ###
 
-<table width="100%">
-<thead>
-    <tr>
-        <th align="left">create( options )</th>
-    </tr>
-</thead>
-<tbody>
-    <tr>
-        <td>
-            Initializes the carousel.
-
-            <table width="100%">
-            <tr>
-                <td class="last">
-                    <strong>options</strong><br>
-                    Type: object<br>
-                    Configuration object for initialization of carousel.
-                </td>
-            </tr>
-            </table>
-        </td>
-    </tr>
-</tbody>
-</table>
-
-<table width="100%">
-<thead>
-    <tr>
-        <th align="left">getOption( key )</th>
-    </tr>
-</thead>
-<tbody>
-    <tr>
-        <td>
-            Returns the requested value from the options object.
-
-            <table width="100%">
-            <tr>
-                <td class="last">
-                    <strong>key</strong><br>
-                    Type: string<br>
-                    Corresponds to options object key.
-                </td>
-            </tr>
-            </table>
-        </td>
-    </tr>
-</tbody>
-</table>
-
-<table width="100%">
-<thead>
-    <tr>
-        <th align="left">getState( key )</th>
-    </tr>
-</thead>
-<tbody>
-    <tr>
-        <td>
-            Returns the requested value from the state object.
-
-            <table width="100%">
-            <tr>
-                <td class="last">
-                    <strong>key</strong><br>
-                    Type: string<br>
-                    Corresponds to state object key.
-                </td>
-            </tr>
-            </table>
-        </td>
-    </tr>
-</tbody>
-</table>
-
 
 ## Plugins ##
 
@@ -473,6 +395,7 @@ define(
 );
 ```
 
+### Implementation ###
 In order to invoke a plugin's functionality, you would then add that plugin's namespace as a node to the options object used to init carousel.
 
 ```javascript
@@ -491,3 +414,80 @@ carousel.create({
     }
 });
 ```
+
+### Intra-Plugin Communication ###
+
+<table width="100%">
+<thead>
+    <tr>
+        <th align="left">create( options )</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>
+            Initializes the carousel.
+
+            <table width="100%">
+            <tr>
+                <td class="last">
+                    <strong>options</strong><br>
+                    Type: object<br>
+                    Configuration object for initialization of carousel.
+                </td>
+            </tr>
+            </table>
+        </td>
+    </tr>
+</tbody>
+</table>
+
+<table width="100%">
+<thead>
+    <tr>
+        <th align="left">getOption( key )</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>
+            Returns the requested value from the options object.
+
+            <table width="100%">
+            <tr>
+                <td class="last">
+                    <strong>key</strong><br>
+                    Type: string<br>
+                    Corresponds to options object key.
+                </td>
+            </tr>
+            </table>
+        </td>
+    </tr>
+</tbody>
+</table>
+
+<table width="100%">
+<thead>
+    <tr>
+        <th align="left">getState( key )</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>
+            Returns the requested value from the state object.
+
+            <table width="100%">
+            <tr>
+                <td class="last">
+                    <strong>key</strong><br>
+                    Type: string<br>
+                    Corresponds to state object key.
+                </td>
+            </tr>
+            </table>
+        </td>
+    </tr>
+</tbody>
+</table>
