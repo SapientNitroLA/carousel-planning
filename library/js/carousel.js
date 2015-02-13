@@ -437,7 +437,6 @@ define(
                     , state = {
                         index: index,
                         offset: 0,
-                        spacers: 0,
                         prevIndex: false,
                         tileObj: tileArr,
                         tileArr: tileArr,
@@ -1048,7 +1047,6 @@ define(
                     , ariaVClass = ' state-visible'
                     , rAriaHClass = /\sstate-hidden/
                     , rAriaVClass = /\sstate-visible/
-                    , rSpacerClass = /carousel-tile-spacer/
                     , add = operation === 'add' ? true : false
                     , initClass = initClass ? ' ' + initClass : ''
                     , hasAriaInited = this.cache( 'hasAriaInited' )
@@ -1058,8 +1056,6 @@ define(
 
                     item = itemArray[ i ];
                     classes = item.className + initClass;
-
-                    if ( rSpacerClass.test( classes ) ) continue;
 
                     if ( add ) classes = classes.replace( rAriaVClass, ariaHClass );
                     else classes = classes.replace( rAriaHClass, ariaVClass );
