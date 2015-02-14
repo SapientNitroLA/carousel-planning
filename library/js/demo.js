@@ -4,7 +4,7 @@ require(
 		'carousel',
         'carousel.pagination',
         'carousel.autorotate',
-        'carousel.loop',
+        // 'carousel.loop',
         'carousel.responsive'
 	],
     
@@ -13,7 +13,7 @@ require(
         var myCarousel = carousel.create({
             element: document.getElementById( 'example-carousel' ),
             wrapperClass: 'test-1 test-2',
-            tilesPerFrame: 3,
+            tilesPerFrame: 1,
             incrementMode: 'tile',
             nextText: 'next',
             prevText: 'previous',
@@ -21,12 +21,14 @@ require(
             pagination: {
               center: true // TODO handle centering when wrapControls is false. Should it simply not be done? Should wrapControls be forced to true?
             },
-            autorotate: {
-                stopEvent: 'click'
-            },
+            // autorotate: {
+            //     stopEvent: 'click'
+            // },
             loop: true
             //responsive: true
         });
+
+        window.testCarousel = myCarousel; //functional test waiting for this global set
     
         // var myCarousel2 = carousel.create({
         //     element: document.getElementById( 'example-carousel-2' ),

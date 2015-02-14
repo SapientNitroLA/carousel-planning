@@ -1,4 +1,4 @@
-.carousel-wrapper {
+/*.carousel-wrapper {
   position:relative;
 }
 .carousel-viewport {
@@ -18,9 +18,63 @@
   float:left;
   display:block;
   text-align:center;
+}*/
+
+.carousel-wrapper {
+  position: relative;
 }
+.carousel-viewport {
+  margin: 0 auto 15px;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+.carousel-viewport ul {
+  margin: 0;
+  padding: 0;
+}
+
+.carousel-tile {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  width: 100%;
+  visibility: hidden;
+  z-index: 1;
+  -webkit-transition: left .2s ease;
+  -moz-transition: left .2s ease;
+  -ms-transition: left .2s ease;
+  -o-transition: left .2s ease;
+  transition: left .2s ease;
+}
+.tile-active {
+  visibility: visible;
+  left: 0;
+  position: relative;
+  z-index: 2;
+}
+.tile-in {
+  left: 0;
+  visibility: visible;
+}
+.tile-out, 
+.carousel-reverse .tile-in {
+  left: -100%;
+}
+
+.carousel-tile p {
+  margin: 0;
+  padding: 10px 0;
+}
+
 .carousel-controls {
   position:relative;
+  width: 100%;
 }
 .carousel-pagination {
   float:left;
@@ -28,13 +82,20 @@
 }
 .carousel-pagination,
 .carousel-pagination li {
-	margin:0;
-	padding:0;
-	position:relative;
+  margin:0;
+  padding:0;
+  position:relative;
 }
 .carousel-pagination li {
-	float:left;	
-	display:block;
+  float:left; 
+  display:block;
+}
+.carousel-slide-reverse .carousel-tile {
+  -webkit-transition: left .1s ease;
+  -moz-transition: left .1s ease;
+  -ms-transition: left .1s ease;
+  -o-transition: left .1s ease;
+  transition: left .1s ease;
 }
 
 /*
@@ -47,11 +108,11 @@ ACCESSIBILITY
 	flow for dimension calculations.
 */
 .state-hidden {
-  visibility:hidden;
+  /*visibility:hidden;*/
 }
 .state-hidden * {
 /*    display:none;*/
-    visibility:hidden;
+  /*visibility:hidden;*/
 }
 /*.carousel-viewport ul li {
     outline:none;
