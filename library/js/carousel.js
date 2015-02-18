@@ -319,25 +319,24 @@ define(
                 this.x.publish( this.ns + '/init/before' );
 
                 var rtnObj
-                    , options           = this.options
                     , self              = this
-                    , carousel          = this.element
+                    , options           = self.options
+                    , carousel          = self.element
                     , parentNode        = carousel.parentNode
                     , nextSibling       = carousel.nextSibling
                     , wrapper           = templates.wrapper.cloneNode( true )
                     , viewport          = templates.viewport.cloneNode( true )
-                    , controls          = templates.controls.cloneNode( true )
                     , tilesPerFrame     = options.tilesPerFrame
                     ;
                 
                 // Save original tiles per frame data
-                this.options.origTilesPerFrame = tilesPerFrame;
+                self.options.origTilesPerFrame = tilesPerFrame;
                     
                 // Make the main elements available to `this`
-                this.parentNode = carousel.parentNode;
-                this.wrapper = wrapper;
-                this.carousel = carousel;
-                this.viewport = viewport;
+                self.parentNode = carousel.parentNode;
+                self.wrapper = wrapper;
+                self.carousel = carousel;
+                self.viewport = viewport;
 
                 // Remove and build the carousel
                 parentNode.removeChild( carousel );
@@ -355,37 +354,37 @@ define(
 
                 // Determine CSS transition support
                 rtnObj = getTransSupport();
-                this.cache( 'supportsTransitions', rtnObj.supported );
-                this.cache( 'transitionData', rtnObj.data );
-                //console.log(rtnObj.supported, rtnObj.data);
+                self.cache( 'supportsTransitions', rtnObj.supported );
+                self.cache( 'transitionData', rtnObj.data );
 
                 // Build out the frames and state object
-                this.initState();
+                self.initState();
 
-                this.buildNavigation();
+                self.buildNavigation();
 
                 // Listen for focus on tiles
                 var panels = carousel.querySelectorAll( '.' + options.tileClass );
 
                 for ( var i = 0, len = panels.length; i < len; ++i ) {
+
                     // Using addEvent method for IE8 support
-                    addEvent( panels[ i ], 'focus', this.focusHandler );
+                    addEvent( panels[ i ], 'focus', self.focusHandler );
                     // Using addEvent method for IE8 support
-                    addEvent( panels[ i ], 'blur', this.focusHandler );
+                    addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
                 if ( options.ready ) {
 
-                    options.ready.call( this, this.state );
+                    options.ready.call( self, self.state );
                 }
 
-                this.x.publish( this.ns + '/init/after' );
+                self.x.publish( self.ns + '/init/after' );
             },
 
             focusHandler: function( e ) {
 
                 var cls = ' state-focus' // TODO Replace string
-                    , target = e.target || e.srcElement; // IE uses srcElement
+                    , target = e.target || e.srcElement // IE uses srcElement
                     ;
 
                 // Using 'className' to support IE8
@@ -676,7 +675,7 @@ define(
                         }
                     }
 
-                    this.updateState({
+                    self.updateState({
                             index: newIndex,
                             offset: state.tileWidth * newIndex,
                             prevIndex: origIndex,
@@ -702,9 +701,9 @@ define(
                     //     this.updatePosition( state.index );
                     // }
 
-                    this.animateStart( origIndex, newIndex );
+                    self.animateStart( origIndex, newIndex );
                     
-                    this.x.publish( this.ns + '/syncState/after', origIndex, newIndex );
+                    self.x.publish( self.ns + '/syncState/after', origIndex, newIndex );
 
                     return state;
                 }
