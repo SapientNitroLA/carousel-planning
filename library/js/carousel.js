@@ -55,11 +55,16 @@ define(
         'use strict';
 
         // Make sure to use the correct case for IE
-        var ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' )
-            , tabindex = tabindex = ieTest ? 'tabIndex' : 'tabindex'
-            ;
+        var tabindex = ( function() {
 
-        ieTest = null;
+            var ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' )
+                , rtnVal = ieTest ? 'tabIndex' : 'tabindex'
+                ;
+
+            ieTest = null;
+
+            return rtnVal;
+        })();
 
         var defaults = {
             element: null,
@@ -74,8 +79,17 @@ define(
             ready: null,
             wrapperClass: '',
             preventNavDisable: false,
-            tileClass: 'carousel-tile'
+            tileClass: 'carousel-tile',
+            activeClass: 'tile-active'
         };
+
+        /* 
+         *   Globals
+         */
+        var inClass = 'tile-in'
+            , outClass = 'tile-out'
+            , reverseClass = 'carousel-reverse'
+            ;
 
         // Options that require integers
         var defaultInts = [ 'tilesPerFrame', 'wrapperDelta', 'viewportDelta' ];
@@ -236,6 +250,30 @@ define(
             };
         }
 
+        function toggleClass( elem, elemClass, add ) {
+
+            if ( typeof elem === 'undefined' || typeof elemClass === 'undefined' ) {
+                return;
+            }
+
+            var classArr = elem.className.split(' ');
+            var classIdx = classArr.indexOf( elemClass );
+
+            // Element already has class, so remove unless add operation specified (add=true)
+            if ( classIdx !== -1 && add !== true ) {
+
+                classArr.splice( classIdx, 1 );
+            }
+
+            // Element doesn't have class, so add unless remove operation specified (add=false)
+            else if ( classIdx === -1 && add !== false ) {
+
+                classArr.push( elemClass );
+            }
+
+            elem.className = classArr.join(' ');
+        }
+
         // Create carousel prototype
         var core = {
 
@@ -260,6 +298,7 @@ define(
                 this.x.repeat = repeat;
                 this.x.getObjType = getObjType;
                 this.x.getTransSupport = getTransSupport;
+                this.x.toggleClass = toggleClass;
 
                 // Setup plugins
                 this.setupPlugins();
@@ -363,7 +402,6 @@ define(
                 this.x.publish( this.ns + '/cache/after', key, value );
 
                 return cache;
-
             },
             
             reinit: function() {
@@ -546,12 +584,18 @@ define(
                 
                 //call calculate - updates state (publish)
                 //dom styler - applies calculations (subscribed)
-                this.calcDimensions( tilesPerFrame );
+                // this.calcDimensions( tilesPerFrame );
 
-                this.updateDimensions();
+                // this.updateDimensions();
                 
                 // Update position of carousel based on index
-                this.updatePosition( state.index );
+                // this.updatePosition( state.index );
+
+                // Turn on active tiles
+                for ( var i = 0; i < tilesPerFrame; i++ ) {
+
+                    toggleClass( tileArr[ i ], options.activeClass, true );
+                }
                 
                 // Determine current frame based on increment mode
                 if ( options.incrementMode === 'frame' ) { //frame increment
@@ -600,42 +644,59 @@ define(
                         , prevFrameIndex    = state.frameIndex
                         , prevFrameNumber   = state.frameIndex + 1
                         , origIndex         = state.index
-                        , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
+                        , newIndex          = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
                                                 : index < 0 ? 0
                                                 : index
-                        , frameIndex        = Math.ceil( index / tilesPerFrame )
+                        , frameIndex        = Math.ceil( newIndex / tilesPerFrame )
                         , frameNumber       = frameIndex + 1
-                        , isFirstFrame      = index === 0
-                        , isLastFrame       = index === state.curTileLength - tilesPerFrame
-                        , updateObj = {
-                            index: index,
-                            offset: state.tileWidth * index,
-                            prevIndex: state.index,
+                        , isFirstFrame      = newIndex === 0
+                        , isLastFrame       = newIndex === state.curTileLength - tilesPerFrame
+                        ;
+
+                    if ( options.loop && origIndex === newIndex ) {
+
+                        // First tile
+                        if ( origIndex === 0 ) {
+
+                            newIndex = state.curTileLength - tilesPerFrame;
+                        }
+                        
+                        // Last tile
+                        else if ( origIndex === state.curTileLength - tilesPerFrame ) {
+
+                            newIndex = 0;
+                        }
+                    }
+
+                    this.updateState({
+                            index: newIndex,
+                            offset: state.tileWidth * newIndex,
+                            prevIndex: origIndex,
                             prevTile: state.curTile,
                             curTile: isLastFrame && state.tileDelta && options.incrementMode === 'frame'
-                                        ? state.tileArr[ index + state.tileDelta ]
-                                        : state.tileArr[ index ],
-                            curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, tilesPerFrame + index ),
+                                        ? state.tileArr[ newIndex + state.tileDelta ]
+                                        : state.tileArr[ newIndex ],
+                            curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? newIndex : newIndex, tilesPerFrame + newIndex ),
                             prevFrame: state.curFrame,
                             frameIndex: frameIndex,
                             frameNumber: frameNumber,
                             prevFrameIndex: state.frameIndex,
                             prevFrameNumber: state.frameNumber
-                        };
-
-                    this.updateState( updateObj );
+                        });
                 
-                    // Animate tile index change
-                    if ( animate ) {
-                        this.animate();
-                    }
+                    // // Animate tile index change
+                    // if ( animate ) {
+                    //     this.animate();
+                    // }
                     
-                    // Even if no animation, make sure carousel correctly positioned
-                    else {
-                        this.updatePosition( state.index );
-                    }
+                    // // Even if no animation, make sure carousel correctly positioned
+                    // else {
+                    //     this.updatePosition( state.index );
+                    // }
+
+                    this.animateStart( origIndex, newIndex );
                     
-                    this.x.publish( this.ns + '/syncState/after', origIndex, index );
+                    this.x.publish( this.ns + '/syncState/after', origIndex, newIndex );
 
                     return state;
                 }
@@ -687,7 +748,6 @@ define(
 
                     tileArr[ i ].style.width = tileStyle;
                 }
-
             },
 
             calcDimensions: function( tilesPerFrame ) {
@@ -706,125 +766,189 @@ define(
                 state.trackWidth = state.tileWidth * numTiles;
             },
 
-            animate: function() {
+            animateStart: function( fromIdx, toIdx ) {
+
+                console.log( fromIdx, toIdx );
+
+                if ( fromIdx === toIdx ) return;
 
                 this.x.publish( this.ns + '/animate/before' );
 
-                var timer = undefined
-                    , self = this
-                    , state = this.state
-                    , index = state.index
-                    , targetIndex = index
-                    , options = this.options
-                    , carousel = this.element
-                    , tilesPerFrame = options.tilesPerFrame
-                    , tileWidth = state.tileWidth
-                    , tilePercent = state.tilePercent
+                var self = this
+                    , state = self.state
+                    , options = self.options
+                    , carousel = self.element
+                    , tileArr = state.tileArr
                     , preFrameChange = options.preFrameChange
                     , postFrameChange = options.postFrameChange
-                    , isFirst = index === 0
-                    , isLast = index === ( state.curTileLength - tilesPerFrame )
-                    , seconds = 1
-                    , supportsTransitions = this.cache( 'supportsTransitions' )
-                    , transitionData = this.cache( 'transitionData' )
-                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
-                    , transformAttr = vendorPrefix + 'transform'
-                    , transitionAttr = vendorPrefix + 'transition'
+                    , currTile = tileArr[ fromIdx ]
+                    , nextTile = tileArr[ toIdx ]
+                    , supportsTransitions = self.cache( 'supportsTransitions' )
+                    , transitionData = self.cache( 'transitionData' )
                     , transitionEvent = ( transitionData && transitionData.endEvt ) ? transitionData.endEvt : 'transitionend'
-                    , translateAmt = tilePercent * targetIndex
-                    , transformStr = 'translateX(-' + translateAmt + '%)'
-                    , translateStr = 'transform' + ' ' + seconds + 's'
-                    , numFrames = Math.ceil( (seconds * 1000) / 60 )
-                    , origin = state.prevIndex * tilePercent
-                    , distance = origin - translateAmt
-                    , frameDist = distance / numFrames
+                    , reverse = ( fromIdx < toIdx ) ? '' : reverseClass
                     ;
 
-                var initSettings = function() {
+                function animateEnd() {
 
-                    self.cache( 'animating', true );
-
-                    // Execute preFrameChange callback
-                    if ( preFrameChange ) preFrameChange.call( self, state );
-
-                    // carousel.setAttribute( 'class', 'state-busy' );
-                    self.toggleAria( state.tileArr, 'remove' );
-
-                    self.updateNavigation();
-                };
-
-                var listener = function( e ) {
-
-                    //console.log('Event listener fired');
-                    clearTimeout( timer );
+                    // remove this handler
+                    removeEvent( nextTile, transitionEvent, animateEnd );
 
                     self.toggleAria( state.tileArr, 'add' );
                     self.toggleAria( state.curFrame, 'remove' );
 
-                    //state.curTile.focus();
-                    carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
-                    
-                    self.cache( 'animating', false );
+                    // $from.removeClass( outClass + " " + activeClass );
+                    toggleClass( currTile, outClass, false );
+                    toggleClass( currTile, options.activeClass, false );
+                    // $to.removeClass( inClass ).addClass( activeClass );
+                    toggleClass( nextTile, inClass, false );
+                    toggleClass( nextTile, options.activeClass, true );
+                    // $( this ).removeClass( reverseClass );
+                    toggleClass( carousel, reverse, false );
 
                     // Execute postFrameChange callback
-                    postFrameChange && postFrameChange.call( self, state );
+                    if ( postFrameChange ) postFrameChange.call( self, state );
+
+                    self.cache( 'animating', false );
 
                     self.x.publish( self.ns + '/transition/end' );
                     self.x.publish( self.ns + '/animate/after' );
-                };
-
-                // Use CSS transitions
-                if ( supportsTransitions ) {
-
-                    initSettings();
-
-                    carousel.style.transition = translateStr;
-                    carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
-
-                    this.x.subscribe( this.ns + '/transition/end', function() {
-
-                        carousel.removeEventListener( transitionEvent, listener, false );
-                    });
-
-                    carousel.addEventListener( transitionEvent, listener, false );
-
-                    carousel.style.transform = transformStr;
-                    carousel.style[ transformAttr ] = transformStr;
-
-                    // Set a little longer than transition time, so listener has chance to execute on its own
-                    timer = setTimeout( listener , seconds * 1010 );
-
-                    //console.log('Event listener added');
                 }
 
-                // IE9 does not support CSS transitions
-                /*
-                    TODO Needs easing
-                */
-                else if ( 'msTransform' in carousel.style ) {
+                // Execute preFrameChange callback
+                if ( preFrameChange ) preFrameChange.call( self, state );
 
-                    initSettings();
+                self.cache( 'animating', true );
 
-                    repeat( 16, numFrames, true, function() {
+                addEvent( nextTile, transitionEvent, animateEnd );
 
-                        origin -= frameDist;
+                // carousel.className += ' ' + reverseClass;
+                toggleClass( carousel, reverse, true );
+                // currTile.className += ' ' + outClass;
+                toggleClass( currTile, outClass, true );
+                // nextTile.className += ' ' + inClass;
+                toggleClass( nextTile, inClass, true );
+            },
 
-                        if ( origin < 0 ) {
+            animate: function() {
 
-                            carousel.style.msTransform = 'translateX( 0px )';
-                            return;
-                        }
+                // this.x.publish( this.ns + '/animate/before' );
 
-                        carousel.style.msTransform = 'translateX( -' + origin + '% )';
+                // var timer = undefined
+                //     , self = this
+                //     , state = this.state
+                //     , index = state.index
+                //     , targetIndex = index
+                //     , options = this.options
+                //     , carousel = this.element
+                //     , tilesPerFrame = options.tilesPerFrame
+                //     , tileWidth = state.tileWidth
+                //     , tilePercent = state.tilePercent
+                //     , preFrameChange = options.preFrameChange
+                //     , postFrameChange = options.postFrameChange
+                //     , isFirst = index === 0
+                //     , isLast = index === ( state.curTileLength - tilesPerFrame )
+                //     , seconds = 1
+                //     , supportsTransitions = this.cache( 'supportsTransitions' )
+                //     , transitionData = this.cache( 'transitionData' )
+                //     , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
+                //     , transformAttr = vendorPrefix + 'transform'
+                //     , transitionAttr = vendorPrefix + 'transition'
+                //     , transitionEvent = ( transitionData && transitionData.endEvt ) ? transitionData.endEvt : 'transitionend'
+                //     , translateAmt = tilePercent * targetIndex
+                //     , transformStr = 'translateX(-' + translateAmt + '%)'
+                //     , translateStr = 'transform' + ' ' + seconds + 's'
+                //     , numFrames = Math.ceil( (seconds * 1000) / 60 )
+                //     , origin = state.prevIndex * tilePercent
+                //     , distance = origin - translateAmt
+                //     , frameDist = distance / numFrames
+                //     ;
 
-                    });
+                // var initSettings = function() {
 
-                    setTimeout( function() {
+                //     self.cache( 'animating', true );
 
-                        listener();
+                //     // Execute preFrameChange callback
+                //     if ( preFrameChange ) preFrameChange.call( self, state );
 
-                    }, ( 300 * seconds ) );
-                }
+                //     // carousel.setAttribute( 'class', 'state-busy' );
+                //     self.toggleAria( state.tileArr, 'remove' );
+
+                //     self.updateNavigation();
+                // };
+
+                // var listener = function( e ) {
+
+                //     //console.log('Event listener fired');
+                //     clearTimeout( timer );
+
+                //     self.toggleAria( state.tileArr, 'add' );
+                //     self.toggleAria( state.curFrame, 'remove' );
+
+                //     //state.curTile.focus();
+                //     carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
+                    
+                //     self.cache( 'animating', false );
+
+                //     // Execute postFrameChange callback
+                //     postFrameChange && postFrameChange.call( self, state );
+
+                //     self.x.publish( self.ns + '/transition/end' );
+                //     self.x.publish( self.ns + '/animate/after' );
+                // };
+
+                // // Use CSS transitions
+                // if ( supportsTransitions ) {
+
+                //     initSettings();
+
+                //     carousel.style.transition = translateStr;
+                //     carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
+
+                //     this.x.subscribe( this.ns + '/transition/end', function() {
+
+                //         carousel.removeEventListener( transitionEvent, listener, false );
+                //     });
+
+                //     carousel.addEventListener( transitionEvent, listener, false );
+
+                //     carousel.style.transform = transformStr;
+                //     carousel.style[ transformAttr ] = transformStr;
+
+                //     // Set a little longer than transition time, so listener has chance to execute on its own
+                //     timer = setTimeout( listener , seconds * 1010 );
+
+                //     //console.log('Event listener added');
+                // }
+
+                // // IE9 does not support CSS transitions
+                // /*
+                //     TODO Needs easing
+                // */
+                // else if ( 'msTransform' in carousel.style ) {
+
+                //     initSettings();
+
+                //     repeat( 16, numFrames, true, function() {
+
+                //         origin -= frameDist;
+
+                //         if ( origin < 0 ) {
+
+                //             carousel.style.msTransform = 'translateX( 0px )';
+                //             return;
+                //         }
+
+                //         carousel.style.msTransform = 'translateX( -' + origin + '% )';
+
+                //     });
+
+                //     setTimeout( function() {
+
+                //         listener();
+
+                //     }, ( 300 * seconds ) );
+                // }
             },
 
             buildNavigation: function() {
@@ -873,7 +997,7 @@ define(
                 }
 
                 // Disable prev button
-                if ( !options.preventNavDisable && index === 0 ) self.prevBtn.disabled = true;
+                if ( !options.preventNavDisable && !options.loop && index === 0 ) self.prevBtn.disabled = true;
 
                 this.state.dom.prevBtn = this.prevBtn;
                 this.state.dom.nextBtn = this.nextBtn;
@@ -938,7 +1062,7 @@ define(
                     , isLast = index + this.options.tilesPerFrame >= state.curTileLength
                     ;
                 
-                if ( options.preventNavDisable ) return;
+                if ( options.preventNavDisable || options.loop ) return;
                 
                 if ( isFirst ) self.prevBtn.disabled = true;
                 else self.prevBtn.disabled = false;
