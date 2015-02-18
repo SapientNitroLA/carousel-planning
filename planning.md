@@ -194,7 +194,7 @@ Type: any
 Data, if any, to be passed to subscribed listeners.
 
 #### subscribe( channel, method ) ####
-Assign an event listener to named event.
+Assign an event listener to named event.  Returns token which can be later used with unsubscribe method to remove this subscription.
 
 **channel**  
 Type: `String`  
