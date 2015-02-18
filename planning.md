@@ -134,11 +134,11 @@ Wrap previous/next controls with separate wrapper element.
 
 In order to be light and flexible, the carousel core only comes with a bare set of features.  Any additional functionality is accomplished through plugins.
 
-The naming convention for plugin files is `carousel.[pluginname].js`.  `pluginname` is the namespace for the plugin and is used as a key in the [options object](#options) to enable and configure that plugin's functionality ([click here for implementation](#implementation)).
+The naming convention for plugin files is `carousel.[pluginname].js`.  `pluginname` is the namespace for the plugin and is used as a key in the [options object](#options) to enable and configure that plugin's functionality.
 
 ### Implementation ###
 
-In order to invoke a plugin's functionality, you would then add that plugin's namespace as a node to the options object used to initiate the carousel.
+After including the plugin script as a dependency in your mediator script (see demo.js for example), add that plugin's namespace as a key to the options object used to configure the carousel.
 
 ```javascript
 // Example 1
@@ -166,7 +166,7 @@ Initializes the carousel.
 
 **options**  
 Type: `Object`  
-Configuration object for initialization of carousel (see Options documentation above).
+Configuration object for initialization of carousel (see [Options](#options) documentation above).
 
 #### getOption( key ) ####
 Returns the requested value from the options object.
