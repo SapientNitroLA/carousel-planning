@@ -187,7 +187,7 @@ Publish event (and data) to subscribers of this channel.
 
 **channel**  
 Type: `String`  
-Name of an event channel to publish to.  Typical format is * namespace/method/event * (i.e. * carousel/setup/before *)  
+Name of an event channel to publish to.  Typical format is *namespace/method/event* (i.e. *carousel/setup/before*)  
 
 **data**  
 Type: any  
@@ -198,7 +198,7 @@ Assign an event listener to named event.
 
 **channel**  
 Type: `String`  
-Name of an event to subscribe to.  Typical format is * namespace/method/event * (i.e. * loop/init/after *)  
+Name of an event to subscribe to.  Typical format is *namespace/method/event* (i.e. *loop/init/after*)  
 
 **method**  
 Type: `Function`  
