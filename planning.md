@@ -50,9 +50,10 @@ Assuming that carousel.js is injected into your mediator script as `carousel`, t
 ```javascript
 // Code found in demo.js for demo
 var options = {
-    element: document.querySelector( '.example-carousel' )
-}
-var thisCarousel = carousel.create( options );
+        element: document.querySelector( '.example-carousel' )
+    }
+    , thisCarousel = carousel.create( options )
+    ;
 ```
 
 ### Options ###
@@ -261,25 +262,18 @@ define(
                 
                 // Subscribe to carousel events (i.e. init/after)
                 self.api.subscribe(
-
                     this.api.ns + '/init/after',
-                    function() {
+                    function() { //anonymous event listener
                         
                         // Determine whether this plugin feature has been turned on
                         var pluginAttr = self.api.getOption( pluginNS );
+
                         pluginOn = ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || 
                             typeof pluginAttr === 'object' ? 
                             true : false;
                         
                         // Plugin is enabled
                         if ( pluginOn ) {
-                            
-                            // Create local object of carousel config
-                            self.carousel = {
-                                dom: self.api.getState( 'dom' ),
-                                tilesPerFrame: self.api.getOption( 'tilesPerFrame' ),
-                                curTileLength: self.api.getState( 'curTileLength' )
-                            };
                             
                             // Call internal method (bound call)
                             self.pluginMethod1.call( self );
@@ -300,7 +294,7 @@ define(
                 ...
             },
         
-            pluginMethod2: function() {
+            pluginMethod2: function( key, value ) {
 
                 // Plugin behavior goes here
                 ...
