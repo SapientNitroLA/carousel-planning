@@ -59,73 +59,73 @@ var thisCarousel = carousel.create( options );
 
 **element**  
 Type: `HTML Element`  
-Required: `true`  
+Required: Yes  
 Default: `null`  
 DOM element to be converted into carousel (i.e. ul in markup above).
 
 **tilesPerFrame**  
 Type: `Number`  
-Required: `false`  
+Required: No  
 Default: `1`  
 Number of visible tiles in carousel.
 
 **tileClass**  
 Type: `String`  
-Required: `false`  
+Required: No  
 Default: `'carousel-tile'`  
 Class name of individual tiles (i.e. li's in markup above).
 
 **wrapperClass**  
 Type: `String`  
-Required: `false`  
+Required: No  
 Default: `''`  
 Class name of outer wrapper (i.e. div with id "wrapper" above).
 
 **incrementMode**  
 Type: `String`  
-Required: `false`  
+Required: No  
 Default: `'frame'`  
 Sets whether carousel advances by tile or frame.
 
 **prevText**  
 Type: `String`  
-Required: `false`  
+Required: No  
 Default: `'Previous'`  
 Previous button text.
 
 **nextText**  
 Type: `String`  
-Required: `false`  
+Required: No  
 Default: `'Next'`  
 Next button text.
 
 **preventNavDisable**  
 Type: `Boolean`  
-Required: `false`  
+Required: No  
 Default: `false`  
 Prevents carousel from disabling previous/next controls.
 
 **wrapControls**  
 Type: `Number`  
-Required: `false`  
+Required: No  
 Default: `false`  
 Wrap previous/next controls with separate wrapper element.
 
 **ready**  
 Type: `Function`  
-Required: `false`  
+Required: No  
 Default: `null`  
 Callback run after init of carousel.
 
 **preFrameChange**  
 Type: `Function`  
-Required: `false`  
+Required: No  
 Default: `null`  
 Callback run prior to animation.
 
 **postFrameChange**  
 Type: `Function`  
-Required: `false`  
+Required: No  
 Default: `null`  
 Callback run after animation.
 
