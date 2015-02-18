@@ -57,73 +57,73 @@ var thisCarousel = carousel.create( options );
 
 ### Options ###
 
-** element **  
+**element**  
 Type: `HTML Element`  
 Required: `true`  
 Default: `null`  
 DOM element to be converted into carousel (i.e. ul in markup above).
 
-** tilesPerFrame **  
+**tilesPerFrame**  
 Type: `Number`  
 Required: `false`  
 Default: `1`  
 Number of visible tiles in carousel.
 
-** tileClass **  
+**tileClass**  
 Type: `String`  
 Required: `false`  
 Default: `'carousel-tile'`  
 Class name of individual tiles (i.e. li's in markup above).
 
-** wrapperClass **  
+**wrapperClass**  
 Type: `String`  
 Required: `false`  
 Default: `''`  
 Class name of outer wrapper (i.e. div with id "wrapper" above).
 
-** incrementMode **  
+**incrementMode**  
 Type: `String`  
 Required: `false`  
 Default: `'frame'`  
 Sets whether carousel advances by tile or frame.
 
-** prevText **  
+**prevText**  
 Type: `String`  
 Required: `false`  
 Default: `'Previous'`  
 Previous button text.
 
-** nextText **  
+**nextText**  
 Type: `String`  
 Required: `false`  
 Default: `'Next'`  
 Next button text.
 
-** preventNavDisable **  
+**preventNavDisable**  
 Type: `Boolean`  
 Required: `false`  
 Default: `false`  
 Prevents carousel from disabling previous/next controls.
 
-** wrapControls **  
+**wrapControls**  
 Type: `Number`  
 Required: `false`  
 Default: `false`  
 Wrap previous/next controls with separate wrapper element.
 
-** ready **  
+**ready**  
 Type: `Function`  
 Required: `false`  
 Default: `null`  
 Callback run after init of carousel.
 
-** preFrameChange **  
+**preFrameChange**  
 Type: `Function`  
 Required: `false`  
 Default: `null`  
 Callback run prior to animation.
 
-** postFrameChange **  
+**postFrameChange**  
 Type: `Function`  
 Required: `false`  
 Default: `null`  
@@ -262,56 +262,56 @@ The included x.js script facilitates communication between the carousel and its 
 #### create( options ) ####
 Initializes the carousel.
 
-** options **  
+**options**  
 Type: `Object`  
 Configuration object for initialization of carousel (see Options documentation above).
 
 #### getOption( key ) ####
 Returns the requested value from the options object.
 
-** key **  
+**key**  
 Type: `String`  
 Corresponds to options object key.
 
 #### trigger( method ) ####
 Provides means to run core carousel methods in the right context.
 
-** method **  
+**method**  
 Type: `Function`  
 Core method of carousel to invoke.
 
 #### getState( key ) ####
 Returns the requested value from the state object.
 
-** key **  
+**key**  
 Type: `String`  
 Corresponds to state object key.
 
 #### subscribe( channel, method ) ####
 Assign an event listener to named event.
 
-** channel **  
+**channel**  
 Type: `String`  
 Name of an event to subscribe to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
 
-** method **  
+**method**  
 Type: `Function`  
 Event listener to invoke when subscribed to event is published.
 
 #### unsubscribe( token ) ####
 Remove event listener.
 
-** token **  
+**token**  
 Type: `Number`  
 Index of method in subscribers array.  This token is returned from the subscribe method above.
 
 #### publish( channel, data ) ####
 Publish event (and data) to subscribers of this channel.
 
-** channel **  
+**channel**  
 Type: `String`  
 Name of an event channel to publish to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
 
-** data **  
+**data**  
 Type: any  
 Data to be passed to subscribed listeners.
