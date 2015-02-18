@@ -106,15 +106,18 @@ define(
         // Compile templates
         for ( var template in templates ) {
 
-            if ( !templates[ template ][1] ) {
+            if ( templates.hasOwnProperty( template ) ) {
 
-                templates[ template ] = document.createElement( templates[ template ][0] );
-                continue;
+                if ( !templates[ template ][ 1 ] ) {
+
+                    templates[ template ] = document.createElement( templates[ template ][ 0 ] );
+                    continue;
+                }
+
+                var tempTmpl = document.createElement( templates[ template ][ 0 ] );
+                tempTmpl.setAttribute( 'class', templates[ template ][ 1 ] );
+                templates[ template ] = tempTmpl;
             }
-
-            var tempTmpl = document.createElement( templates[ template ][0] );
-            tempTmpl.setAttribute( 'class', templates[ template ][1] );
-            templates[ template ] = tempTmpl;
         }
 
         // Utilities
@@ -207,7 +210,7 @@ define(
         // Determine CSS transition support (based on function at http://stackoverflow.com/a/9090128)
         function getTransSupport() {
 
-            var i,
+            var key,
                 transStr,
                 el = document.createElement( 'div' ),
                 vendorLookup = {
@@ -229,17 +232,22 @@ define(
                     }
                 };
 
-            for ( i in vendorLookup ) {
+            for ( key in vendorLookup ) {
 
-                transStr = vendorLookup[i].prefix + 'transition';
+                if ( vendorLookup.hasOwnProperty( key ) ) {
 
-                if ( vendorLookup.hasOwnProperty( i ) && el.style[ transStr ] !== undefined ) {
-                    // If transition support found, stop loop and return populated object
-                    if ( i === 'std' ) vendorLookup[i].prefix = '-webkit-'; //hack for some webkit browsers
-                    return {
-                        supported: true,
-                        data: vendorLookup[i]
-                    };
+                    transStr = vendorLookup[ key ].prefix + 'transition';
+
+                    if ( el.style[ transStr ] !== undefined ) {
+
+                        // If transition support found, stop loop and return populated object
+                        if ( key === 'std' ) vendorLookup[ key ].prefix = '-webkit-'; //hack for some webkit browsers
+
+                        return {
+                            supported: true,
+                            data: vendorLookup[ key ]
+                        };
+                    }
                 }
             }
 
