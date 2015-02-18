@@ -273,19 +273,23 @@ Returns the requested value from the options object.
 Type: `String`  
 Corresponds to options object key.
 
-#### trigger( method ) ####
-Provides means to run core carousel methods in the right context.
-
-**method**  
-Type: `Function`  
-Core method of carousel to invoke.
-
 #### getState( key ) ####
 Returns the requested value from the state object.
 
 **key**  
 Type: `String`  
 Corresponds to state object key.
+
+#### publish( channel, data ) ####
+Publish event (and data) to subscribers of this channel.
+
+**channel**  
+Type: `String`  
+Name of an event channel to publish to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
+
+**data**  
+Type: any  
+Data to be passed to subscribed listeners.
 
 #### subscribe( channel, method ) ####
 Assign an event listener to named event.
@@ -298,20 +302,16 @@ Name of an event to subscribe to.  Typical format is * namespace/method/event *,
 Type: `Function`  
 Event listener to invoke when subscribed to event is published.
 
+#### trigger( method ) ####
+Provides means to run core carousel methods in the right context.
+
+**method**  
+Type: `Function`  
+Core method of carousel to invoke.
+
 #### unsubscribe( token ) ####
 Remove event listener.
 
 **token**  
 Type: `Number`  
 Index of method in subscribers array.  This token is returned from the subscribe method above.
-
-#### publish( channel, data ) ####
-Publish event (and data) to subscribers of this channel.
-
-**channel**  
-Type: `String`  
-Name of an event channel to publish to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
-
-**data**  
-Type: any  
-Data to be passed to subscribed listeners.
