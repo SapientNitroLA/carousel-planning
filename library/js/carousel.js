@@ -124,9 +124,10 @@ define(
         function outerWidth( element ) {
 
             var width = element.offsetWidth
-              , style = getComputedStyle( element ) || element.currentStyle; // element.currentStyle is for IE8
+              , style = getComputedStyle( element ) || element.currentStyle // element.currentStyle is for IE8
+              ;
 
-            width += parseInt( style.marginLeft ) + parseInt( style.marginRight );
+            width += parseInt( style.marginLeft, 10 ) + parseInt( style.marginRight, 10 );
 
             return width;
         }
@@ -134,9 +135,10 @@ define(
         function outerHeight( element ) {
 
             var height = element.offsetHeight
-              , style = getComputedStyle( element ) || element.currentStyle; // element.currentStyle is for IE8
+              , style = getComputedStyle( element ) || element.currentStyle // element.currentStyle is for IE8
+              ;
 
-            height += parseInt( style.marginTop ) + parseInt( style.marginBottom );
+            height += parseInt( style.marginTop, 10 ) + parseInt( style.marginBottom, 10 );
 
             return height;
         }
@@ -469,12 +471,12 @@ define(
                     , tilePercent
                     , self              = this
                     , index             = 0
-                    , state             = this.state
-                    , carousel          = this.carousel
+                    , state             = self.state
+                    , carousel          = self.carousel
                     , tileArr           = carousel.children
                     , origTiles         = tileArr
                     , firstTile         = tileArr[ 0 ]
-                    , options           = this.options
+                    , options           = self.options
                     , tilesPerFrame     = options.tilesPerFrame
                     , origTileLength    = tileArr.length
                     , curTileLength     = origTileLength
@@ -512,14 +514,14 @@ define(
                     }
                     ;
 
-                this.state = state;
+                self.state = state;
 
-                this.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
+                self.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
 
                 // Build the normalized frames array
-                this.buildFrames();
+                self.buildFrames();
 
-                this.x.publish( this.ns + '/initState/after' );
+                self.x.publish( self.ns + '/initState/after' );
             },
             
             buildFrames: function() {
@@ -534,7 +536,7 @@ define(
                     , tilesPerFrame     = options.tilesPerFrame
                     ;
 
-                this.toggleAria( state.tileArr, 'add' ); //hide all tiles
+                self.toggleAria( state.tileArr, 'add' ); //hide all tiles
                 
                 state.frameArr = [];
                 
@@ -632,9 +634,9 @@ define(
                     }
                 }
                 
-                this.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
+                self.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
                 
-                this.x.publish( this.ns + '/buildFrames/after' );
+                self.x.publish( this.ns + '/buildFrames/after' );
             },
 
             syncState: function( index, animate ) {
@@ -676,20 +678,20 @@ define(
                     }
 
                     self.updateState({
-                            index: newIndex,
-                            offset: state.tileWidth * newIndex,
-                            prevIndex: origIndex,
-                            prevTile: state.curTile,
-                            curTile: isLastFrame && state.tileDelta && options.incrementMode === 'frame'
-                                        ? state.tileArr[ newIndex + state.tileDelta ]
-                                        : state.tileArr[ newIndex ],
-                            curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? newIndex : newIndex, tilesPerFrame + newIndex ),
-                            prevFrame: state.curFrame,
-                            frameIndex: frameIndex,
-                            frameNumber: frameNumber,
-                            prevFrameIndex: state.frameIndex,
-                            prevFrameNumber: state.frameNumber
-                        });
+                        index: newIndex,
+                        offset: state.tileWidth * newIndex,
+                        prevIndex: origIndex,
+                        prevTile: state.curTile,
+                        curTile: isLastFrame && state.tileDelta && options.incrementMode === 'frame'
+                                    ? state.tileArr[ newIndex + state.tileDelta ]
+                                    : state.tileArr[ newIndex ],
+                        curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? newIndex : newIndex, tilesPerFrame + newIndex ),
+                        prevFrame: state.curFrame,
+                        frameIndex: frameIndex,
+                        frameNumber: frameNumber,
+                        prevFrameIndex: state.frameIndex,
+                        prevFrameNumber: state.frameNumber
+                    });
                 
                     // // Animate tile index change
                     // if ( animate ) {
