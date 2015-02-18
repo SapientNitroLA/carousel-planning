@@ -1,12 +1,12 @@
 # Sapient LA Carousel #
 
-This repo is for a bare-bone carousel which can be employed in a variety of contexts by means of a [plugin-based feature set](#plugins).  It is written in AMD format, so it can be used as-is with a dependency manager like RequireJS.  It has no dependencies on a 3rd party framework, like jQuery; however, it does rely on the included x.js script for setup and [internal communication](#internal-communication-methods).
+This repo is for a bare-bone carousel which can be employed in a variety of contexts by means of a [plugin-based feature set](#plugins).  It is written in AMD format, so it can be used as-is with a dependency manager like RequireJS.  It has no dependencies on 3rd party frameworks, such as jQuery; however, it does rely on the included x.js script for setup and [internal communication](#internal-communication-methods).
 
 It is compatible with Chrome, Firefox, Safari, and down to IE9.
 
 ## Getting Started ##
 
-These are the files you will need to implement a basic carousel:
+These are the files which make up the carousel demo:
 
     |-- index.html
     +-- library
@@ -67,7 +67,7 @@ DOM element to be converted into carousel (i.e. ul in markup above).
 Type: `String`  
 Required: No  
 Default: `'frame'`  
-Sets whether carousel advances by tile or frame.
+Sets whether carousel advances by tile or frame.  `'tile'` mode advances the carousel a single tile at a time, while `'frame'` mode advances the carousel by the number of visible tiles (i.e. tilesPerFrame).  In the case of only one visible tile, these modes would function exactly the same.
 
 **nextText**  
 Type: `String`  
@@ -124,10 +124,10 @@ Default: `''`
 Class name of outer wrapper (i.e. div with id "wrapper" above).
 
 **wrapControls**  
-Type: `Number`  
+Type: `Boolean` `HTML Element`  
 Required: No  
 Default: `false`  
-Wrap previous/next controls with separate wrapper element.
+Flag whether to wrap previous/next controls with separate wrapper element.  This option is later re-tasked as the actual controls wrapper element.
 
 
 ## Plugins ##
@@ -169,7 +169,7 @@ Type: `Object`
 Configuration object for initialization of carousel (see [Options](#options) documentation above).
 
 #### getOption( key ) ####
-Returns the requested value from the options object.
+Returns the requested value from the [options object](#options).
 
 **key**  
 Type: `String`  
@@ -187,25 +187,25 @@ Publish event (and data) to subscribers of this channel.
 
 **channel**  
 Type: `String`  
-Name of an event channel to publish to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
+Name of an event channel to publish to.  Typical format is * namespace/method/event * (i.e. * carousel/setup/before *)  
 
 **data**  
 Type: any  
-Data to be passed to subscribed listeners.
+Data, if any, to be passed to subscribed listeners.
 
 #### subscribe( channel, method ) ####
 Assign an event listener to named event.
 
 **channel**  
 Type: `String`  
-Name of an event to subscribe to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
+Name of an event to subscribe to.  Typical format is * namespace/method/event * (i.e. * loop/init/after *)  
 
 **method**  
 Type: `Function`  
 Event listener to invoke when subscribed to event is published.
 
 #### trigger( method ) ####
-Provides means to run core carousel methods in the right context.
+Provides means to run core carousel methods in the proper context (i.e. this = carousel object).
 
 **method**  
 Type: `Function`  
