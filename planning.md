@@ -136,7 +136,89 @@ In order to be light and flexible, the carousel core only comes with a bare set 
 
 The naming convention for plugin files is `carousel.[pluginname].js`.  `pluginname` is the namespace for the plugin and is used as a key in the [options object](#options) to enable and configure that plugin's functionality ([click here for implementation](#implementation)).
 
-Below is an example of a simple plugin script:
+### Implementation ###
+
+In order to invoke a plugin's functionality, you would then add that plugin's namespace as a node to the options object used to initiate the carousel.
+
+```javascript
+// Example 1
+carousel.create({
+    element: document.querySelector( '.example-carousel' ),
+    pluginname: true
+});
+
+// Example 2
+carousel.create({
+    element: document.querySelector( '.example-carousel' ),
+    pluginname: {
+        property1: 'value',
+        property2: [ 1, 2, 3 ]
+    }
+});
+```
+
+### Internal Communication Methods ###
+
+The included x.js script facilitates communication between the carousel and its plugins.  It also enables internal communication among the plugins themselves.
+
+#### create( options ) ####
+Initializes the carousel.
+
+**options**  
+Type: `Object`  
+Configuration object for initialization of carousel (see Options documentation above).
+
+#### getOption( key ) ####
+Returns the requested value from the options object.
+
+**key**  
+Type: `String`  
+Corresponds to options object key.
+
+#### getState( key ) ####
+Returns the requested value from the state object.
+
+**key**  
+Type: `String`  
+Corresponds to state object key.
+
+#### publish( channel, data ) ####
+Publish event (and data) to subscribers of this channel.
+
+**channel**  
+Type: `String`  
+Name of an event channel to publish to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
+
+**data**  
+Type: any  
+Data to be passed to subscribed listeners.
+
+#### subscribe( channel, method ) ####
+Assign an event listener to named event.
+
+**channel**  
+Type: `String`  
+Name of an event to subscribe to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
+
+**method**  
+Type: `Function`  
+Event listener to invoke when subscribed to event is published.
+
+#### trigger( method ) ####
+Provides means to run core carousel methods in the right context.
+
+**method**  
+Type: `Function`  
+Core method of carousel to invoke.
+
+#### unsubscribe( token ) ####
+Remove event listener.
+
+**token**  
+Type: `Number`  
+Index of method in subscribers array.  This token is returned from the subscribe method above.
+
+### Simple Plugin Example ###
 
 ```javascript
 define( 
@@ -234,84 +316,3 @@ define(
 );
 ```
 
-### Implementation ###
-
-In order to invoke a plugin's functionality, you would then add that plugin's namespace as a node to the options object used to initiate the carousel.
-
-```javascript
-// Example 1
-carousel.create({
-    element: document.querySelector( '.example-carousel' ),
-    pluginname: true
-});
-
-// Example 2
-carousel.create({
-    element: document.querySelector( '.example-carousel' ),
-    pluginname: {
-        property1: 'value',
-        property2: [ 1, 2, 3 ]
-    }
-});
-```
-
-### Internal Communication Methods ###
-
-The included x.js script facilitates communication between the carousel and its plugins.  It also enables internal communication among the plugins themselves.
-
-#### create( options ) ####
-Initializes the carousel.
-
-**options**  
-Type: `Object`  
-Configuration object for initialization of carousel (see Options documentation above).
-
-#### getOption( key ) ####
-Returns the requested value from the options object.
-
-**key**  
-Type: `String`  
-Corresponds to options object key.
-
-#### getState( key ) ####
-Returns the requested value from the state object.
-
-**key**  
-Type: `String`  
-Corresponds to state object key.
-
-#### publish( channel, data ) ####
-Publish event (and data) to subscribers of this channel.
-
-**channel**  
-Type: `String`  
-Name of an event channel to publish to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
-
-**data**  
-Type: any  
-Data to be passed to subscribed listeners.
-
-#### subscribe( channel, method ) ####
-Assign an event listener to named event.
-
-**channel**  
-Type: `String`  
-Name of an event to subscribe to.  Typical format is * namespace/method/event *, i.e. * carousel/init/after *  
-
-**method**  
-Type: `Function`  
-Event listener to invoke when subscribed to event is published.
-
-#### trigger( method ) ####
-Provides means to run core carousel methods in the right context.
-
-**method**  
-Type: `Function`  
-Core method of carousel to invoke.
-
-#### unsubscribe( token ) ####
-Remove event listener.
-
-**token**  
-Type: `Number`  
-Index of method in subscribers array.  This token is returned from the subscribe method above.
