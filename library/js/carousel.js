@@ -55,11 +55,16 @@ define(
         'use strict';
 
         // Make sure to use the correct case for IE
-        var ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' )
-            , tabindex = tabindex = ieTest ? 'tabIndex' : 'tabindex'
-            ;
+        var tabindex = ( function() {
 
-        ieTest = null;
+            var ieTest = document.createElement( 'li' ).getAttributeNode( 'tabindex' )
+                , rtnVal = ieTest ? 'tabIndex' : 'tabindex'
+                ;
+
+            ieTest = null;
+
+            return rtnVal;
+        })();
 
         var defaults = {
             element: null,
@@ -81,8 +86,11 @@ define(
         /* 
          *   Globals
          */
-        var inClass = 'tile-in';
-        var outClass = 'tile-out';
+        var inClass = 'tile-in'
+            , outClass = 'tile-out'
+            , reverseClass = 'carousel-reverse'
+            , noTransClass = 'carousel-no-transition'
+            ;
 
         // Options that require integers
         var defaultInts = [ 'tilesPerFrame', 'wrapperDelta', 'viewportDelta' ];
@@ -99,15 +107,18 @@ define(
         // Compile templates
         for ( var template in templates ) {
 
-            if ( !templates[ template ][1] ) {
+            if ( templates.hasOwnProperty( template ) ) {
 
-                templates[ template ] = document.createElement( templates[ template ][0] );
-                continue;
+                if ( !templates[ template ][ 1 ] ) {
+
+                    templates[ template ] = document.createElement( templates[ template ][ 0 ] );
+                    continue;
+                }
+
+                var tempTmpl = document.createElement( templates[ template ][ 0 ] );
+                tempTmpl.setAttribute( 'class', templates[ template ][ 1 ] );
+                templates[ template ] = tempTmpl;
             }
-
-            var tempTmpl = document.createElement( templates[ template ][0] );
-            tempTmpl.setAttribute( 'class', templates[ template ][1] );
-            templates[ template ] = tempTmpl;
         }
 
         // Utilities
@@ -200,7 +211,7 @@ define(
         // Determine CSS transition support (based on function at http://stackoverflow.com/a/9090128)
         function getTransSupport() {
 
-            var i,
+            var key,
                 transStr,
                 el = document.createElement( 'div' ),
                 vendorLookup = {
@@ -222,24 +233,28 @@ define(
                     }
                 };
 
-            for ( i in vendorLookup ) {
+            for ( key in vendorLookup ) {
 
-                transStr = vendorLookup[i].prefix + 'transition';
+                if ( vendorLookup.hasOwnProperty( key ) ) {
 
-                if ( vendorLookup.hasOwnProperty( i ) && el.style[ transStr ] !== undefined ) {
-                    // If transition support found, stop loop and return populated object
-                    if ( i === 'std' ) vendorLookup[i].prefix = '-webkit-'; //hack for some webkit browsers
-                    return {
-                        supported: true,
-                        data: vendorLookup[i]
-                    };
+                    transStr = vendorLookup[ key ].prefix + 'transition';
+
+                    if ( el.style[ transStr ] !== undefined ) {
+
+                        // If transition support found, stop loop and return populated object
+                        if ( key === 'std' ) vendorLookup[ key ].prefix = '-webkit-'; //hack for some webkit browsers
+
+                        return {
+                            supported: true,
+                            data: vendorLookup[ key ]
+                        };
+                    }
                 }
             }
 
             // Return empty object if no transition support found
             return {
-                supported: false,
-                data: undefined
+                supported: false
             };
         }
 
@@ -291,6 +306,7 @@ define(
                 this.x.repeat = repeat;
                 this.x.getObjType = getObjType;
                 this.x.getTransSupport = getTransSupport;
+                this.x.toggleClass = toggleClass;
 
                 // Setup plugins
                 this.setupPlugins();
@@ -303,25 +319,24 @@ define(
                 this.x.publish( this.ns + '/init/before' );
 
                 var rtnObj
-                    , options           = this.options
                     , self              = this
-                    , carousel          = this.element
+                    , options           = self.options
+                    , carousel          = self.element
                     , parentNode        = carousel.parentNode
                     , nextSibling       = carousel.nextSibling
                     , wrapper           = templates.wrapper.cloneNode( true )
                     , viewport          = templates.viewport.cloneNode( true )
-                    , controls          = templates.controls.cloneNode( true )
                     , tilesPerFrame     = options.tilesPerFrame
                     ;
                 
                 // Save original tiles per frame data
-                this.options.origTilesPerFrame = tilesPerFrame;
+                self.options.origTilesPerFrame = tilesPerFrame;
                     
                 // Make the main elements available to `this`
-                this.parentNode = carousel.parentNode;
-                this.wrapper = wrapper;
-                this.carousel = carousel;
-                this.viewport = viewport;
+                self.parentNode = carousel.parentNode;
+                self.wrapper = wrapper;
+                self.carousel = carousel;
+                self.viewport = viewport;
 
                 // Remove and build the carousel
                 parentNode.removeChild( carousel );
@@ -339,37 +354,37 @@ define(
 
                 // Determine CSS transition support
                 rtnObj = getTransSupport();
-                this.cache( 'supportsTransitions', rtnObj.supported );
-                this.cache( 'transitionData', rtnObj.data );
-                //console.log(rtnObj.supported, rtnObj.data);
+                self.cache( 'supportsTransitions', rtnObj.supported );
+                self.cache( 'transitionData', rtnObj.data );
 
                 // Build out the frames and state object
-                this.initState();
+                self.initState();
 
-                this.buildNavigation();
+                self.buildNavigation();
 
                 // Listen for focus on tiles
                 var panels = carousel.querySelectorAll( '.' + options.tileClass );
 
                 for ( var i = 0, len = panels.length; i < len; ++i ) {
+
                     // Using addEvent method for IE8 support
-                    addEvent( panels[ i ], 'focus', this.focusHandler );
+                    addEvent( panels[ i ], 'focus', self.focusHandler );
                     // Using addEvent method for IE8 support
-                    addEvent( panels[ i ], 'blur', this.focusHandler );
+                    addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
                 if ( options.ready ) {
 
-                    options.ready.call( this, this.state );
+                    options.ready.call( self, self.state );
                 }
 
-                this.x.publish( this.ns + '/init/after' );
+                self.x.publish( self.ns + '/init/after' );
             },
 
             focusHandler: function( e ) {
 
                 var cls = ' state-focus' // TODO Replace string
-                    , target = e.target || e.srcElement; // IE uses srcElement
+                    , target = e.target || e.srcElement // IE uses srcElement
                     ;
 
                 // Using 'className' to support IE8
@@ -454,12 +469,12 @@ define(
                     , tilePercent
                     , self              = this
                     , index             = 0
-                    , state             = this.state
-                    , carousel          = this.carousel
+                    , state             = self.state
+                    , carousel          = self.carousel
                     , tileArr           = carousel.children
                     , origTiles         = tileArr
                     , firstTile         = tileArr[ 0 ]
-                    , options           = this.options
+                    , options           = self.options
                     , tilesPerFrame     = options.tilesPerFrame
                     , origTileLength    = tileArr.length
                     , curTileLength     = origTileLength
@@ -497,14 +512,14 @@ define(
                     }
                     ;
 
-                this.state = state;
+                self.state = state;
 
-                this.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
+                self.toggleAria( tileArr, 'add', options.tileClass + ' ' + noTransClass ); //init tile classes (all tiles hidden by default)
 
                 // Build the normalized frames array
-                this.buildFrames();
+                self.buildFrames();
 
-                this.x.publish( this.ns + '/initState/after' );
+                self.x.publish( self.ns + '/initState/after' );
             },
             
             buildFrames: function() {
@@ -519,7 +534,7 @@ define(
                     , tilesPerFrame     = options.tilesPerFrame
                     ;
 
-                this.toggleAria( state.tileArr, 'add' ); //hide all tiles
+                self.toggleAria( state.tileArr, 'add' ); //hide all tiles
                 
                 state.frameArr = [];
                 
@@ -586,7 +601,7 @@ define(
                 // Turn on active tiles
                 for ( var i = 0; i < tilesPerFrame; i++ ) {
 
-                    tileArr[ i ].className += ' ' + options.activeClass;
+                    toggleClass( tileArr[ i ], options.activeClass, true );
                 }
                 
                 // Determine current frame based on increment mode
@@ -613,16 +628,17 @@ define(
                     }
                     
                     for ( var i = frameStart; i < frameEnd; i++ ) {
+
                         thisFrame.push( state.tileObj[ i ] );
                     }
                 }
                 
-                this.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
+                self.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
                 
-                this.x.publish( this.ns + '/buildFrames/after' );
+                self.x.publish( this.ns + '/buildFrames/after' );
             },
 
-            syncState: function( index, animate ) {
+            syncState: function( index, dir ) {
 
                 // Don't update state during tile transition
                 if ( !this.cache( 'animating' ) ) {
@@ -636,30 +652,45 @@ define(
                         , prevFrameIndex    = state.frameIndex
                         , prevFrameNumber   = state.frameIndex + 1
                         , origIndex         = state.index
-                        , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
+                        , newIndex          = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
                                                 : index < 0 ? 0
                                                 : index
-                        , frameIndex        = Math.ceil( index / tilesPerFrame )
+                        , frameIndex        = Math.ceil( newIndex / tilesPerFrame )
                         , frameNumber       = frameIndex + 1
-                        , isFirstFrame      = index === 0
-                        , isLastFrame       = index === state.curTileLength - tilesPerFrame
-                        , updateObj = {
-                            index: index,
-                            offset: state.tileWidth * index,
-                            prevIndex: state.index,
-                            prevTile: state.curTile,
-                            curTile: isLastFrame && state.tileDelta && options.incrementMode === 'frame'
-                                        ? state.tileArr[ index + state.tileDelta ]
-                                        : state.tileArr[ index ],
-                            curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, tilesPerFrame + index ),
-                            prevFrame: state.curFrame,
-                            frameIndex: frameIndex,
-                            frameNumber: frameNumber,
-                            prevFrameIndex: state.frameIndex,
-                            prevFrameNumber: state.frameNumber
-                        };
+                        , isFirstFrame      = newIndex === 0
+                        , isLastFrame       = newIndex === state.curTileLength - tilesPerFrame
+                        ;
 
-                    this.updateState( updateObj );
+                    if ( options.loop && origIndex === newIndex ) {
+
+                        // First tile
+                        if ( origIndex === 0 ) {
+
+                            newIndex = state.curTileLength - tilesPerFrame;
+                        }
+                        
+                        // Last tile
+                        else if ( origIndex === state.curTileLength - tilesPerFrame ) {
+
+                            newIndex = 0;
+                        }
+                    }
+
+                    self.updateState({
+                        index: newIndex,
+                        offset: state.tileWidth * newIndex,
+                        prevIndex: origIndex,
+                        prevTile: state.curTile,
+                        curTile: isLastFrame && state.tileDelta && options.incrementMode === 'frame'
+                                    ? state.tileArr[ newIndex + state.tileDelta ]
+                                    : state.tileArr[ newIndex ],
+                        curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? newIndex : newIndex, tilesPerFrame + newIndex ),
+                        prevFrame: state.curFrame,
+                        frameIndex: frameIndex,
+                        frameNumber: frameNumber,
+                        prevFrameIndex: state.frameIndex,
+                        prevFrameNumber: state.frameNumber
+                    });
                 
                     // // Animate tile index change
                     // if ( animate ) {
@@ -671,45 +702,45 @@ define(
                     //     this.updatePosition( state.index );
                     // }
 
-                    this.animateStart( origIndex, index );
+                    self.animateStart( origIndex, newIndex, dir );
                     
-                    this.x.publish( this.ns + '/syncState/after', origIndex, index );
+                    self.x.publish( self.ns + '/syncState/after', origIndex, newIndex );
 
                     return state;
                 }
             },
             
-            updatePosition: function( index ) {
+            // updatePosition: function( index ) {
 
-                var carousel = this.element;
-                var state = this.state;
-                var translateAmt = state.tilePercent * index;
-                var transformStr = 'translateX(-' + translateAmt + '%)';
-                var supportsTransitions = this.cache( 'supportsTransitions' );
-                var transitionData = this.cache( 'transitionData' );
-                var vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : '';
-                var transformAttr = vendorPrefix + 'transform';
-                var transitionAttr = vendorPrefix + 'transition';
+            //     var carousel = this.element;
+            //     var state = this.state;
+            //     var translateAmt = state.tilePercent * index;
+            //     var transformStr = 'translateX(-' + translateAmt + '%)';
+            //     var supportsTransitions = this.cache( 'supportsTransitions' );
+            //     var transitionData = this.cache( 'transitionData' );
+            //     var vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : '';
+            //     var transformAttr = vendorPrefix + 'transform';
+            //     var transitionAttr = vendorPrefix + 'transition';
                 
-                if ( supportsTransitions ) {
+            //     if ( supportsTransitions ) {
 
-                    // Prevent animation of re-position
-                    carousel.style.transition = '';
-                    carousel.style[ transitionAttr ] = '';
+            //         // Prevent animation of re-position
+            //         carousel.style.transition = '';
+            //         carousel.style[ transitionAttr ] = '';
                     
-                    carousel.style.transform = transformStr;
-                    carousel.style[ transformAttr ] = transformStr;
-                }
+            //         carousel.style.transform = transformStr;
+            //         carousel.style[ transformAttr ] = transformStr;
+            //     }
 
-                // IE9
-                else if ( 'msTransform' in carousel.style ) {
+            //     // IE9
+            //     else if ( 'msTransform' in carousel.style ) {
 
-                    carousel.style.msTransform = transformStr;
-                }
+            //         carousel.style.msTransform = transformStr;
+            //     }
                 
-                this.toggleAria( state.tileArr, 'add' );
-                this.toggleAria( state.curFrame, 'remove' );
-            },
+            //     this.toggleAria( state.tileArr, 'add' );
+            //     this.toggleAria( state.curFrame, 'remove' );
+            // },
 
             updateDimensions: function() {
 
@@ -743,9 +774,11 @@ define(
                 state.trackWidth = state.tileWidth * numTiles;
             },
 
-            animateStart: function( fromIdx, toIdx ) {
+            animateStart: function( fromIdx, toIdx, dir ) {
 
-                console.log( fromIdx, toIdx );
+                console.log( fromIdx, toIdx, dir );
+
+                if ( fromIdx === toIdx || this.cache( 'animating' ) ) return;
 
                 this.x.publish( this.ns + '/animate/before' );
 
@@ -755,52 +788,67 @@ define(
                     , carousel = self.element
                     , tileArr = state.tileArr
                     , preFrameChange = options.preFrameChange
-                    , postFrameChange = options.postFrameChange
                     , currTile = tileArr[ fromIdx ]
                     , nextTile = tileArr[ toIdx ]
-                    , supportsTransitions = self.cache( 'supportsTransitions' )
                     , transitionData = self.cache( 'transitionData' )
-                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
-                    , transformAttr = vendorPrefix + 'transform'
-                    , transitionAttr = vendorPrefix + 'transition'
                     , transitionEvent = ( transitionData && transitionData.endEvt ) ? transitionData.endEvt : 'transitionend'
+                    , reverseAttr = dir === 'prev' ? reverseClass : ''
                     ;
-
-                function animateEnd() {
-
-                    // remove this handler
-                    removeEvent( nextTile, transitionEvent, animateEnd );
-
-                    self.toggleAria( state.tileArr, 'add' );
-                    self.toggleAria( state.curFrame, 'remove' );
-
-                    // $( this ).removeClass( reverseClass );
-                    // toggleClass( carousel, reverseClass, false );
-                    // $from.removeClass( outClass + " " + activeClass );
-                    toggleClass( currTile, outClass, false );
-                    toggleClass( currTile, options.activeClass, false );
-                    // $to.removeClass( inClass ).addClass( activeClass );
-                    toggleClass( nextTile, inClass, false );
-                    toggleClass( nextTile, options.activeClass, true );
-
-                    // Execute postFrameChange callback
-                    if ( postFrameChange ) postFrameChange.call( self, state );
-
-                    self.x.publish( self.ns + '/transition/end' );
-                    self.x.publish( self.ns + '/animate/after' );
-                }
 
                 // Execute preFrameChange callback
                 if ( preFrameChange ) preFrameChange.call( self, state );
 
-                addEvent( nextTile, transitionEvent, animateEnd );
+                self.cache( 'animating', true );
 
-                // carousel.className += ' ' + reverseClass;
-                // toggleClass( carousel, reverseClass, true );
-                // currTile.className += ' ' + outClass;
+                addEvent( nextTile, transitionEvent, self.animateEnd( currTile, nextTile, reverseAttr ) );
+
+                // toggleClass( carousel, reverseClass, false );
+
+                toggleClass( carousel, reverseAttr, true );
                 toggleClass( currTile, outClass, true );
-                // nextTile.className += ' ' + inClass;
                 toggleClass( nextTile, inClass, true );
+            },
+
+            animateEnd: function( currTile, nextTile, reverseAttr ) {
+
+                var self = this
+                    , carousel = self.element
+                    , state = self.state
+                    , options = self.options
+                    , activeClass = options.activeClass
+                    , postFrameChange = options.postFrameChange
+                    , transitionData = self.cache( 'transitionData' )
+                    , transitionEvent = transitionData && transitionData.endEvt ? transitionData.endEvt : 'transitionend'
+                    ;
+
+                return function evtListener( e ) {
+
+                    console.log('animateEnd');
+
+                    // remove this handler
+                    removeEvent( nextTile, transitionEvent, evtListener );
+
+                    // Toggle appropriate classes
+                    toggleClass( carousel, reverseAttr, false );
+
+                    toggleClass( currTile, activeClass, false );
+                    toggleClass( currTile, outClass, false );
+
+                    toggleClass( nextTile, activeClass, true );
+                    toggleClass( nextTile, inClass, false );
+
+                    // Reset ARIA classes
+                    self.toggleAria( state.tileArr, 'add' );
+                    self.toggleAria( state.curFrame, 'remove' );
+
+                    // Execute postFrameChange callback
+                    if ( postFrameChange ) postFrameChange.call( self, state );
+
+                    self.cache( 'animating', false );
+
+                    self.x.publish( self.ns + '/transition/end' );
+                    self.x.publish( self.ns + '/animate/after' );
+                };
             },
 
             animate: function() {
@@ -1069,7 +1117,7 @@ define(
                 if ( this.options.incrementMode === 'tile' ) index--;
                 else index = index - this.options.tilesPerFrame;
 
-                this.syncState( index, true );
+                this.syncState( index, 'prev' );
 
                 this.x.publish( this.ns + '/prevFrame/after' );
 
@@ -1086,7 +1134,7 @@ define(
                 if ( this.options.incrementMode === 'tile' ) index++;
                 else index = index + this.options.tilesPerFrame;
 
-                this.syncState( index, true );
+                this.syncState( index, 'next' );
 
                 this.x.publish( this.ns + '/nextFrame/after' );
 

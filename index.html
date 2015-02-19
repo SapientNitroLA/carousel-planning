@@ -8,18 +8,33 @@
 	<link rel="stylesheet" href="library/css/core.css" />
 	
 	<style>
+    li {
+      display: none;
+    }
 		.prevFrame {
 			float: left;
 		}
 		.nextFrame {
 			float: right;
 		}
-		.carousel-container {
-			clear: both;
+    .carousel-viewport ul {
+      list-style: none;
+    }
+    .carousel-viewport li {
+      display: block;
+    }
+		.carousel li {
+      color: white;
+      font-family: 'Courier';
+      font-size: 24px;
+      font-weight: bold;
 		}
-		li {
-			background-color: rgba(255,0,0,0.25);
-		}
+    .carousel li:nth-child(odd) {
+      background-color: darkred;
+    }
+    .carousel li:nth-child(even) {
+      background-color: darkblue;
+    }
     .carousel-viewport ul li img {
       max-width:100%;
     }
@@ -48,8 +63,12 @@
       overflow:hidden;
     }
     .carousel-wrapper {
-      width:45%;
+      width:70%;
       margin:0 auto;
+    }
+    .carousel-tile p {
+      margin: 0;
+      padding: 25px 0;
     }
 	</style>
 	
@@ -57,12 +76,13 @@
 <body>
 	<h1 id="title">Example Carousel</h1>
   
-  <ul id="example-carousel">
+  <ul id="example-carousel" class="carousel">
     <li><p>1</p></li>
     <li><p>2</p></li>
     <li><p>3</p></li>
     <li><p>4</p></li>
     <li><p>5</p></li>
+    <li><p>6</p></li>
   </ul>
   
   <!-- <ul id="example-carousel-3">
