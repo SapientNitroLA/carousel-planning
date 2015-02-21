@@ -172,7 +172,7 @@ define(
          * @param {Object} obj Element which will have listener attached to it
          * @param {String} evt Name of event to listen for
          * @param {Function} fn Event listener
-         * @param {Boolean} capture Listen for events during capture phase, rather than bubbling phase
+         * @param {Boolean} capture Listen for events during capture phase, rather than bubbling phase (optional)
          * @author John Resig: http://ejohn.org/projects/flexible-javascript-events
          * @private
          */
@@ -318,7 +318,13 @@ define(
          */
         var core = {
 
-            // Required by XJS
+            /**
+             * Sets up carousel environment
+             *
+             * @method setup
+             * @param {Object} options Configuration object
+             * @public
+             */
             setup: function( options ) {
 
                 this.cacheObj = {};
@@ -346,6 +352,12 @@ define(
                 this.init();
             },
 
+            /**
+             * Initializes all carousel functionality
+             *
+             * @method init
+             * @public
+             */
             init: function() {
 
                 this.x.publish( this.ns + '/init/before' );
@@ -400,9 +412,8 @@ define(
                 var panels = carousel.querySelectorAll( '.' + options.tileClass );
 
                 for ( var i = 0, len = panels.length; i < len; ++i ) {
-                    // Using addEvent method for IE8 support
+
                     addEvent( panels[ i ], 'focus', this.focusHandler );
-                    // Using addEvent method for IE8 support
                     addEvent( panels[ i ], 'blur', this.focusHandler );
                 }
 
@@ -414,10 +425,17 @@ define(
                 this.x.publish( this.ns + '/init/after' );
             },
 
+            /**
+             * Event listener for focus/blur events on each tile: adds class name to focused tile (attached in init)
+             *
+             * @method focusHandler
+             * @param {Event} e Event object returned after focus/blur event is fired
+             * @public
+             */
             focusHandler: function( e ) {
 
                 var cls = ' state-focus' // TODO Replace string
-                    , target = e.target || e.srcElement; // IE uses srcElement
+                    , target = e.target || e.srcElement // IE uses srcElement
                     ;
 
                 // Using 'className' to support IE8
@@ -425,6 +443,15 @@ define(
                 else target.className = target.className.replace( cls, '' );
             },
 
+            /**
+             * Sets/reads cached variables so that they are available to all methods and plugins
+             *
+             * @method cache
+             * @param {String} key Name of variable to be cached
+             * @param {Any} value Value of variable to be cached (optional)
+             * @return {Object} {Any} Value of requested variable (read) or entire cache object (set) 
+             * @public
+             */
             cache: function( key, value ) {
 
                 this.x.publish( this.ns + '/cache/before', key, value );
@@ -442,9 +469,14 @@ define(
                 this.x.publish( this.ns + '/cache/after', key, value );
 
                 return cache;
-
             },
             
+            /**
+             * Re-initializes all carousel functionality
+             *
+             * @method reinit
+             * @public
+             */
             reinit: function() {
                 
                 this.x.publish( this.ns + '/reinit/before' );
@@ -456,44 +488,54 @@ define(
                 this.x.publish( this.ns + '/reinit/after' );
             },
             
+            /**
+             * Updates properties in configuration options object, and runs reinit if necessary
+             *
+             * @method updateOptions
+             * @param {Object} optsObj Object containing options properties to update
+             * @return {Object} Updated options object
+             * @public
+             */
             updateOptions: function( optsObj ) {
                 
                 var rebuild;
 
-                if ( getObjType( optsObj ) === '[object Object]' ) {
+                if ( getObjType( optsObj ) !== '[object Object]' ) return false;
                     
-                    rebuild = ( typeof optsObj.tilesPerFrame === 'number' && optsObj.tilesPerFrame !== this.options.tilesPerFrame ) ? true : false;
-                    
-                    this.x.extend( this.options, optsObj );
-                    
-                    if ( rebuild ) {
-                        this.reinit();
-                    }
+                rebuild = ( typeof optsObj.tilesPerFrame === 'number' && optsObj.tilesPerFrame !== this.options.tilesPerFrame ) ? true : false;
                 
-                    return this.options;
-                }
+                this.x.extend( this.options, optsObj );
                 
-                else {
-                    return false;
+                if ( rebuild ) {
+                    this.reinit();
                 }
+            
+                return this.options;
             },
             
+            /**
+             * Updates properties in state object
+             *
+             * @method updateState
+             * @param {Object} stateObj Object containing state properties to update
+             * @return {Object} Updated state object
+             * @public
+             */
             updateState: function( stateObj ) {
                 
-                if ( getObjType( stateObj ) === '[object Object]' ) {
+                if ( getObjType( stateObj ) !== '[object Object]' ) return false;
                     
-                    this.x.extend( this.state, stateObj );
-                    
-                    // console.log(this.state);
-                
-                    return this.state;
-                }
-                
-                else {
-                    return false;
-                }
+                this.x.extend( this.state, stateObj );
+            
+                return this.state;
             },
 
+            /**
+             * Initializes state object
+             *
+             * @method initState
+             * @public
+             */
             initState: function() {
 
                 this.x.publish( this.ns + '/initState/before' );
@@ -503,12 +545,12 @@ define(
                     , tilePercent
                     , self              = this
                     , index             = 0
-                    , state             = this.state
-                    , carousel          = this.carousel
+                    , state             = self.state
+                    , carousel          = self.carousel
                     , tileArr           = carousel.children
                     , origTiles         = tileArr
                     , firstTile         = tileArr[ 0 ]
-                    , options           = this.options
+                    , options           = self.options
                     , tilesPerFrame     = options.tilesPerFrame
                     , origTileLength    = tileArr.length
                     , curTileLength     = origTileLength
@@ -546,16 +588,22 @@ define(
                     }
                     ;
 
-                this.state = state;
+                self.state = state;
 
-                this.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
+                self.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
 
                 // Build the normalized frames array
-                this.buildFrames();
+                self.buildFrames();
 
-                this.x.publish( this.ns + '/initState/after' );
+                self.x.publish( self.ns + '/initState/after' );
             },
             
+            /**
+             * Populates state object, including width calculations based on tilesPerFrame
+             *
+             * @method buildFrames
+             * @public
+             */
             buildFrames: function() {
                 
                 this.x.publish( this.ns + '/buildFrames/before' );
@@ -665,6 +713,15 @@ define(
                 this.x.publish( this.ns + '/buildFrames/after' );
             },
 
+            /**
+             * Synchronize state object after a state change, i.e. carousel going to previous/next tile/frame
+             *
+             * @method syncState
+             * @param {Number} index New index of left-most visible tile
+             * @param {Boolean} animate Flag whether to animate index change
+             * @return {Object} Updated state object
+             * @public
+             */
             syncState: function( index, animate ) {
 
                 // Don't update state during tile transition
@@ -720,6 +777,13 @@ define(
                 }
             },
             
+            /**
+             * Goes to indicated tile without an animation
+             *
+             * @method updatePosition
+             * @param {Number} index New index of left-most visible tile
+             * @public
+             */
             updatePosition: function( index ) {
 
                 var carousel = this.element;
@@ -752,23 +816,13 @@ define(
                 this.toggleAria( state.curFrame, 'remove' );
             },
 
-            updateDimensions: function() {
-
-                var state = this.state
-                    , tileArr = state.tileArr
-                    , tileStyle = state.tilePercent + '%'
-                    , trackStyle = state.trackPercent + '%'
-                    ;
-
-                this.carousel.style.width = trackStyle;
-
-                for ( var i = 0; i< tileArr.length; i++ ) {
-
-                    tileArr[ i ].style.width = tileStyle;
-                }
-
-            },
-
+            /**
+             * Determines carousel and tile widths based on tilesPerFrame and total tiles
+             *
+             * @method calcDimensions
+             * @param {Number} tilesPerFrame Number of visible tiles
+             * @public
+             */
             calcDimensions: function( tilesPerFrame ) {
 
                 var state = this.state
@@ -785,6 +839,34 @@ define(
                 state.trackWidth = state.tileWidth * numTiles;
             },
 
+            /**
+             * Updates dimensions of carousel and tiles based on new values provided by calcDimensions
+             *
+             * @method updateDimensions
+             * @public
+             */
+            updateDimensions: function() {
+
+                var state = this.state
+                    , tileArr = state.tileArr
+                    , tileStyle = state.tilePercent + '%'
+                    , trackStyle = state.trackPercent + '%'
+                    ;
+
+                this.carousel.style.width = trackStyle;
+
+                for ( var i = 0; i< tileArr.length; i++ ) {
+
+                    tileArr[ i ].style.width = tileStyle;
+                }
+            },
+
+            /**
+             * Animates carousel transitions
+             *
+             * @method animate
+             * @public
+             */
             animate: function() {
 
                 this.x.publish( this.ns + '/animate/before' );
@@ -906,6 +988,12 @@ define(
                 }
             },
 
+            /**
+             * Builds out controls container and previous/next buttons
+             *
+             * @method buildNavigation
+             * @public
+             */
             buildNavigation: function() {
 
                 this.x.publish( this.ns + '/navigation/before' );
@@ -992,6 +1080,12 @@ define(
                 this.x.publish( this.ns + '/navigation/after' );
             },
             
+            /**
+             * Re-builds out controls container and previous/next buttons (removing any previously existing elements)
+             *
+             * @method rebuildNavigation
+             * @public
+             */
             rebuildNavigation: function() {
                 
                 if ( this.controlsWrapper ) {
@@ -1007,6 +1101,12 @@ define(
                 }
             },
 
+            /**
+             * Disables previous/next buttons at start/end of carousel
+             *
+             * @method updateNavigation
+             * @public
+             */
             updateNavigation: function() {
 
                 var self = this
@@ -1026,7 +1126,14 @@ define(
                 else self.nextBtn.disabled = false;
             },
 
-            handleNavigation: function(e) {
+            /**
+             * Event listener for all clicks on controls (attached in buildNavigation)
+             *
+             * @method handleNavigation
+             * @param {Event} e Event object returned after click event is fired
+             * @public
+             */
+            handleNavigation: function( e ) {
 
                 var method
                     , target = e.target || e.srcElement // IE uses srcElement
@@ -1042,6 +1149,14 @@ define(
                 if ( method ) this[ method ]();
             },
 
+            /**
+             * Navigates carousel back one tile/frame
+             *
+             * @method prevFrame
+             * @return {Obj} Carousel object
+             * @chainable
+             * @public
+             */
             prevFrame: function() {
 
                 this.x.publish( this.ns + '/prevFrame/before' );
@@ -1056,9 +1171,16 @@ define(
                 this.x.publish( this.ns + '/prevFrame/after' );
 
                 return this.carousel;
-
             },
 
+            /**
+             * Navigates carousel forward one tile/frame
+             *
+             * @method nextFrame
+             * @return {Obj} Carousel object
+             * @chainable
+             * @public
+             */
             nextFrame: function() {
 
                 this.x.publish( this.ns + '/nextFrame/before' );
@@ -1073,9 +1195,17 @@ define(
                 this.x.publish( this.ns + '/nextFrame/after' );
 
                 return this.carousel;
-
             },
 
+            /**
+             * Navigates carousel to arbitrary tile/frame
+             *
+             * @method jumpToFrame
+             * @param {Number} frame Index of tile to navigate to
+             * @return {Obj} Carousel object
+             * @chainable
+             * @public
+             */
             jumpToFrame: function( frame ) {
 
                 var self = this,
@@ -1095,9 +1225,16 @@ define(
                 this.syncState( index, true );
 
                 return self.carousel;
-
             },
 
+            /**
+             * Resets carousel tiles to original position
+             *
+             * @method reset
+             * @return {Obj} Carousel object
+             * @chainable
+             * @public
+             */
             reset: function() {
 
                 var self = this
@@ -1111,9 +1248,17 @@ define(
                 self.syncState( index, true );
 
                 return this.carousel;
-
             },
 
+            /**
+             * Toggles ARIA classes on tiles
+             *
+             * @method toggleAria
+             * @param {Array} itemArray Array of tiles to add/remove ARIA classes from
+             * @param {String} operation Operation mode (add=hide|remove=show)
+             * @param {String} initClass Initial class name to add to tiles in itemArray (optional)
+             * @public
+             */
             toggleAria: function( itemArray, operation, initClass ) {
 
                 var item
@@ -1151,7 +1296,7 @@ define(
 
                 this.cache( 'hasAriaInited', true );
             }
-        }
+        };
 
         // Define the carousel
         return x.define( 'carousel', core );
