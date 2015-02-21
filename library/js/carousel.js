@@ -111,27 +111,51 @@ define(
             }
         }
 
-        // Utilities
+        /**
+         * Returns the outer width of an element (emulates jQuery's outerWidth method)
+         *
+         * @method outerWidth
+         * @param {Object} element HTML element
+         * @return {Number} Outer width value of requested element
+         * @private
+         */
         function outerWidth( element ) {
 
             var width = element.offsetWidth
               , style = getComputedStyle( element ) || element.currentStyle; // element.currentStyle is for IE8
 
-            width += parseInt( style.marginLeft, 10 ) + parseInt( style.marginRight, 10  );
+            width += parseInt( style.marginLeft, 10 ) + parseInt( style.marginRight, 10 );
 
             return width;
         }
 
+        /**
+         * Returns the outer height of an element (emulates jQuery's outerHeight method)
+         *
+         * @method outerHeight
+         * @param {Object} element HTML element
+         * @return {Number} Outer height value of requested element
+         * @private
+         */
         function outerHeight( element ) {
 
             var height = element.offsetHeight
               , style = getComputedStyle( element ) || element.currentStyle; // element.currentStyle is for IE8
 
-            height += parseInt( style.marginTop, 10  ) + parseInt( style.marginBottom, 10  );
+            height += parseInt( style.marginTop, 10 ) + parseInt( style.marginBottom, 10 );
 
             return height;
         }
 
+        /**
+         * Inserts an HTML element after another HTML element (like jQuery's insertAfter and after methods)
+         *
+         * @method insertAfter
+         * @param {Object} newNode HTML element to be inserted
+         * @param {Object} targetNode HTML element newNode will be inserted after
+         * @return {Object} newNode HTML element
+         * @private
+         */
         function insertAfter( newNode, targetNode ) {
 
             if ( !targetNode.parentNode ) throw new Error( 'insertAfter failed. The targetNode argument has no parentNode.' );
@@ -141,8 +165,17 @@ define(
             return newNode;
         }
 
-        // Using addEvent method for IE8 support
-        // Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
+        /**
+         * Using addEvent method for backward compatibility with IE8
+         *
+         * @method addEvent
+         * @param {Object} obj Element which will have listener attached to it
+         * @param {String} evt Name of event to listen for
+         * @param {Function} fn Event listener
+         * @param {Boolean} capture Listen for events during capture phase, rather than bubbling phase
+         * @author John Resig: http://ejohn.org/projects/flexible-javascript-events
+         * @private
+         */
         function addEvent( obj, evt, fn, capture ) {
             
             if ( obj.addEventListener ) {
@@ -159,8 +192,16 @@ define(
             }
         }
 
-        // Using removeEvent method for IE8 support
-        // Polyfill created by John Resig: http://ejohn.org/projects/flexible-javascript-events
+        /**
+         * Using removeEvent method for backward compatibility with IE8
+         *
+         * @method removeEvent
+         * @param {Object} obj Element from which to remove listener
+         * @param {String} evt Name of event to remove
+         * @param {Function} fn Event listener
+         * @author John Resig: http://ejohn.org/projects/flexible-javascript-events
+         * @private
+         */
         function removeEvent( obj, evt, fn ) {
             
             if ( obj.removeEventListener ){
@@ -172,10 +213,17 @@ define(
             }
         }
 
-        /*
-            TODO Document this sucker
-        */
-        // Based off of http://codereview.stackexchange.com/questions/13046/javascript-repeat-a-function-x-times-at-i-intervals
+        /**
+         * Repeat a function X times at I intervals
+         *
+         * @method repeat
+         * @param {Number} interval Interval at which to call provided function
+         * @param {Number} repeats Number of times to repeat
+         * @param {Boolean} immediate Flag for delaying running of callback
+         * @param {Function} callback Function to run at intervals 
+         * @author http://codereview.stackexchange.com/questions/13046/javascript-repeat-a-function-x-times-at-i-intervals
+         * @private
+         */
         function repeat( interval, repeats, immediate, callback ) {
 
             var timer;
@@ -192,13 +240,28 @@ define(
             // Run immediately
             if ( !!immediate ) { trigger(); }
         }
-            
+        
+        /**
+         * Provides a more accurate object type string than typeof operator
+         *
+         * @method getObjType
+         * @param {Object} obj Object to be evaluated
+         * @return {String} Bracketed specific object type name, i.e. [object Array]
+         * @private
+         */
         function getObjType( obj ) {
             
             return Object.prototype.toString.call( obj );
         }
 
-        // Determine CSS transition support (based on function at http://stackoverflow.com/a/9090128)
+        /**
+         * Determine CSS transition support
+         *
+         * @method getTransSupport
+         * @return {Object} Data object containing supported flag and corresponding data, if any
+         * @author http://stackoverflow.com/a/9090128
+         * @private
+         */
         function getTransSupport() {
 
             var key,
@@ -248,7 +311,11 @@ define(
             };
         }
 
-        // Create carousel prototype
+        /**
+         * Provides core code for carousel module
+         *
+         * @module carousel
+         */
         var core = {
 
             // Required by XJS
