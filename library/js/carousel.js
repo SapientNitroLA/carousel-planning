@@ -312,7 +312,7 @@ define(
         }
 
         /**
-         * Provides core code for carousel module
+         * Carousel core code
          *
          * @module carousel
          */
@@ -327,29 +327,32 @@ define(
              */
             setup: function( options ) {
 
-                this.cacheObj = {};
-                this.element = options.element;
-                this.options = this.x.extend( {}, defaults, options );
+                var self = this;
+
+                self.cacheObj = {};
+                self.element = options.element;
+                self.options = self.x.extend( {}, defaults, options );
 
                 // Make sure the options are integers
                 for ( var i = 0; i < defaultInts.length; i++ ) {
-                    this.options[ defaultInts[i] ] = parseInt( this.options[ defaultInts[i] ], 10 );
+
+                    self.options[ defaultInts[ i ] ] = parseInt( self.options[ defaultInts[ i ] ], 10 );
                 }
 
                 // Add utilities to the API passed to plugins
-                this.x.outerWidth = outerWidth;
-                this.x.outerHeight = outerHeight;
-                this.x.insertAfter = insertAfter;
-                this.x.addEvent = addEvent;
-                this.x.removeEvent = removeEvent;
-                this.x.repeat = repeat;
-                this.x.getObjType = getObjType;
-                this.x.getTransSupport = getTransSupport;
+                self.x.outerWidth = outerWidth;
+                self.x.outerHeight = outerHeight;
+                self.x.insertAfter = insertAfter;
+                self.x.addEvent = addEvent;
+                self.x.removeEvent = removeEvent;
+                self.x.repeat = repeat;
+                self.x.getObjType = getObjType;
+                self.x.getTransSupport = getTransSupport;
 
                 // Setup plugins
-                this.setupPlugins();
+                self.setupPlugins();
 
-                this.init();
+                self.init();
             },
 
             /**
@@ -363,25 +366,24 @@ define(
                 this.x.publish( this.ns + '/init/before' );
 
                 var rtnObj
-                    , options           = this.options
                     , self              = this
-                    , carousel          = this.element
+                    , options           = self.options
+                    , carousel          = self.element
                     , parentNode        = carousel.parentNode
                     , nextSibling       = carousel.nextSibling
                     , wrapper           = templates.wrapper.cloneNode( true )
                     , viewport          = templates.viewport.cloneNode( true )
-                    , controls          = templates.controls.cloneNode( true )
                     , tilesPerFrame     = options.tilesPerFrame
                     ;
                 
                 // Save original tiles per frame data
-                this.options.origTilesPerFrame = tilesPerFrame;
+                self.options.origTilesPerFrame = tilesPerFrame;
                     
                 // Make the main elements available to `this`
-                this.parentNode = carousel.parentNode;
-                this.wrapper = wrapper;
-                this.carousel = carousel;
-                this.viewport = viewport;
+                self.parentNode = carousel.parentNode;
+                self.wrapper = wrapper;
+                self.carousel = carousel;
+                self.viewport = viewport;
 
                 // Remove and build the carousel
                 parentNode.removeChild( carousel );
@@ -399,30 +401,29 @@ define(
 
                 // Determine CSS transition support
                 rtnObj = getTransSupport();
-                this.cache( 'supportsTransitions', rtnObj.supported );
-                this.cache( 'transitionData', rtnObj.data );
-                //console.log(rtnObj.supported, rtnObj.data);
+                self.cache( 'supportsTransitions', rtnObj.supported );
+                self.cache( 'transitionData', rtnObj.data );
 
                 // Build out the frames and state object
-                this.initState();
+                self.initState();
 
-                this.buildNavigation();
+                self.buildNavigation();
 
                 // Listen for focus on tiles
                 var panels = carousel.querySelectorAll( '.' + options.tileClass );
 
                 for ( var i = 0, len = panels.length; i < len; ++i ) {
 
-                    addEvent( panels[ i ], 'focus', this.focusHandler );
-                    addEvent( panels[ i ], 'blur', this.focusHandler );
+                    addEvent( panels[ i ], 'focus', self.focusHandler );
+                    addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
                 if ( options.ready ) {
 
-                    options.ready.call( this, this.state );
+                    options.ready.call( self, self.state );
                 }
 
-                this.x.publish( this.ns + '/init/after' );
+                self.x.publish( self.ns + '/init/after' );
             },
 
             /**
@@ -540,16 +541,10 @@ define(
 
                 this.x.publish( this.ns + '/initState/before' );
 
-                var tiles
-                    , tileStyle
-                    , tilePercent
-                    , self              = this
+                var self                = this
                     , index             = 0
-                    , state             = self.state
                     , carousel          = self.carousel
                     , tileArr           = carousel.children
-                    , origTiles         = tileArr
-                    , firstTile         = tileArr[ 0 ]
                     , options           = self.options
                     , tilesPerFrame     = options.tilesPerFrame
                     , origTileLength    = tileArr.length
@@ -608,7 +603,11 @@ define(
                 
                 this.x.publish( this.ns + '/buildFrames/before' );
                 
-                var tiles, thisFrame, frameStart, frameEnd, carEnd
+                var tiles
+                    , thisFrame
+                    , frameStart
+                    , frameEnd
+                    , carEnd
                     , self              = this
                     , state             = self.state
                     , tileArr           = state.tileArr
@@ -616,7 +615,7 @@ define(
                     , tilesPerFrame     = options.tilesPerFrame
                     ;
 
-                this.toggleAria( state.tileArr, 'add' ); //hide all tiles
+                self.toggleAria( state.tileArr, 'add' ); //hide all tiles
                 
                 state.frameArr = [];
                 
@@ -673,12 +672,12 @@ define(
                 
                 //call calculate - updates state (publish)
                 //dom styler - applies calculations (subscribed)
-                this.calcDimensions( tilesPerFrame );
+                self.calcDimensions( tilesPerFrame );
 
-                this.updateDimensions();
+                self.updateDimensions();
                 
                 // Update position of carousel based on index
-                this.updatePosition( state.index );
+                self.updatePosition( state.index );
                 
                 // Determine current frame based on increment mode
                 if ( options.incrementMode === 'frame' ) { //frame increment
@@ -700,17 +699,19 @@ define(
                     }
                     
                     else {
+
                         frameStart = state.index;
                     }
                     
                     for ( var i = frameStart; i < frameEnd; i++ ) {
+
                         thisFrame.push( state.tileObj[ i ] );
                     }
                 }
                 
-                this.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
+                self.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
                 
-                this.x.publish( this.ns + '/buildFrames/after' );
+                self.x.publish( self.ns + '/buildFrames/after' );
             },
 
             /**
@@ -755,23 +756,25 @@ define(
                             prevFrame: state.curFrame,
                             frameIndex: frameIndex,
                             frameNumber: frameNumber,
-                            prevFrameIndex: state.frameIndex,
-                            prevFrameNumber: state.frameNumber
+                            prevFrameIndex: prevFrameIndex,
+                            prevFrameNumber: prevFrameNumber
                         };
 
-                    this.updateState( updateObj );
+                    self.updateState( updateObj );
                 
                     // Animate tile index change
                     if ( animate ) {
-                        this.animate();
+
+                        self.animate();
                     }
                     
                     // Even if no animation, make sure carousel correctly positioned
                     else {
-                        this.updatePosition( state.index );
+
+                        self.updatePosition( state.index );
                     }
                     
-                    this.x.publish( this.ns + '/syncState/after', origIndex, index );
+                    self.x.publish( self.ns + '/syncState/after', origIndex, index );
 
                     return state;
                 }
@@ -786,15 +789,17 @@ define(
              */
             updatePosition: function( index ) {
 
-                var carousel = this.element;
-                var state = this.state;
-                var translateAmt = state.tilePercent * index;
-                var transformStr = 'translateX(-' + translateAmt + '%)';
-                var supportsTransitions = this.cache( 'supportsTransitions' );
-                var transitionData = this.cache( 'transitionData' );
-                var vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : '';
-                var transformAttr = vendorPrefix + 'transform';
-                var transitionAttr = vendorPrefix + 'transition';
+                var self = this
+                    , carousel = self.element
+                    , state = self.state
+                    , translateAmt = state.tilePercent * index
+                    , transformStr = 'translateX(-' + translateAmt + '%)'
+                    , supportsTransitions = self.cache( 'supportsTransitions' )
+                    , transitionData = self.cache( 'transitionData' )
+                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
+                    , transformAttr = vendorPrefix + 'transform'
+                    , transitionAttr = vendorPrefix + 'transition'
+                    ;
                 
                 if ( supportsTransitions ) {
 
@@ -812,8 +817,8 @@ define(
                     carousel.style.msTransform = transformStr;
                 }
                 
-                this.toggleAria( state.tileArr, 'add' );
-                this.toggleAria( state.curFrame, 'remove' );
+                self.toggleAria( state.tileArr, 'add' );
+                self.toggleAria( state.curFrame, 'remove' );
             },
 
             /**
@@ -871,23 +876,19 @@ define(
 
                 this.x.publish( this.ns + '/animate/before' );
 
-                var timer = undefined
+                var timer
                     , self = this
-                    , state = this.state
+                    , state = self.state
                     , index = state.index
                     , targetIndex = index
-                    , options = this.options
-                    , carousel = this.element
-                    , tilesPerFrame = options.tilesPerFrame
-                    , tileWidth = state.tileWidth
+                    , options = self.options
+                    , carousel = self.element
                     , tilePercent = state.tilePercent
                     , preFrameChange = options.preFrameChange
                     , postFrameChange = options.postFrameChange
-                    , isFirst = index === 0
-                    , isLast = index === ( state.curTileLength - tilesPerFrame )
                     , seconds = 1
-                    , supportsTransitions = this.cache( 'supportsTransitions' )
-                    , transitionData = this.cache( 'transitionData' )
+                    , supportsTransitions = self.cache( 'supportsTransitions' )
+                    , transitionData = self.cache( 'transitionData' )
                     , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
                     , transformAttr = vendorPrefix + 'transform'
                     , transitionAttr = vendorPrefix + 'transition'
@@ -914,9 +915,8 @@ define(
                     self.updateNavigation();
                 };
 
-                var listener = function( e ) {
+                var listener = function() {
 
-                    //console.log('Event listener fired');
                     clearTimeout( timer );
 
                     self.toggleAria( state.tileArr, 'add' );
@@ -928,7 +928,7 @@ define(
                     self.cache( 'animating', false );
 
                     // Execute postFrameChange callback
-                    postFrameChange && postFrameChange.call( self, state );
+                    if ( postFrameChange ) postFrameChange.call( self, state );
 
                     self.x.publish( self.ns + '/transition/end' );
                     self.x.publish( self.ns + '/animate/after' );
@@ -942,7 +942,7 @@ define(
                     carousel.style.transition = translateStr;
                     carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
 
-                    this.x.subscribe( this.ns + '/transition/end', function() {
+                    self.x.subscribe( self.ns + '/transition/end', function() {
 
                         carousel.removeEventListener( transitionEvent, listener, false );
                     });
@@ -954,8 +954,6 @@ define(
 
                     // Set a little longer than transition time, so listener has chance to execute on its own
                     timer = setTimeout( listener , seconds * 1010 );
-
-                    //console.log('Event listener added');
                 }
 
                 // IE9 does not support CSS transitions
@@ -999,26 +997,21 @@ define(
                 this.x.publish( this.ns + '/navigation/before' );
 
                 var text
-                    , controlsWidth
-                    , newStyle
                     , self              = this
-                    , state             = this.state
+                    , state             = self.state
                     , index             = state.index
                     , wrapper           = self.wrapper
                     , options           = self.options
-                    , tilesPerFrame     = options.tilesPerFrame
                     , controls          = templates.controls.cloneNode( true )
                     , controlsParent    = templates.controlsWrapper.cloneNode( true )
                     , controlsWrapper   = options.wrapControls ? controls : wrapper
-                    // , viewportWidth        = state.tileWidth * options.tilesPerFrame + options.viewportDelta
-                    , viewportWidth     = outerWidth( self.viewport )
                     , prevFrame         = 'prevFrame' // TODO Replace string
                     , nextFrame         = 'nextFrame' // TODO Replace string
-                    , hasNavInited      = this.cache( 'hasNavInited' )
+                    , hasNavInited      = self.cache( 'hasNavInited' )
                     ;
 
-                this.controls = controls;
-                this.controlsWrapper = controlsWrapper;
+                self.controls = controls;
+                self.controlsWrapper = controlsWrapper;
 
                 text = options.prevText;
                 self.prevBtn = templates.button.cloneNode( true );
@@ -1042,42 +1035,45 @@ define(
                 // Disable prev button
                 if ( !options.preventNavDisable && index === 0 ) self.prevBtn.disabled = true;
 
-                this.state.dom.prevBtn = this.prevBtn;
-                this.state.dom.nextBtn = this.nextBtn;
-                this.state.dom.controlsWrapper = this.controlsWrapper;
-                this.state.dom.controls = this.controls;
+                self.state.dom.prevBtn = self.prevBtn;
+                self.state.dom.nextBtn = self.nextBtn;
+                self.state.dom.controlsWrapper = self.controlsWrapper;
+                self.state.dom.controls = self.controls;
 
                 // Insert controls
                 if ( !options.wrapControls ) {
 
-                    this.x.publish( this.ns + '/navigation/controls/insert/before', wrapper, self.prevBtn, self.nextBtn );
+                    self.x.publish( self.ns + '/navigation/controls/insert/before', wrapper, self.prevBtn, self.nextBtn );
 
                     wrapper.insertBefore( self.prevBtn, self.viewport );
                     insertAfter( self.nextBtn, self.viewport );
 
-                    this.x.publish( this.ns + '/navigation/controls/insert/after', wrapper, self.prevBtn, self.nextBtn );
+                    self.x.publish( self.ns + '/navigation/controls/insert/after', wrapper, self.prevBtn, self.nextBtn );
 
-                } else {
+                }
 
-                    this.x.publish( this.ns + '/navigation/controls/insert/before', controls, self.prevBtn, self.nextBtn );
+                else {
+
+                    self.x.publish( self.ns + '/navigation/controls/insert/before', controls, self.prevBtn, self.nextBtn );
 
                     controlsParent.appendChild( controls );
                     controls.appendChild( self.prevBtn );
                     controls.appendChild( self.nextBtn );
                     wrapper.appendChild( controlsParent );
 
-                    this.x.publish( this.ns + '/navigation/controls/insert/after', controls, self.prevBtn, self.nextBtn );
+                    self.x.publish( self.ns + '/navigation/controls/insert/after', controls, self.prevBtn, self.nextBtn );
                 }
 
                 // Set click events buttons
                 // Using addEvent method for IE8 support
                 if ( !hasNavInited ) {
-                    addEvent( this.wrapper, 'click', this.handleNavigation.bind( this ) );
+
+                    addEvent( self.wrapper, 'click', self.handleNavigation.bind( self ) );
                 }
 
-                this.cache( 'hasNavInited', true );
+                self.cache( 'hasNavInited', true );
 
-                this.x.publish( this.ns + '/navigation/after' );
+                self.x.publish( self.ns + '/navigation/after' );
             },
             
             /**
@@ -1110,11 +1106,11 @@ define(
             updateNavigation: function() {
 
                 var self = this
-                    , state = this.state
+                    , state = self.state
                     , index = state.index
                     , options = self.options
                     , isFirst = index === 0
-                    , isLast = index + this.options.tilesPerFrame >= state.curTileLength
+                    , isLast = index + self.options.tilesPerFrame >= state.curTileLength
                     ;
                 
                 if ( options.preventNavDisable ) return;
@@ -1161,10 +1157,9 @@ define(
 
                 this.x.publish( this.ns + '/prevFrame/before' );
 
-                var index = this.state.index;
-
-                if ( this.options.incrementMode === 'tile' ) index--;
-                else index = index - this.options.tilesPerFrame;
+                var modifier = this.options.incrementMode === 'tile' ? 1 : this.options.tilesPerFrame
+                    , index = this.state.index - modifier
+                    ;
 
                 this.syncState( index, true );
 
@@ -1185,10 +1180,9 @@ define(
 
                 this.x.publish( this.ns + '/nextFrame/before' );
 
-                var index = this.state.index;
-
-                if ( this.options.incrementMode === 'tile' ) index++;
-                else index = index + this.options.tilesPerFrame;
+                var modifier = this.options.incrementMode === 'tile' ? 1 : this.options.tilesPerFrame
+                    , index = this.state.index + modifier
+                    ;
 
                 this.syncState( index, true );
 
@@ -1208,21 +1202,26 @@ define(
              */
             jumpToFrame: function( frame ) {
 
-                var self = this,
-                    state = self.state,
-                    options = self.options,
-                    frame = parseInt( frame, 10 ),
-                    tilesPerFrame = self.options.tilesPerFrame,
-                    index = ( options.incrementMode === 'frame' ) ? 
-                            frame * tilesPerFrame : frame;
+                var self = this
+                    , state = self.state
+                    , options = self.options
+                    , frame = parseInt( frame, 10 )
+                    , tilesPerFrame = self.options.tilesPerFrame
+                    , index = ( options.incrementMode === 'frame' ) ? 
+                            frame * tilesPerFrame : frame
+                    ;
 
                 index = index < 0 ? 0 : index;
 
-                if ( ( options.incrementMode === 'tile' && index === state.index ) || ( options.incrementMode === 'frame' && frame > state.curFrameLength ) ) {
+                if ( 
+                    ( options.incrementMode === 'tile' && index === state.index ) ||
+                    ( options.incrementMode === 'frame' && frame > state.curFrameLength )
+                ) {
+
                     return self.carousel;
                 }
 
-                this.syncState( index, true );
+                self.syncState( index, true );
 
                 return self.carousel;
             },
@@ -1237,15 +1236,9 @@ define(
              */
             reset: function() {
 
-                var self = this
-                    , state = self.state
-                    , index = state.index
-                    , options = self.options
-                    ;
+                var index = 0;
 
-                index = 0;
-
-                self.syncState( index, true );
+                this.syncState( index, true );
 
                 return this.carousel;
             },
@@ -1265,7 +1258,6 @@ define(
                     , classes
                     , i = 0
                     , self = this
-                    , state = self.state
                     , length = itemArray.length
                     , ariaHClass = ' state-hidden'
                     , ariaVClass = ' state-visible'
@@ -1273,7 +1265,7 @@ define(
                     , rAriaVClass = /\sstate-visible/
                     , add = operation === 'add' ? true : false
                     , initClass = initClass ? ' ' + initClass : ''
-                    , hasAriaInited = this.cache( 'hasAriaInited' )
+                    , hasAriaInited = self.cache( 'hasAriaInited' )
                     ;
 
                 for ( ; i < length; i++ ) {
@@ -1287,6 +1279,7 @@ define(
                     item.className = classes.replace( /^\s/, '' );
 
                     if ( !hasAriaInited ) {
+
                         item.className = item.className + ariaHClass;
                         item.setAttribute( tabindex, '-1' );
                     }
@@ -1294,7 +1287,7 @@ define(
                     classes = null;
                 }
 
-                this.cache( 'hasAriaInited', true );
+                self.cache( 'hasAriaInited', true );
             }
         };
 
