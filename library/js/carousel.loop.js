@@ -201,7 +201,6 @@ define(
                 
                 var updateObj       = {},
                     tilesPerFrame   = this.carousel.tilesPerFrame,
-                    prevFrame       = this.api.getState( 'prevFrame' ),
                     curFrameLength  = this.api.getState( 'curFrameLength' ),
                     curTileLength   = this.api.getState( 'curTileLength' ),
                     index           = newIndex,
@@ -224,8 +223,7 @@ define(
                     updateObj = {
                         index: index,
                         frameIndex: Math.ceil( index / tilesPerFrame ),
-                        prevFrameIndex: isFirstFrame ? 1 : curFrameLength - 1,
-                        prevFrame: prevFrame
+                        prevFrameIndex: isFirstFrame ? 1 : curFrameLength - 1
                     };
                     
                     this.carousel.index = index;
@@ -252,10 +250,12 @@ define(
             
             updatePagination: function() {
                 
-                var newFrameIndex, thisFrame, updateVal;
-                var newFrame = [];
-                //var thisIndex = this.api.getState( 'index' );
-                var curFrame = this.api.getState( 'curFrame' );
+                var newFrameIndex
+                    , thisFrame
+                    , updateVal
+                    , newFrame = []
+                    , curFrame = this.api.getState( 'curFrame' )
+                    ;
 
                 for ( var i = 0; i < curFrame.length; i++ ) {
 

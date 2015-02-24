@@ -196,7 +196,7 @@ define(
                     , currentFrameIndex = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
                                           this.api.getState( 'frameIndex' ) : this.api.getState( 'index' )
                     , currentFrameNumber = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ?
-                                           this.api.getState( 'frameNumber' ) : this.api.getState( 'index' ) + 1
+                                           currentFrameIndex : this.api.getState( 'index' ) + 1
                     ;
 
                 if ( isNaN( frame ) ) return;

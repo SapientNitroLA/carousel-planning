@@ -508,6 +508,7 @@ define(
                 this.x.extend( this.options, optsObj );
                 
                 if ( rebuild ) {
+
                     this.reinit();
                 }
             
@@ -542,7 +543,6 @@ define(
                 this.x.publish( this.ns + '/initState/before' );
 
                 var self                = this
-                    , index             = 0
                     , carousel          = self.carousel
                     , tileArr           = carousel.children
                     , options           = self.options
@@ -551,37 +551,31 @@ define(
                     , curTileLength     = origTileLength
                     , frameLength       = Math.ceil( curTileLength / tilesPerFrame )
                     , state = {
-                        index: index,
-                        offset: 0,
+                        index: 0,
                         prevIndex: false,
-                        tileObj: tileArr,
                         tileArr: tileArr,
                         origTileLength: origTileLength,
                         curTileLength: curTileLength,
-                        tilePercent: 100,
                         curTile: false,
-                        prevTile: false,
                         frameArr: [],
-                        origFrameLength: frameLength,
                         curFrameLength: frameLength,
                         curFrame: [],
-                        prevFrame: [],
                         frameIndex: 0,
-                        frameNumber: 1,
                         prevFrameIndex: 0,
-                        prevFrameNumber: 1,
-                        origWrapperClass: self.wrapper.className,
                         dom: {
                             wrapper: self.wrapper,
                             viewport: self.viewport,
                             carousel: self.element,
-                            controlsWrapper: self.controlsWrapper,
                             controls: self.controls,
                             prevBtn: self.prevBtn,
                             nextBtn: self.nextBtn
                         }
                     }
                     ;
+
+                // Cache internal vars for later use
+                self.cache( 'origWrapperClass', self.wrapper.className );
+                self.cache( 'tilePercent', 100 );
 
                 self.state = state;
 
@@ -613,6 +607,7 @@ define(
                     , tileArr           = state.tileArr
                     , options           = self.options
                     , tilesPerFrame     = options.tilesPerFrame
+                    , origWrapperClass  = self.cache( 'origWrapperClass' )
                     ;
 
                 self.toggleAria( state.tileArr, 'add' ); //hide all tiles
@@ -639,27 +634,15 @@ define(
 
                     state.frameArr.push( tiles );
                 }
-                
-                //console.log('state.frameArr', state.frameArr);
 
-                state.tileObj           = tileArr;
-                state.curTile           = state.tileObj[ state.index ];
+                state.curTile           = state.tileArr[ state.index ];
                 state.curTileLength     = tileArr.length;
                 state.curFrameLength    = Math.ceil( state.curTileLength / tilesPerFrame );
                 state.frameIndex        = Math.ceil( state.index / tilesPerFrame );
-                state.frameNumber       = state.frameIndex + 1;
                 state.prevFrameIndex    = state.frameIndex;
-                state.prevFrameNumber   = state.prevFrameIndex + 1;
                 state.curFrame          = state.frameArr[ state.frameIndex ];
-                state.tileDelta         = ( options.tilesPerFrame * state.curFrameLength ) - state.curTileLength;
-                state.tileWidth         = outerWidth( state.tileObj[ state.index ] );
-                state.tileHeight        = outerHeight( state.tileObj[ state.index ] );
-                state.trackWidth        = state.tileWidth * state.curTileLength;
-                state.trackPercent      = 100 * state.curTileLength;
-                state.frameWidth        = options.tilesPerFrame * state.tileWidth;
-                state.offset            = state.index ? ( state.tileWidth / options.tilesPerFrame ) * state.index : 0;
 
-                state.dom.wrapper.setAttribute( 'class', state.origWrapperClass + ' ' + options.wrapperClass );
+                self.wrapper.setAttribute( 'class', origWrapperClass + ' ' + options.wrapperClass );
 
                 // tilePercent = ( parseInt( ( 100 / options.tilesPerFrame ) * 1000 ) ) / 1000;
                 // tileStyle = 'width: ' + tilePercent + '%; ';
@@ -669,6 +652,14 @@ define(
                 //                     // tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
                 //                     // carousel.appendChild( tileArr[ 0 ] );
                 // }
+
+                // Cache measurement vars
+                self.cache( 'tileDelta', ( options.tilesPerFrame * state.curFrameLength ) - state.curTileLength );
+                self.cache( 'tileWidth', outerWidth( state.tileArr[ state.index ] ) );
+                // self.cache( 'tileHeight', outerHeight( state.tileArr[ state.index ] ) );
+                self.cache( 'trackPercent', 100 * state.curTileLength );
+                self.cache( 'trackWidth', self.cache( 'tileWidth' ) * state.curTileLength );
+                // self.cache( 'frameWidth', options.tilesPerFrame * self.cache( 'tileWidth' ) );
                 
                 //call calculate - updates state (publish)
                 //dom styler - applies calculations (subscribed)
@@ -705,7 +696,7 @@ define(
                     
                     for ( var i = frameStart; i < frameEnd; i++ ) {
 
-                        thisFrame.push( state.tileObj[ i ] );
+                        thisFrame.push( state.tileArr[ i ] );
                     }
                 }
                 
@@ -735,29 +726,22 @@ define(
                         , options           = self.options
                         , tilesPerFrame     = options.tilesPerFrame
                         , prevFrameIndex    = state.frameIndex
-                        , prevFrameNumber   = state.frameIndex + 1
                         , origIndex         = state.index
                         , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
                                                 : index < 0 ? 0
                                                 : index
                         , frameIndex        = Math.ceil( index / tilesPerFrame )
-                        , frameNumber       = frameIndex + 1
-                        , isFirstFrame      = index === 0
                         , isLastFrame       = index === state.curTileLength - tilesPerFrame
+                        , tileDelta         = self.cache( 'tileDelta' )
                         , updateObj = {
                             index: index,
-                            offset: state.tileWidth * index,
                             prevIndex: state.index,
-                            prevTile: state.curTile,
-                            curTile: isLastFrame && state.tileDelta && options.incrementMode === 'frame'
-                                        ? state.tileArr[ index + state.tileDelta ]
+                            curTile: isLastFrame && tileDelta && options.incrementMode === 'frame'
+                                        ? state.tileArr[ index + tileDelta ]
                                         : state.tileArr[ index ],
-                            curFrame: Array.prototype.slice.call( state.tileArr, isLastFrame ? index : index, tilesPerFrame + index ),
-                            prevFrame: state.curFrame,
+                            curFrame: Array.prototype.slice.call( state.tileArr, index, tilesPerFrame + index ),
                             frameIndex: frameIndex,
-                            frameNumber: frameNumber,
-                            prevFrameIndex: prevFrameIndex,
-                            prevFrameNumber: prevFrameNumber
+                            prevFrameIndex: prevFrameIndex
                         };
 
                     self.updateState( updateObj );
@@ -792,7 +776,8 @@ define(
                 var self = this
                     , carousel = self.element
                     , state = self.state
-                    , translateAmt = state.tilePercent * index
+                    , tilePercent = self.cache( 'tilePercent' )
+                    , translateAmt = tilePercent * index
                     , transformStr = 'translateX(-' + translateAmt + '%)'
                     , supportsTransitions = self.cache( 'supportsTransitions' )
                     , transitionData = self.cache( 'transitionData' )
@@ -835,13 +820,15 @@ define(
                     , percentIncrement = 100 / tilesPerFrame
                     , trackPercent = percentIncrement * numTiles
                     , tilePercent = 100 / ((trackPercent / 100) * tilesPerFrame)
+                    , tileWidth = this.cache( 'tileWidth' )
+                    , trackWidth = this.cache( 'trackWidth' )
                     ;
 
-                state.trackPercent = trackPercent;
-                state.tilePercent = tilePercent;
+                this.cache( 'trackPercent', trackPercent );
+                this.cache( 'tilePercent', tilePercent );
 
                 // make pixel values?
-                state.trackWidth = state.tileWidth * numTiles;
+                trackWidth = tileWidth * numTiles;
             },
 
             /**
@@ -854,8 +841,10 @@ define(
 
                 var state = this.state
                     , tileArr = state.tileArr
-                    , tileStyle = state.tilePercent + '%'
-                    , trackStyle = state.trackPercent + '%'
+                    , tilePercent = this.cache( 'tilePercent' )
+                    , tileStyle = tilePercent + '%'
+                    , trackPercent = this.cache( 'trackPercent' )
+                    , trackStyle = trackPercent + '%'
                     ;
 
                 this.carousel.style.width = trackStyle;
@@ -883,7 +872,7 @@ define(
                     , targetIndex = index
                     , options = self.options
                     , carousel = self.element
-                    , tilePercent = state.tilePercent
+                    , tilePercent = self.cache( 'tilePercent' )
                     , preFrameChange = options.preFrameChange
                     , postFrameChange = options.postFrameChange
                     , seconds = 1
@@ -1037,7 +1026,6 @@ define(
 
                 self.state.dom.prevBtn = self.prevBtn;
                 self.state.dom.nextBtn = self.nextBtn;
-                self.state.dom.controlsWrapper = self.controlsWrapper;
                 self.state.dom.controls = self.controls;
 
                 // Insert controls
