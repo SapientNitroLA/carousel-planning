@@ -70,7 +70,7 @@ define(
                 return new aliasFn();
             }
         };
-    
+
         // Provide component's prototype API
         var protoAPI = {
 
@@ -83,18 +83,20 @@ define(
                 for ( var member in plugins ) {
 
                     if ( !( member in this.options ) ) continue;
-                    
+
                     this.x.nsPlugin = member;
 
                     plugins[ member ]( this.x, this.options[ member ] );
                 }
             }
         };
-    
+
+        // The X library's constructor
         function X( component ) {
 
             this.channels = {};
             this.tokenUid = -1;
+            this.component = component;
 
             this.getState = function( key ) {
                 return component.state[ key ];
@@ -105,15 +107,15 @@ define(
             };
 
             this.trigger = function ( method ) {
-            
+
                 var func = component[ method ];
-            
+
                 if ( !func ) { return; }
-            
+
                 return func.apply( component, [].slice.call( arguments, 1 ) );
             };
         }
-    
+
         X.define = function( namespace, proto ) {
 
             // Component constructor
@@ -130,7 +132,7 @@ define(
                 // Pass in constructor arguments to new component
                 this.setup.apply( this, arguments );
             };
-        
+
             // Provide the component with static API
             for ( var member in staticAPI ) {
 
@@ -149,7 +151,7 @@ define(
             // Return the statc component
             return F;
         };
-    
+
         X.prototype = {
 
             subscribe: function( channel, method ) {
@@ -210,6 +212,13 @@ define(
                 return this;
             },
 
+            override: function ( name, func ) {
+
+                if ( !this.component.override ) { return; }
+
+                this.component.override.call( this.component, name, func );
+            },
+
             /**
              * Simple method for extending multiple objects into one.
              *
@@ -233,7 +242,7 @@ define(
                 return arguments[0];
             }
         };
-    
+
         return X;
     }
 );
