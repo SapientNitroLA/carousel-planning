@@ -216,7 +216,7 @@ define(
 
                 if ( !this.component.override ) { return; }
 
-                this.component.override.call( this.component, name, func );
+                return this.component.override.call( this.component, name, func );
             },
 
             /**

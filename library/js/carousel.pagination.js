@@ -58,6 +58,17 @@ define(
                 );
 
                 this.api.subscribe(
+                    this.api.ns + '/init/after',
+                    function() {
+
+                        self.api.subscribe(
+                            self.api.ns + '/updatePosition/after',
+                            self.funcs.updatePagination
+                        );
+                    }
+                );
+
+                this.api.subscribe(
                     this.api.ns + '/navigation/controls/insert/before',
                     function() {
                         self.dom = self.api.getState( 'dom' );
@@ -70,7 +81,7 @@ define(
                 );
 
                 this.api.subscribe(
-                    this.api.ns + '/animate/before',
+                    'animate/transition/before',
                     this.funcs.updatePagination
                 );
 

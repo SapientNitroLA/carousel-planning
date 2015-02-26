@@ -5,7 +5,7 @@ require(
         'carousel.pagination',
         'carousel.autorotate',
         'carousel.loop',
-        'carousel.responsive'
+        'carousel.animate'
 	],
     
     function( carousel ) {
@@ -24,6 +24,7 @@ require(
             autorotate: {
                 stopEvent: 'click'
             },
+            animate: true,
             loop: true
             //responsive: true
         });

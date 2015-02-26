@@ -212,34 +212,6 @@ define(
                 obj[ evt + fn ] = null;
             }
         }
-
-        /**
-         * Repeat a function X times at I intervals
-         *
-         * @method repeat
-         * @param {Number} interval Interval at which to call provided function
-         * @param {Number} repeats Number of times to repeat
-         * @param {Boolean} immediate Flag for delaying running of callback
-         * @param {Function} callback Function to run at intervals 
-         * @author http://codereview.stackexchange.com/questions/13046/javascript-repeat-a-function-x-times-at-i-intervals
-         * @private
-         */
-        function repeat( interval, repeats, immediate, callback ) {
-
-            var timer;
-
-            var trigger = function () {
-                callback();
-                --repeats || clearInterval( timer );
-            };
-
-            interval = interval <= 0 ? 1000 : interval; // default: 1000ms
-            repeats = parseInt( repeats, 10 ) || 0; // default: repeat forever
-            timer = setInterval( trigger, interval );
-
-            // Run immediately
-            if ( !!immediate ) { trigger(); }
-        }
         
         /**
          * Provides a more accurate object type string than typeof operator
@@ -345,7 +317,7 @@ define(
                 self.x.insertAfter = insertAfter;
                 self.x.addEvent = addEvent;
                 self.x.removeEvent = removeEvent;
-                self.x.repeat = repeat;
+                // self.x.repeat = repeat;
                 self.x.getObjType = getObjType;
                 self.x.getTransSupport = getTransSupport;
 
@@ -377,7 +349,7 @@ define(
                     ;
                 
                 // Save original tiles per frame data
-                self.options.origTilesPerFrame = tilesPerFrame;
+                options.origTilesPerFrame = tilesPerFrame;
                     
                 // Make the main elements available to `this`
                 self.parentNode = carousel.parentNode;
@@ -418,12 +390,113 @@ define(
                     addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
+                // Set up and register internal subscriptions
+                self.state.subRegistry = [
+                    {
+                        name: 'frameChange',
+                        channel: self.ns + '/syncState/after',
+                        subscriber: self.updatePosition.bind( self )
+                    }
+                ];
+
+                self.registerSubscriptions();
+
                 if ( options.ready ) {
 
                     options.ready.call( self, self.state );
                 }
 
                 self.x.publish( self.ns + '/init/after' );
+            },
+
+            /**
+             * Overrides internal method with provided function
+             *
+             * @method override
+             * @param {String} name Name of internal method to override
+             * @param {Function} func Function to replace internal method
+             * @return {Function} Replaced internal method
+             * @public
+             */
+            override: function( name, func ) {
+
+                if ( !this[ name ] ) { return; }
+
+                var origMethod = this[ name ].bind( this );
+
+                this[ name ] = func;
+
+                return origMethod; //return overidden method so that it can still be called if necessary
+            },
+
+            /**
+             * Creates internal subscriptions for all entries in subscription registry
+             *
+             * @method registerSubscriptions
+             * @public
+             */
+            registerSubscriptions: function() {
+
+                var tempToken
+                    , subRegistry = this.state.subRegistry
+                    ;
+
+                for ( var j = 0; j < subRegistry.length; j++ ) {
+
+                    tempToken = this.x.subscribe( 
+                        subRegistry[ j ].channel,
+                        subRegistry[ j ].subscriber
+                    );
+
+                    subRegistry[ j ].token = tempToken;
+                }
+            },
+
+            /**
+             * Retrieves data for subscription in subscription registry by name
+             *
+             * @method getSubscription
+             * @param {String} name Name of subscription entry
+             * @return {Object} Requested subscription data || {Boolean} No subscription found
+             * @public
+             */
+            getSubscription: function( name ) {
+
+                var subRegistry = this.state.subRegistry;
+
+                for ( var j = 0; j < subRegistry.length; j++ ) {
+
+                    if ( subRegistry[ j ].name === name ) {
+
+                        return subRegistry[ j ];
+                    }
+                }
+
+                return false;
+            },
+
+            /**
+             * Remove subscription in subscription registry by name
+             *
+             * @method removeSubscription
+             * @param {String} name Name of subscription entry
+             * @public
+             */
+            removeSubscription: function( name ) {
+
+                var subRegistry = this.state.subRegistry;
+
+                for ( var j = 0; j < subRegistry.length; j++ ) {
+
+                    if ( subRegistry[ j ].name === name ) {
+
+                        this.x.unsubscribe( subRegistry[ j ].token );
+
+                        subRegistry.splice( j, 1 );
+
+                        return;
+                    }
+                }
             },
 
             /**
@@ -710,58 +783,40 @@ define(
              *
              * @method syncState
              * @param {Number} index New index of left-most visible tile
-             * @param {Boolean} animate Flag whether to animate index change
              * @return {Object} Updated state object
              * @public
              */
-            syncState: function( index, animate ) {
+            syncState: function( index ) {
 
-                // Don't update state during tile transition
-                if ( !this.cache( 'animating' ) ) {
+                this.x.publish( this.ns + '/syncState/before', this.state.index, index );
+
+                var self                = this
+                    , state             = self.state
+                    , options           = self.options
+                    , tilesPerFrame     = options.tilesPerFrame
+                    , prevFrameIndex    = state.frameIndex
+                    , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
+                                            : index < 0 ? 0
+                                            : index
+                    , frameIndex        = Math.ceil( index / tilesPerFrame )
+                    , isLastFrame       = index === state.curTileLength - tilesPerFrame
+                    , tileDelta         = self.cache( 'tileDelta' )
+                    , updateObj = {
+                        index: index,
+                        prevIndex: state.index,
+                        curTile: isLastFrame && tileDelta && options.incrementMode === 'frame'
+                                    ? state.tileArr[ index + tileDelta ]
+                                    : state.tileArr[ index ],
+                        curFrame: Array.prototype.slice.call( state.tileArr, index, tilesPerFrame + index ),
+                        frameIndex: frameIndex,
+                        prevFrameIndex: prevFrameIndex
+                    };
+
+                self.updateState( updateObj ); //update state
                 
-                    this.x.publish( this.ns + '/syncState/before', this.state.index, index );
+                self.x.publish( self.ns + '/syncState/after', index );
 
-                    var self                = this
-                        , state             = self.state
-                        , options           = self.options
-                        , tilesPerFrame     = options.tilesPerFrame
-                        , prevFrameIndex    = state.frameIndex
-                        , origIndex         = state.index
-                        , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
-                                                : index < 0 ? 0
-                                                : index
-                        , frameIndex        = Math.ceil( index / tilesPerFrame )
-                        , isLastFrame       = index === state.curTileLength - tilesPerFrame
-                        , tileDelta         = self.cache( 'tileDelta' )
-                        , updateObj = {
-                            index: index,
-                            prevIndex: state.index,
-                            curTile: isLastFrame && tileDelta && options.incrementMode === 'frame'
-                                        ? state.tileArr[ index + tileDelta ]
-                                        : state.tileArr[ index ],
-                            curFrame: Array.prototype.slice.call( state.tileArr, index, tilesPerFrame + index ),
-                            frameIndex: frameIndex,
-                            prevFrameIndex: prevFrameIndex
-                        };
-
-                    self.updateState( updateObj );
-                
-                    // Animate tile index change
-                    if ( animate ) {
-
-                        self.animate();
-                    }
-                    
-                    // Even if no animation, make sure carousel correctly positioned
-                    else {
-
-                        self.updatePosition( state.index );
-                    }
-                    
-                    self.x.publish( self.ns + '/syncState/after', origIndex, index );
-
-                    return state;
-                }
+                return state;
             },
             
             /**
@@ -772,6 +827,8 @@ define(
              * @public
              */
             updatePosition: function( index ) {
+
+                this.x.publish( this.ns + '/updatePosition/before' );
 
                 var self = this
                     , carousel = self.element
@@ -804,6 +861,8 @@ define(
                 
                 self.toggleAria( state.tileArr, 'add' );
                 self.toggleAria( state.curFrame, 'remove' );
+
+                self.x.publish( self.ns + '/updatePosition/after' );
             },
 
             /**
@@ -852,126 +911,6 @@ define(
                 for ( var i = 0; i< tileArr.length; i++ ) {
 
                     tileArr[ i ].style.width = tileStyle;
-                }
-            },
-
-            /**
-             * Animates carousel transitions
-             *
-             * @method animate
-             * @public
-             */
-            animate: function() {
-
-                this.x.publish( this.ns + '/animate/before' );
-
-                var timer
-                    , self = this
-                    , state = self.state
-                    , index = state.index
-                    , targetIndex = index
-                    , options = self.options
-                    , carousel = self.element
-                    , tilePercent = self.cache( 'tilePercent' )
-                    , preFrameChange = options.preFrameChange
-                    , postFrameChange = options.postFrameChange
-                    , seconds = 1
-                    , supportsTransitions = self.cache( 'supportsTransitions' )
-                    , transitionData = self.cache( 'transitionData' )
-                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
-                    , transformAttr = vendorPrefix + 'transform'
-                    , transitionAttr = vendorPrefix + 'transition'
-                    , transitionEvent = ( transitionData && transitionData.endEvt ) ? transitionData.endEvt : 'transitionend'
-                    , translateAmt = tilePercent * targetIndex
-                    , transformStr = 'translateX(-' + translateAmt + '%)'
-                    , translateStr = 'transform' + ' ' + seconds + 's'
-                    , numFrames = Math.ceil( (seconds * 1000) / 60 )
-                    , origin = state.prevIndex * tilePercent
-                    , distance = origin - translateAmt
-                    , frameDist = distance / numFrames
-                    ;
-
-                var initSettings = function() {
-
-                    self.cache( 'animating', true );
-
-                    // Execute preFrameChange callback
-                    if ( preFrameChange ) preFrameChange.call( self, state );
-
-                    // carousel.setAttribute( 'class', 'state-busy' );
-                    self.toggleAria( state.tileArr, 'remove' );
-
-                    self.updateNavigation();
-                };
-
-                var listener = function() {
-
-                    clearTimeout( timer );
-
-                    self.toggleAria( state.tileArr, 'add' );
-                    self.toggleAria( state.curFrame, 'remove' );
-
-                    //state.curTile.focus();
-                    carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
-                    
-                    self.cache( 'animating', false );
-
-                    // Execute postFrameChange callback
-                    if ( postFrameChange ) postFrameChange.call( self, state );
-
-                    self.x.publish( self.ns + '/transition/end' );
-                    self.x.publish( self.ns + '/animate/after' );
-                };
-
-                // Use CSS transitions
-                if ( supportsTransitions ) {
-
-                    initSettings();
-
-                    carousel.style.transition = translateStr;
-                    carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
-
-                    self.x.subscribe( self.ns + '/transition/end', function() {
-
-                        carousel.removeEventListener( transitionEvent, listener, false );
-                    });
-
-                    carousel.addEventListener( transitionEvent, listener, false );
-
-                    carousel.style.transform = transformStr;
-                    carousel.style[ transformAttr ] = transformStr;
-
-                    // Set a little longer than transition time, so listener has chance to execute on its own
-                    timer = setTimeout( listener , seconds * 1010 );
-                }
-
-                // IE9 does not support CSS transitions
-                /*
-                    TODO Needs easing
-                */
-                else if ( 'msTransform' in carousel.style ) {
-
-                    initSettings();
-
-                    repeat( 16, numFrames, true, function() {
-
-                        origin -= frameDist;
-
-                        if ( origin < 0 ) {
-
-                            carousel.style.msTransform = 'translateX( 0px )';
-                            return;
-                        }
-
-                        carousel.style.msTransform = 'translateX( -' + origin + '% )';
-
-                    });
-
-                    setTimeout( function() {
-
-                        listener();
-
-                    }, ( 300 * seconds ) );
                 }
             },
 
@@ -1149,7 +1088,7 @@ define(
                     , index = this.state.index - modifier
                     ;
 
-                this.syncState( index, true );
+                this.syncState( index );
 
                 this.x.publish( this.ns + '/prevFrame/after' );
 
@@ -1172,7 +1111,7 @@ define(
                     , index = this.state.index + modifier
                     ;
 
-                this.syncState( index, true );
+                this.syncState( index );
 
                 this.x.publish( this.ns + '/nextFrame/after' );
 
@@ -1209,7 +1148,7 @@ define(
                     return self.carousel;
                 }
 
-                self.syncState( index, true );
+                self.syncState( index );
 
                 return self.carousel;
             },
@@ -1226,7 +1165,7 @@ define(
 
                 var index = 0;
 
-                this.syncState( index, true );
+                this.syncState( index );
 
                 return this.carousel;
             },
