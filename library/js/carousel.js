@@ -784,6 +784,13 @@ define(
                 self.x.publish( self.ns + '/updatePosition/after' );
             },
 
+            /**
+             * Mediator function responsible for processing passed index, syncing state object, and navigating to appropriate tile
+             *
+             * @method navigate
+             * @param {Number} index Index of left-most visible tile
+             * @public
+             */
             navigate: function( index ) {
 
                 var newState = this.syncState( index );
