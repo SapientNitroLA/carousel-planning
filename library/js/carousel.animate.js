@@ -19,8 +19,7 @@ define(
 
         var pluginNS = 'animate';
 
-        var subToken
-            , pluginOn = false
+        var pluginOn = false
             , animating = false
             ;
 
@@ -85,7 +84,9 @@ define(
 
                     function() {
 
-                        var pluginAttr = self.api.getOption( pluginNS );
+                        var origNavMethod
+                            , pluginAttr = self.api.getOption( pluginNS )
+                            ;
 
                         pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
 
@@ -99,15 +100,15 @@ define(
                                 transitionData: self.api.trigger( 'cache', 'transitionData' )
                             };
 
-                            self.api.override( 'navigate', function( index, prevAnim ) {
+                            origNavMethod = self.api.override( 'navigate', function( index, prevAnim ) {
 
                                 // If carousel is animating, halt further processing
-                                if ( animating ) { return; }
+                                // if ( animating ) { return; } 
 
                                 // If animation prevented, update the position of carousel statically (default method)
                                 if ( prevAnim ) {
 
-                                    self.api.trigger( 'navigate', index );
+                                    origNavMethod( index );
                                 }
 
                                 else {
@@ -123,7 +124,7 @@ define(
             },
             
             /**
-             * Animates carousel transitions
+             * Animates carousel navigation
              *
              * @method animate
              * @public
@@ -157,6 +158,7 @@ define(
                     , frameDist = distance / numFrames
                     ;
 
+                // Initial set-up
                 var initSettings = function() {
 
                     animating = true;
@@ -170,6 +172,7 @@ define(
                     self.api.trigger( 'updateNavigation' );
                 };
 
+                // Transition end listener: runs at end of animation
                 var listener = function() {
 
                     clearTimeout( timer );

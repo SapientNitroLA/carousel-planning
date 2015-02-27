@@ -714,26 +714,27 @@ define(
                     , options           = self.options
                     , tilesPerFrame     = options.tilesPerFrame
                     , prevFrameIndex    = state.frameIndex
-                    , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
+                    , newIndex          = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
                                             : index < 0 ? 0
                                             : index
-                    , frameIndex        = Math.ceil( index / tilesPerFrame )
-                    , isLastFrame       = index === state.curTileLength - tilesPerFrame
+                    , frameIndex        = Math.ceil( newIndex / tilesPerFrame )
+                    , isLastFrame       = newIndex === state.curTileLength - tilesPerFrame
                     , tileDelta         = self.cache( 'tileDelta' )
                     , updateObj = {
-                        index: index,
+                        index: newIndex,
                         prevIndex: state.index,
                         curTile: isLastFrame && tileDelta && options.incrementMode === 'frame'
-                                    ? state.tileArr[ index + tileDelta ]
-                                    : state.tileArr[ index ],
-                        curFrame: Array.prototype.slice.call( state.tileArr, index, tilesPerFrame + index ),
+                                    ? state.tileArr[ newIndex + tileDelta ]
+                                    : state.tileArr[ newIndex ],
+                        curFrame: Array.prototype.slice.call( state.tileArr, newIndex, tilesPerFrame + newIndex ),
                         frameIndex: frameIndex,
                         prevFrameIndex: prevFrameIndex
                     };
 
-                self.updateState( updateObj ); //update state
+                // Update state object
+                self.updateState( updateObj );
                 
-                self.x.publish( self.ns + '/syncState/after', index );
+                self.x.publish( self.ns + '/syncState/after', newIndex );
 
                 return state;
             },
