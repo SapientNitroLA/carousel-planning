@@ -390,17 +390,6 @@ define(
                     addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
-                // Set up and register internal subscriptions
-                self.state.subRegistry = [
-                    {
-                        name: 'frameChange',
-                        channel: self.ns + '/syncState/after',
-                        subscriber: self.updatePosition.bind( self )
-                    }
-                ];
-
-                self.registerSubscriptions();
-
                 if ( options.ready ) {
 
                     options.ready.call( self, self.state );
@@ -427,76 +416,6 @@ define(
                 this[ name ] = func;
 
                 return origMethod; //return overidden method so that it can still be called if necessary
-            },
-
-            /**
-             * Creates internal subscriptions for all entries in subscription registry
-             *
-             * @method registerSubscriptions
-             * @public
-             */
-            registerSubscriptions: function() {
-
-                var tempToken
-                    , subRegistry = this.state.subRegistry
-                    ;
-
-                for ( var j = 0; j < subRegistry.length; j++ ) {
-
-                    tempToken = this.x.subscribe( 
-                        subRegistry[ j ].channel,
-                        subRegistry[ j ].subscriber
-                    );
-
-                    subRegistry[ j ].token = tempToken;
-                }
-            },
-
-            /**
-             * Retrieves data for subscription in subscription registry by name
-             *
-             * @method getSubscription
-             * @param {String} name Name of subscription entry
-             * @return {Object} Requested subscription data || {Boolean} No subscription found
-             * @public
-             */
-            getSubscription: function( name ) {
-
-                var subRegistry = this.state.subRegistry;
-
-                for ( var j = 0; j < subRegistry.length; j++ ) {
-
-                    if ( subRegistry[ j ].name === name ) {
-
-                        return subRegistry[ j ];
-                    }
-                }
-
-                return false;
-            },
-
-            /**
-             * Remove subscription in subscription registry by name
-             *
-             * @method removeSubscription
-             * @param {String} name Name of subscription entry
-             * @public
-             */
-            removeSubscription: function( name ) {
-
-                var subRegistry = this.state.subRegistry;
-
-                for ( var j = 0; j < subRegistry.length; j++ ) {
-
-                    if ( subRegistry[ j ].name === name ) {
-
-                        this.x.unsubscribe( subRegistry[ j ].token );
-
-                        subRegistry.splice( j, 1 );
-
-                        return;
-                    }
-                }
             },
 
             /**
@@ -865,6 +784,13 @@ define(
                 self.x.publish( self.ns + '/updatePosition/after' );
             },
 
+            navigate: function( index ) {
+
+                var newState = this.syncState( index );
+
+                this.updatePosition( newState.index );
+            },
+
             /**
              * Determines carousel and tile widths based on tilesPerFrame and total tiles
              *
@@ -1088,7 +1014,7 @@ define(
                     , index = this.state.index - modifier
                     ;
 
-                this.syncState( index );
+                this.navigate( index );
 
                 this.x.publish( this.ns + '/prevFrame/after' );
 
@@ -1111,7 +1037,7 @@ define(
                     , index = this.state.index + modifier
                     ;
 
-                this.syncState( index );
+                this.navigate( index );
 
                 this.x.publish( this.ns + '/nextFrame/after' );
 
@@ -1148,7 +1074,7 @@ define(
                     return self.carousel;
                 }
 
-                self.syncState( index );
+                self.navigate( index );
 
                 return self.carousel;
             },
@@ -1165,7 +1091,7 @@ define(
 
                 var index = 0;
 
-                this.syncState( index );
+                this.navigate( index );
 
                 return this.carousel;
             },

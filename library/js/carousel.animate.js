@@ -85,9 +85,7 @@ define(
 
                     function() {
 
-                        var syncStateMethod
-                            , pluginAttr = self.api.getOption( pluginNS )
-                            ;
+                        var pluginAttr = self.api.getOption( pluginNS );
 
                         pluginOn = ( ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || typeof pluginAttr === 'object' ) ? true : false;
 
@@ -100,60 +98,28 @@ define(
                                 supportsTransitions: self.api.trigger( 'cache', 'supportsTransitions' ),
                                 transitionData: self.api.trigger( 'cache', 'transitionData' )
                             };
-                            
-                            // Override carousel syncState method
-                            syncStateMethod = self.api.override( 'syncState', function( index, prevAnim ) {
+
+                            self.api.override( 'navigate', function( index, prevAnim ) {
 
                                 // If carousel is animating, halt further processing
                                 if ( animating ) { return; }
 
-                                // If prevent animation flag true, unsubscribe animate method from this channel
+                                // If animation prevented, update the position of carousel statically (default method)
                                 if ( prevAnim ) {
 
-                                    self.ssUnubscribe();
+                                    self.api.trigger( 'navigate', index );
                                 }
 
-                                // Call original syncState method
-                                syncStateMethod( index );
+                                else {
 
-                                // If animation prevented, update the position of carousel statically & resubscribe to this channel
-                                if ( prevAnim ) {
+                                    self.api.trigger( 'syncState', index );
 
-                                    self.api.trigger( 'updatePosition', self.api.getState( 'index' ) );
-
-                                    self.ssSubscribe();
+                                    self.animate.call( self );
                                 }
                             });
-
-                            // Unregister frameChange subscription
-                            self.api.trigger( 'removeSubscription', 'frameChange' );
-
-                            // Replace subscription with this object's animate method
-                            self.ssSubscribe();
                         }
                     }
                 );
-            },
-
-            ssSubscribe: function() {
-
-                if ( typeof subToken === 'undefined' ) {
-
-                    subToken = this.api.subscribe(
-                        this.api.ns + '/syncState/after',
-                        this.animate.bind( this )
-                    );
-                }
-            },
-
-            ssUnubscribe: function() {
-
-                if ( typeof subToken !== 'undefined' ) {
-
-                    this.api.unsubscribe( subToken );
-
-                    subToken = undefined;
-                }
             },
             
             /**

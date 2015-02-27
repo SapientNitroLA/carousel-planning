@@ -236,7 +236,7 @@ define(
                 
                 if ( this.updatePosition ) {
 
-                    this.api.trigger( 'syncState', this.carousel.index, true );
+                    this.api.trigger( 'navigate', this.carousel.index, true );
                     this.updatePosition = false;
                 }
             },
