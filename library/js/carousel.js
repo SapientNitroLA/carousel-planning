@@ -550,7 +550,7 @@ define(
                         ;
                     
                     // if ( isFirst || isLast ) return;
-            
+
                     elem.style.transform = transformStr;
                     elem.style[ transformAttr ] = transformStr;
                 });

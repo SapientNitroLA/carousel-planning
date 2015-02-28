@@ -37,6 +37,10 @@
 	display:block;
 }
 
+.carousel-no-transition {
+  transition: none !important;
+}
+
 /*
 ACCESSIBILITY
 ---------------------------------*/
