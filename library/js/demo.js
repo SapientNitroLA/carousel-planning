@@ -13,19 +13,20 @@ require(
         var myCarousel = carousel.create({
             element: document.getElementById( 'example-carousel' ),
             wrapperClass: 'test-1 test-2',
-            tilesPerFrame: 3,
+            tilesPerFrame: 1,
             incrementMode: 'tile',
             nextText: 'next',
             prevText: 'previous',
             wrapControls: true,
             pagination: {
-              center: true // TODO handle centering when wrapControls is false. Should it simply not be done? Should wrapControls be forced to true?
+                frameText: '{pageNumber} of {total}',
+                center: true // TODO handle centering when wrapControls is false. Should it simply not be done? Should wrapControls be forced to true?
             },
-            autorotate: {
-                stopEvent: 'click'
-            },
-            animate: true,
-            loop: true
+            // autorotate: {
+            //     stopEvent: 'click'
+            // },
+            animate: true
+            // loop: true
             //responsive: true
         });
     

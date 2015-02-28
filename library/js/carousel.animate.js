@@ -85,6 +85,8 @@ define(
                     function() {
 
                         var origNavMethod
+                            , carousel
+                            , transitionAttr
                             , pluginAttr = self.api.getOption( pluginNS )
                             ;
 
@@ -100,10 +102,21 @@ define(
                                 transitionData: self.api.trigger( 'cache', 'transitionData' )
                             };
 
+                            self.carData.vendorPrefix = ( self.carData.transitionData && typeof self.carData.transitionData.prefix !== 'undefined' ) ? self.carData.transitionData.prefix : '';
+
+                            carousel = self.carData.dom.carousel;
+                            transitionAttr = self.carData.vendorPrefix + 'transition';
+
                             origNavMethod = self.api.override( 'navigate', function( index, prevAnim ) {
 
                                 // If carousel is animating, halt further processing
-                                // if ( animating ) { return; } 
+                                if ( animating ) { 
+
+                                    carousel.style.transition = '';
+                                    carousel.style[ transitionAttr ] = '';
+
+                                    // return;
+                                }
 
                                 // If animation prevented, update the position of carousel statically (default method)
                                 if ( prevAnim ) {

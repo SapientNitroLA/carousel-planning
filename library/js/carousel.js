@@ -82,6 +82,10 @@ define(
             tileClass: 'carousel-tile'
         };
 
+        var activeClass = 'state-visible'
+            , inactiveClass = 'state-hidden'
+            ;
+
         // Options that require integers
         var defaultInts = [ 'tilesPerFrame', 'wrapperDelta', 'viewportDelta' ];
 
@@ -283,6 +287,30 @@ define(
             };
         }
 
+        function toggleClass( elem, elemClass, add ) {
+
+            if ( typeof elem === 'undefined' || typeof elemClass === 'undefined' ) {
+                return;
+            }
+
+            var classArr = elem.className.split(' ');
+            var classIdx = classArr.indexOf( elemClass );
+
+            // Element already has class, so remove unless add operation specified (add=true)
+            if ( classIdx !== -1 && add !== true ) {
+
+                classArr.splice( classIdx, 1 );
+            }
+
+            // Element doesn't have class, so add unless remove operation specified (add=false)
+            else if ( classIdx === -1 && add !== false ) {
+
+                classArr.push( elemClass );
+            }
+
+            elem.className = classArr.join(' ');
+        }
+
         /**
          * Carousel core code
          *
@@ -317,9 +345,9 @@ define(
                 self.x.insertAfter = insertAfter;
                 self.x.addEvent = addEvent;
                 self.x.removeEvent = removeEvent;
-                // self.x.repeat = repeat;
                 self.x.getObjType = getObjType;
                 self.x.getTransSupport = getTransSupport;
+                self.x.toggleClass = toggleClass;
 
                 // Setup plugins
                 self.setupPlugins();
@@ -390,12 +418,190 @@ define(
                     addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
+                self.initDrag();
+
                 if ( options.ready ) {
 
                     options.ready.call( self, self.state );
                 }
 
                 self.x.publish( self.ns + '/init/after' );
+            },
+
+            initDrag: function() {
+
+                var origin
+                    , stopMove
+                    , self = this
+                    , options = self.options
+                    , state = self.state
+                    , touchData = {}
+                    , elem = self.carousel
+                    , noTrans = 'carousel-no-transition'
+                    , evtDetail = { 'detail': { data: touchData } }
+                    , tilePercent = self.cache( 'tilePercent' )
+                    , transitionData = self.cache( 'transitionData' )
+                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
+                    , transformAttr = vendorPrefix + 'transform'
+                    , translateAmt
+                    , transformStr
+                    , dragThreshold = function( deltaX ) {
+
+                        return Math.abs( deltaX ) > 4;
+                    }
+                    , setData = function( e ) {
+
+                        var touches = e.touches || e.originalEvent.touches;
+
+                        if ( e.type === 'touchstart' ) {
+
+                            origin = {
+                                x : touches[ 0 ].pageX,
+                                y: touches[ 0 ].pageY
+                            };
+                        }
+
+                        stopMove = false;
+
+                        if ( touches[ 0 ] && touches[ 0 ].pageX ) {
+
+                            touchData.touches = touches;
+                            touchData.deltaX = touches[ 0 ].pageX - origin.x;
+                            touchData.deltaY = touches[ 0 ].pageY - origin.y;
+                            touchData.w = outerWidth( elem );
+                            touchData.h = outerHeight( elem );
+                            touchData.xPercent = touchData.deltaX / touchData.w;
+                            touchData.yPercent = touchData.deltaY / touchData.h;
+                            touchData.srcEvent = e;
+                        }
+
+                    }
+                    , emitEvents = function( e ){
+
+                        var thisEvt;
+
+                        setData( e );
+
+                        if ( touchData.touches.length === 1 ) {
+
+                            thisEvt = new CustomEvent( self.ns + '.drag' + e.type.split( 'touch' )[ 1 ], evtDetail );
+
+                            elem.dispatchEvent( thisEvt );
+                        }
+                    };
+
+                // Native touch event listeners
+                addEvent( elem, 'touchstart', function( e ) {
+
+                    toggleClass( elem, noTrans, true );
+                    emitEvents( e );
+                });
+
+                addEvent( elem, 'touchmove', function( e ) {
+
+                    if ( Math.abs( touchData.deltaX ) > 10 ) {
+
+                        if ( e && e.preventDefault ) {
+
+                            e.preventDefault();
+                        }
+                    }
+
+                    else if ( Math.abs( touchData.deltaY ) > 3 ) {
+
+                        stopMove = true;
+                    }
+
+                    if ( !stopMove ) {
+
+                        setData( e );
+                        emitEvents( e );
+                    }
+                });
+
+                addEvent( elem, 'touchend', function( e ) {
+
+                    toggleClass( elem, noTrans, false );
+                    emitEvents( e );
+                });
+
+                // Custom event listeners
+                addEvent( elem, self.ns + '.dragmove', function( e ) {
+
+                    if ( Math.abs( touchData.deltaY ) > Math.abs( touchData.deltaX ) ) return;
+            
+                    if ( !dragThreshold( touchData.deltaX ) ) return;
+                
+                    var currentPosition = state.index
+                        , maxPosition = state.curTileLength - options.tilesPerFrame
+                        , forward = touchData.deltaX < 0
+                        , nextIndex = forward ? currentPosition + 1 : currentPosition - 1
+                        , translateAmt = tilePercent * currentPosition
+                        , transformStr = 'translateX(calc(-' + translateAmt + '% + ' + touchData.deltaX + 'px))'
+                        // , calcPercent = currentPosition * -100
+                        // peeking
+                        // , calcOffset = currentPosition > 0 ? currentPosition * 30 : 0
+                        // , calcPosition = calcOffset + touchData.deltaX
+                        // , positionStr = 'calc(' + calcPercent + '% + ' + calcPosition + 'px)'
+                        // end peeking
+                        // , positionStr = 'calc(' + calcPercent + '% + ' + touchData.deltaX + 'px)'
+                        , isFirst = currentPosition === 0 && touchData.deltaX > 0
+                        , isLast = currentPosition === maxPosition && touchData.deltaX < 0
+                        ;
+                    
+                    // if ( isFirst || isLast ) return;
+            
+                    elem.style.transform = transformStr;
+                    elem.style[ transformAttr ] = transformStr;
+                });
+
+                addEvent( elem, self.ns + '.dragend', function( e ) {
+
+                    if ( !dragThreshold( touchData.deltaX ) ) return;
+            
+                    self.x.publish( self.ns + '/move' );
+            
+                    var newSlide = Math.abs( touchData.deltaX ) > 45
+                        , currentPosition = state.index
+                        , maxPosition = state.curTileLength - options.tilesPerFrame
+                        , isFirst = currentPosition === 0 && touchData.deltaX > 0
+                        , isLast = currentPosition === maxPosition && touchData.deltaX < 0
+                        , forward = touchData.deltaX < 0
+                        , nextIndex = forward ? currentPosition + 1 : currentPosition - 1
+                        ;
+            
+                    // if ( isFirst || isLast ) return;
+            
+                    // var stackEl = $( '.stack' )
+                    //     , carouselEl = self.wrapper
+                    //     , ratioFavorsX = Math.abs( touchData.deltaY ) / Math.abs( touchData.deltaX ) < 0.2
+                    //     // , carouselOffset = carouselEl.offset().top - 65
+                    //     // , notSet = Math.abs( carouselOffset ) > 1
+                    //     ;
+            
+                    // if ( notSet && ratioFavorsX ) {
+                
+                    //     body.animate({ scrollTop: carouselOffset }, 500 );
+                    // }
+            
+                    if ( newSlide ) {
+                
+                        var thisMethod = forward ? self.nextFrame : self.prevFrame;
+
+                        toggleClass( state.curTile, activeClass, false );
+                        toggleClass( state.curTile, inactiveClass, true );
+
+                        toggleClass( state.tileArr[ nextIndex ], inactiveClass, false );
+                        toggleClass( state.tileArr[ nextIndex ], activeClass, true );
+            
+                        thisMethod.call( self );
+                    }
+
+                    else {
+                
+                        self.reset();
+                    }
+                });
             },
 
             /**
