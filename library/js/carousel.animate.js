@@ -87,6 +87,8 @@ define(
                         var origNavMethod
                             , carousel
                             , transitionAttr
+                            , translateStr
+                            , seconds = self.options.interval / 1000
                             , pluginAttr = self.api.getOption( pluginNS )
                             ;
 
@@ -106,14 +108,23 @@ define(
 
                             carousel = self.carData.dom.carousel;
                             transitionAttr = self.carData.vendorPrefix + 'transition';
+                            translateStr = 'transform' + ' ' + seconds + 's';
 
+                            // If supported, initialize CSS transition setting
+                            if ( self.carData.supportsTransitions ) {
+                            
+                                carousel.style.transition = translateStr;
+                                carousel.style[ transitionAttr ] = translateStr;
+                            }
+
+                            // Override carousel's core navigate method
                             origNavMethod = self.api.override( 'navigate', function( index, prevAnim ) {
 
                                 // If carousel is animating, halt further processing
                                 if ( animating ) { 
 
-                                    carousel.style.transition = '';
-                                    carousel.style[ transitionAttr ] = '';
+                                    carousel.style.transition = translateStr;
+                                    carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
 
                                     // return;
                                 }
@@ -160,11 +171,9 @@ define(
                     , transitionData = self.carData.transitionData
                     , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
                     , transformAttr = vendorPrefix + 'transform'
-                    , transitionAttr = vendorPrefix + 'transition'
                     , transitionEvent = ( transitionData && transitionData.endEvt ) ? transitionData.endEvt : 'transitionend'
                     , translateAmt = tilePercent * targetIndex
                     , transformStr = 'translateX(-' + translateAmt + '%)'
-                    , translateStr = 'transform' + ' ' + seconds + 's'
                     , numFrames = Math.ceil( options.interval / 60 )
                     , origin = self.api.getState( 'prevIndex' ) * tilePercent
                     , distance = origin - translateAmt
@@ -208,9 +217,6 @@ define(
                 if ( supportsTransitions ) {
 
                     initSettings();
-
-                    carousel.style.transition = translateStr;
-                    carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
 
                     self.api.subscribe( self.pluginNS + '/transition/after', function() {
 

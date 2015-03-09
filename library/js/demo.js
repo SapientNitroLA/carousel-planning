@@ -13,7 +13,7 @@ require(
         var myCarousel = carousel.create({
             element: document.getElementById( 'example-carousel' ),
             wrapperClass: 'test-1 test-2',
-            tilesPerFrame: 1,
+            tilesPerFrame: 2,
             incrementMode: 'tile',
             nextText: 'next',
             prevText: 'previous',

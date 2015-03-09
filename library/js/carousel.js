@@ -287,6 +287,15 @@ define(
             };
         }
 
+        /**
+         * Toggles class on an HTML element (mimics addClass and removeClass jQuery methods)
+         *
+         * @method toggleClass
+         * @param {HTML Element} elem Element which class will be toggled on (required)
+         * @param {String} elemClass Class name to be toggled (required)
+         * @param {Boolean} add Flag which will force adding or removal of class (optional)
+         * @private
+         */
         function toggleClass( elem, elemClass, add ) {
 
             if ( typeof elem === 'undefined' || typeof elemClass === 'undefined' ) {
@@ -418,7 +427,7 @@ define(
                     addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
-                self.initDrag();
+                self.initSwipe();
 
                 if ( options.ready ) {
 
@@ -428,13 +437,15 @@ define(
                 self.x.publish( self.ns + '/init/after' );
             },
 
-            initDrag: function() {
+            initSwipe: function() {
 
                 var origin
                     , stopMove
+                    , transCache = ''
                     , self = this
                     , options = self.options
                     , state = self.state
+                    , tileWidth = self.cache( 'tileWidth' ) / window.devicePixelRatio //adjust for Retina
                     , touchData = {}
                     , elem = self.carousel
                     , noTrans = 'carousel-no-transition'
@@ -443,8 +454,6 @@ define(
                     , transitionData = self.cache( 'transitionData' )
                     , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
                     , transformAttr = vendorPrefix + 'transform'
-                    , translateAmt
-                    , transformStr
                     , dragThreshold = function( deltaX ) {
 
                         return Math.abs( deltaX ) > 4;
@@ -468,8 +477,8 @@ define(
                             touchData.touches = touches;
                             touchData.deltaX = touches[ 0 ].pageX - origin.x;
                             touchData.deltaY = touches[ 0 ].pageY - origin.y;
-                            touchData.w = outerWidth( elem );
-                            touchData.h = outerHeight( elem );
+                            touchData.w = tileWidth;
+                            touchData.h = tileWidth;
                             touchData.xPercent = touchData.deltaX / touchData.w;
                             touchData.yPercent = touchData.deltaY / touchData.h;
                             touchData.srcEvent = e;
@@ -490,10 +499,15 @@ define(
                         }
                     };
 
-                // Native touch event listeners
+                /* 
+                 *  Native touch event listeners
+                 */
                 addEvent( elem, 'touchstart', function( e ) {
 
                     toggleClass( elem, noTrans, true );
+
+                    transCache = elem.style.transform;
+
                     emitEvents( e );
                 });
 
@@ -525,7 +539,9 @@ define(
                     emitEvents( e );
                 });
 
-                // Custom event listeners
+                /* 
+                 *  Custom event listeners
+                 */
                 addEvent( elem, self.ns + '.dragmove', function( e ) {
 
                     if ( Math.abs( touchData.deltaY ) > Math.abs( touchData.deltaX ) ) return;
@@ -535,7 +551,10 @@ define(
                     var currentPosition = state.index
                         , maxPosition = state.curTileLength - options.tilesPerFrame
                         , forward = touchData.deltaX < 0
+                        , deltaX = Math.abs( touchData.deltaX )
                         , nextIndex = forward ? currentPosition + 1 : currentPosition - 1
+                        , peekMod = forward ? options.tilesPerFrame - 1 : 0
+                        , peekIndex = nextIndex + peekMod
                         , translateAmt = tilePercent * currentPosition
                         , transformStr = 'translateX(calc(-' + translateAmt + '% + ' + touchData.deltaX + 'px))'
                         // , calcPercent = currentPosition * -100
@@ -545,14 +564,20 @@ define(
                         // , positionStr = 'calc(' + calcPercent + '% + ' + calcPosition + 'px)'
                         // end peeking
                         // , positionStr = 'calc(' + calcPercent + '% + ' + touchData.deltaX + 'px)'
-                        , isFirst = currentPosition === 0 && touchData.deltaX > 0
-                        , isLast = currentPosition === maxPosition && touchData.deltaX < 0
+                        // , isFirst = currentPosition === 0 && touchData.deltaX > 0
+                        // , isLast = currentPosition === maxPosition && touchData.deltaX < 0
                         ;
                     
                     // if ( isFirst || isLast ) return;
 
                     elem.style.transform = transformStr;
                     elem.style[ transformAttr ] = transformStr;
+
+                    if ( deltaX >= ( tileWidth / 2 ) ) {
+
+                        toggleClass( state.tileArr[ peekIndex ], inactiveClass, false );
+                        toggleClass( state.tileArr[ peekIndex ], activeClass, true );
+                    }
                 });
 
                 addEvent( elem, self.ns + '.dragend', function( e ) {
@@ -561,30 +586,21 @@ define(
             
                     self.x.publish( self.ns + '/move' );
             
-                    var newSlide = Math.abs( touchData.deltaX ) > 45
+                    var newSlide = Math.abs( touchData.deltaX ) >= tileWidth
                         , currentPosition = state.index
                         , maxPosition = state.curTileLength - options.tilesPerFrame
-                        , isFirst = currentPosition === 0 && touchData.deltaX > 0
-                        , isLast = currentPosition === maxPosition && touchData.deltaX < 0
+                        // , isFirst = currentPosition === 0 && touchData.deltaX > 0
+                        // , isLast = currentPosition === maxPosition && touchData.deltaX < 0
                         , forward = touchData.deltaX < 0
                         , nextIndex = forward ? currentPosition + 1 : currentPosition - 1
                         ;
             
                     // if ( isFirst || isLast ) return;
-            
-                    // var stackEl = $( '.stack' )
-                    //     , carouselEl = self.wrapper
-                    //     , ratioFavorsX = Math.abs( touchData.deltaY ) / Math.abs( touchData.deltaX ) < 0.2
-                    //     // , carouselOffset = carouselEl.offset().top - 65
-                    //     // , notSet = Math.abs( carouselOffset ) > 1
-                    //     ;
-            
-                    // if ( notSet && ratioFavorsX ) {
                 
-                    //     body.animate({ scrollTop: carouselOffset }, 500 );
-                    // }
-            
+                    // Navigation threshold met, navigate carousel
                     if ( newSlide ) {
+
+                        console.log(tileWidth, Math.abs( touchData.deltaX ));
                 
                         var thisMethod = forward ? self.nextFrame : self.prevFrame;
 
@@ -597,9 +613,15 @@ define(
                         thisMethod.call( self );
                     }
 
+                    // Threshold not met, reset carousel to previous position
                     else {
-                
-                        self.reset();
+
+                        toggleClass( elem, noTrans, false );
+                        
+                        elem.style.transform = transCache;
+                        elem.style[ transformAttr ] = transCache;
+
+                        transCache = '';
                     }
                 });
             },
@@ -853,7 +875,7 @@ define(
 
                 // Cache measurement vars
                 self.cache( 'tileDelta', ( options.tilesPerFrame * state.curFrameLength ) - state.curTileLength );
-                self.cache( 'tileWidth', outerWidth( state.tileArr[ state.index ] ) );
+                self.cache( 'tileWidth', outerWidth( state.curTile ) );
                 // self.cache( 'tileHeight', outerHeight( state.tileArr[ state.index ] ) );
                 self.cache( 'trackPercent', 100 * state.curTileLength );
                 self.cache( 'trackWidth', self.cache( 'tileWidth' ) * state.curTileLength );

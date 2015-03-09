@@ -54,8 +54,8 @@ ACCESSIBILITY
   visibility:hidden;
 }
 .state-hidden * {
-/*    display:none;*/
-    visibility:hidden;
+/* display:none;*/
+  visibility:hidden;
 }
 /*.carousel-viewport ul li {
     outline:none;
