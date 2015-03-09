@@ -1,4 +1,4 @@
-# Sapient LA Carousel #
+# Carousel #
 
 This repo is for a bare-bone carousel which can be employed in a variety of contexts by means of a [plugin-based feature set](#plugins).  It is written in AMD format, so it can be used as-is with a dependency manager like RequireJS.  It has no dependencies on 3rd party frameworks, such as jQuery; however, it does rely on the included x.js script for setup and [internal communication](#internal-communication-methods).
 
@@ -58,76 +58,76 @@ var options = {
 
 ### Options ###
 
-**element**  
-Type: `HTML Element`  
-Required: Yes  
-Default: `null`  
+**element**
+Type: `HTML Element`
+Required: Yes
+Default: `null`
 DOM element to be converted into carousel (i.e. ul in markup above).
 
-**incrementMode**  
-Type: `String`  
-Required: No  
-Default: `'frame'`  
+**incrementMode**
+Type: `String`
+Required: No
+Default: `'frame'`
 Sets whether carousel advances by tile or frame.  `'tile'` mode advances the carousel a single tile at a time, while `'frame'` mode advances the carousel by the number of visible tiles (i.e. tilesPerFrame).  In the case of only one visible tile, these modes would function exactly the same.
 
-**nextText**  
-Type: `String`  
-Required: No  
-Default: `'Next'`  
+**nextText**
+Type: `String`
+Required: No
+Default: `'Next'`
 Next button text.
 
-**postFrameChange**  
-Type: `Function`  
-Required: No  
-Default: `null`  
+**postFrameChange**
+Type: `Function`
+Required: No
+Default: `null`
 Callback run after animation.
 
-**preFrameChange**  
-Type: `Function`  
-Required: No  
-Default: `null`  
+**preFrameChange**
+Type: `Function`
+Required: No
+Default: `null`
 Callback run prior to animation.
 
-**prevText**  
-Type: `String`  
-Required: No  
-Default: `'Previous'`  
+**prevText**
+Type: `String`
+Required: No
+Default: `'Previous'`
 Previous button text.
 
-**preventNavDisable**  
-Type: `Boolean`  
-Required: No  
-Default: `false`  
+**preventNavDisable**
+Type: `Boolean`
+Required: No
+Default: `false`
 Prevents carousel from disabling previous/next controls.
 
-**ready**  
-Type: `Function`  
-Required: No  
-Default: `null`  
+**ready**
+Type: `Function`
+Required: No
+Default: `null`
 Callback run after init of carousel.
 
-**tileClass**  
-Type: `String`  
-Required: No  
-Default: `'carousel-tile'`  
+**tileClass**
+Type: `String`
+Required: No
+Default: `'carousel-tile'`
 Class name of individual tiles (i.e. li's in markup above).
 
-**tilesPerFrame**  
-Type: `Number`  
-Required: No  
-Default: `1`  
+**tilesPerFrame**
+Type: `Number`
+Required: No
+Default: `1`
 Number of visible tiles in carousel.
 
-**wrapperClass**  
-Type: `String`  
-Required: No  
-Default: `''`  
+**wrapperClass**
+Type: `String`
+Required: No
+Default: `''`
 Class name of outer wrapper (i.e. div with id "wrapper" above).
 
-**wrapControls**  
-Type: `Boolean` `HTML Element`  
-Required: No  
-Default: `false`  
+**wrapControls**
+Type: `Boolean` `HTML Element`
+Required: No
+Default: `false`
 Flag whether to wrap previous/next controls with separate wrapper element.  This option is later re-tasked as the actual controls wrapper element.
 
 
@@ -165,72 +165,72 @@ The included x.js script facilitates communication between the carousel and its 
 #### create( options ) ####
 Initializes the carousel.
 
-**options**  
-Type: `Object`  
+**options**
+Type: `Object`
 Configuration object for initialization of carousel (see [Options](#options) documentation above).
 
 #### getOption( key ) ####
 Returns the requested value from the [options object](#options).
 
-**key**  
-Type: `String`  
+**key**
+Type: `String`
 Corresponds to options object key.
 
 #### getState( key ) ####
 Returns the requested value from the state object.
 
-**key**  
-Type: `String`  
+**key**
+Type: `String`
 Corresponds to state object key.
 
 #### publish( channel, data ) ####
 Publish event (and data) to subscribers of this channel.
 
-**channel**  
-Type: `String`  
-Name of an event channel to publish to.  Typical format is *namespace/method/event* (i.e. *carousel/setup/before*)  
+**channel**
+Type: `String`
+Name of an event channel to publish to.  Typical format is *namespace/method/event* (i.e. *carousel/setup/before*)
 
-**data**  
-Type: any  
+**data**
+Type: any
 Data, if any, to be passed to subscribed listeners.
 
 #### subscribe( channel, method ) ####
 Assign an event listener to named event.  Returns token which can be later used with unsubscribe method to remove this subscription.
 
-**channel**  
-Type: `String`  
-Name of an event to subscribe to.  Typical format is *namespace/method/event* (i.e. *loop/init/after*)  
+**channel**
+Type: `String`
+Name of an event to subscribe to.  Typical format is *namespace/method/event* (i.e. *loop/init/after*)
 
-**method**  
-Type: `Function`  
+**method**
+Type: `Function`
 Event listener to invoke when subscribed to event is published.
 
 #### trigger( method ) ####
 Provides means to run core carousel methods in the proper context (i.e. this = carousel object).
 
-**method**  
-Type: `Function`  
+**method**
+Type: `Function`
 Core method of carousel to invoke.
 
 #### unsubscribe( token ) ####
 Remove event listener.
 
-**token**  
-Type: `Number`  
+**token**
+Type: `Number`
 Index of method in subscribers array.  This token is returned from the subscribe method above.
 
 ### Simple Plugin Example ###
 
 ```javascript
-define( 
+define(
     [
         'carousel'
     ],
-    
+
     function( carousel ) {
-        
+
         'use strict';
-        
+
         /**
          * Global Plugin Vars
          */
@@ -246,61 +246,61 @@ define(
          * Constructor
          */
         function Pluginname( api, options ) {
-    
+
             this.api = api;
             this.options = this.api.extend( {}, defaults, options );
-    
+
             this.setup();
         }
 
         Pluginname.prototype = {
-        
+
             // Init plugin (must be named 'setup'!)
             setup: function() {
 
                 var self = this; //alias 'this' for callbacks below
-                
+
                 // Subscribe to carousel events (i.e. init/after)
                 self.api.subscribe(
                     this.api.ns + '/init/after',
                     function() { //anonymous event listener
-                        
+
                         // Determine whether this plugin feature has been turned on
                         var pluginAttr = self.api.getOption( pluginNS );
 
-                        pluginOn = ( typeof pluginAttr === 'boolean' && pluginAttr === true ) || 
-                            typeof pluginAttr === 'object' ? 
+                        pluginOn = ( typeof pluginAttr === 'boolean' && pluginAttr === true ) ||
+                            typeof pluginAttr === 'object' ?
                             true : false;
-                        
+
                         // Plugin is enabled
                         if ( pluginOn ) {
-                            
+
                             // Call internal method (bound call)
                             self.pluginMethod1.call( self );
                         }
                     }
                 );
-                
+
                 // Simple event subscriber (i.e. single named function listener)
                 self.api.subscribe(
                     self.api.ns + '/cache/after',
                     self.pluginMethod2.bind( self ) //bound to this object
                 );
             },
-        
+
             pluginMethod1: function() {
 
                 // Plugin behavior goes here
                 ...
             },
-        
+
             pluginMethod2: function( key, value ) {
 
                 // Plugin behavior goes here
                 ...
             }
         };
-        
+
         // Create plugin by calling 'plugin' method of x.js
         carousel.plugin( pluginNS, function( options, api ) {
 
