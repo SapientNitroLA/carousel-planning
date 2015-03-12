@@ -120,15 +120,6 @@ define(
                             // Override carousel's core navigate method
                             origNavMethod = self.api.override( 'navigate', function( index, prevAnim ) {
 
-                                // If carousel is animating, halt further processing
-                                if ( animating ) { 
-
-                                    carousel.style.transition = translateStr;
-                                    carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
-
-                                    // return;
-                                }
-
                                 // If animation prevented, update the position of carousel statically (default method)
                                 if ( prevAnim ) {
 
@@ -169,7 +160,7 @@ define(
                     , seconds = options.interval / 1000
                     , supportsTransitions = self.carData.supportsTransitions
                     , transitionData = self.carData.transitionData
-                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
+                    , vendorPrefix = self.carData.vendorPrefix
                     , transformAttr = vendorPrefix + 'transform'
                     , transitionEvent = ( transitionData && transitionData.endEvt ) ? transitionData.endEvt : 'transitionend'
                     , translateAmt = tilePercent * targetIndex
