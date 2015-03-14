@@ -169,7 +169,7 @@ define(
         xApi.define = function( namespace, inter ) {
 
             // Component constructor
-            var constructor = function( args ) {
+            var constructor = function( spec ) {
 
                 var compInterface = {};
 
@@ -186,17 +186,17 @@ define(
                  */
                 inter.setupPlugins = function setupPlugins() {
 
-                    compInterface.plugins = constructor.plugins;
+                    var plugins = constructor.plugins;
 
-                    for ( var member in compInterface.plugins ) {
+                    for ( var member in plugins ) {
 
-                        if ( compInterface.plugins.hasOwnProperty( member ) ) {
+                        if ( plugins.hasOwnProperty( member ) ) {
 
                             if ( !( member in compInterface.options ) ) continue;
 
                             compInterface.x.nsPlugin = member;
 
-                            compInterface.plugins[ member ]( compInterface.x, compInterface.options[ member ] );
+                            plugins[ member ]( compInterface.x, compInterface.options[ member ] );
                         }
                     }
                 };
@@ -211,16 +211,16 @@ define(
                 }
 
                 // Pass in constructor arguments to new component instance
-                compInterface.setup.apply( compInterface, args );
+                compInterface.setup.apply( compInterface, spec );
 
                 return compInterface;
             };
 
-            constructor.plugins = {};
-
             /*
              *  Provide static interface for component (non-instance)
              */
+            constructor.plugins = {};
+
             constructor.plugin = function plugin( name, factory ) {
 
                 constructor.plugins[ name ] = factory;
