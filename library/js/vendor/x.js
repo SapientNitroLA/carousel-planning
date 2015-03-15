@@ -168,8 +168,10 @@ define(
 
         xApi.define = function( namespace, inter ) {
 
+            var plugins = {};
+
             // Component constructor
-            var constructor = function( spec ) {
+            var constructor = function( config ) {
 
                 var compInterface = {};
 
@@ -186,22 +188,18 @@ define(
                  */
                 inter.setupPlugins = function setupPlugins() {
 
-                    var plugins = constructor.plugins;
-
                     for ( var member in plugins ) {
 
                         if ( plugins.hasOwnProperty( member ) ) {
 
                             if ( !( member in compInterface.options ) ) continue;
 
-                            compInterface.x.nsPlugin = member;
-
                             plugins[ member ]( compInterface.x, compInterface.options[ member ] );
                         }
                     }
                 };
 
-                // Copy provided component core object into instance interface
+                // Copy provided component core object & properties defined above into instance interface
                 for ( var member in inter ) {
 
                     if ( inter.hasOwnProperty( member ) ) {
@@ -210,8 +208,8 @@ define(
                     }
                 }
 
-                // Pass in constructor arguments to new component instance
-                compInterface.setup.apply( compInterface, spec );
+                // Pass in config object to instance's setup method
+                compInterface.setup.apply( compInterface, config );
 
                 return compInterface;
             };
@@ -219,11 +217,9 @@ define(
             /*
              *  Provide static interface for component (non-instance)
              */
-            constructor.plugins = {};
-
             constructor.plugin = function plugin( name, factory ) {
 
-                constructor.plugins[ name ] = factory;
+                plugins[ name ] = factory;
             };
 
             constructor.create = function create() {
