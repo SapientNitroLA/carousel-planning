@@ -15,15 +15,15 @@ define(
                 component: component
             };
 
-            xObj.getState = function( key ) {
+            xObj.getState = function getState( key ) {
                 return component.state[ key ];
             };
 
-            xObj.getOption = function( key ) {
+            xObj.getOption = function getOption( key ) {
                 return component.options[ key ];
             };
 
-            xObj.trigger = function ( method ) {
+            xObj.trigger = function trigger( method ) {
 
                 var func = component[ method ];
 
@@ -32,7 +32,7 @@ define(
                 return func.apply( component, [].slice.call( arguments, 1 ) );
             };
 
-            xObj.subscribe = function( channel, method ) {
+            xObj.subscribe = function subscribe( channel, method ) {
 
                 var subscribers;
 
@@ -53,7 +53,7 @@ define(
                 return xObj.tokenUid;
             };
 
-            xObj.unsubscribe = function( token ) {
+            xObj.unsubscribe = function unsubscribe( token ) {
 
                 var subscribers;
 
@@ -79,7 +79,7 @@ define(
                 return xObj;
             };
 
-            xObj.publish = function( channel ) {
+            xObj.publish = function publish( channel ) {
 
                 var subscribers = xObj.channels[ channel ]
                     , subsLength = subscribers ? subscribers.length : 0
@@ -94,7 +94,7 @@ define(
                 return xObj;
             };
 
-            xObj.override = function ( name, func ) {
+            xObj.override = function override( name, func ) {
 
                 if ( !xObj.component.override ) { return; }
 
@@ -138,7 +138,7 @@ define(
                 var compInterface = {
                     state: {},
                     ns: namespace,
-                    setupPlugins: function setupPlugins() {
+                    setupPlugins: function setupPlugins() { //inits instance-level plugin functionality
 
                         for ( var member in plugins ) {
 
@@ -152,11 +152,11 @@ define(
                     }
                 };
                     
-                // Provide an new instance of X
+                // Provide an instance of X API to new interface
                 compInterface.x = xApi( compInterface );
                 compInterface.x.ns = namespace;
 
-                // Copy spec into newly created instance interface
+                // Copy spec into interface
                 for ( var prop in spec ) {
 
                     if ( spec.hasOwnProperty( prop ) ) {
@@ -165,7 +165,7 @@ define(
                     }
                 }
 
-                // Pass in config object to instance's setup method
+                // Pass in config object to new instance's setup method
                 compInterface.setup.apply( compInterface, config );
 
                 return compInterface;
