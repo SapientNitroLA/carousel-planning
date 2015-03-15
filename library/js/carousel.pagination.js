@@ -294,9 +294,9 @@ define(
             }
         };
 
-        carousel.plugin( pluginNS, function( options, api ) {
+        carousel.plugin( pluginNS, function( api, options ) {
 
-            new Pagination( options, api );
+            new Pagination( api, options );
         });
     }
 );

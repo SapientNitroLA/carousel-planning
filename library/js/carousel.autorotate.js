@@ -146,9 +146,9 @@ define(
             },
         };
     
-        carousel.plugin( pluginNS, function( options, api ) {
+        carousel.plugin( pluginNS, function( api, options ) {
 
-            new Autorotate( options, api );
+            new Autorotate( api, options );
         });
     }
 );

@@ -254,9 +254,9 @@ define(
             }
         };
     
-        carousel.plugin( pluginNS, function( options, api ) {
+        carousel.plugin( pluginNS, function( api, options ) {
 
-            new Animate( options, api );
+            new Animate( api, options );
         });
     }
 );

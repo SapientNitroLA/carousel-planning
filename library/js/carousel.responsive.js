@@ -105,9 +105,9 @@ define(
             }
         };
     
-        carousel.plugin( 'responsive', function( options, api ) {
+        carousel.plugin( 'responsive', function( api, options ) {
 
-            new Responsive( options, api );
+            new Responsive( api, options );
         });
     }
 );
