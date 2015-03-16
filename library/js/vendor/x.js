@@ -197,6 +197,16 @@ define(
             return xObj;
         }
 
+        /**
+         * Creates static interface for instantiating components and plugins
+         *
+         * @method define
+         * @param {String} namespace Namespace of component
+         * @param {Object} spec Core object to be used for instantiating new components
+         * @return {Object} Returns X API
+         * @chainable
+         * @public
+         */
         xApi.define = function( namespace, spec ) {
 
             var plugins = {};
