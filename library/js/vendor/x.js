@@ -271,7 +271,6 @@ define(
              * Instantiates component (usually called from mediator)
              *
              * @method constructor.create
-             * @param {Object} config Configuration spec for new instance
              * @return {Object} Component instance (component.setup() ran)
              * @public
              */
