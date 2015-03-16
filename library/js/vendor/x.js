@@ -67,7 +67,7 @@ define(
              * @method subscribe
              * @param {String} channel Name of publishable event
              * @param {Function} method Function to run when named event is published
-             * @return {Number} Token ID of channel/method entry (used in unsubscribe method)
+             * @return {Number} Token of channel/method entry (used in unsubscribe method)
              * @public
              */
             xObj.subscribe = function subscribe( channel, method ) {
@@ -95,9 +95,8 @@ define(
              * Unsubscribe channel/method entry from internal pub-sub system
              *
              * @method unsubscribe
-             * @param {Number} token Token ID of channel/method entry
-             * @return {Object} Returns X API
-             * @chainable
+             * @param {Number} token Token of channel/method entry
+             * @return {Number} {Object} Returns token if found in channels object, otherwise X API
              * @public
              */
             xObj.unsubscribe = function unsubscribe( token ) {
