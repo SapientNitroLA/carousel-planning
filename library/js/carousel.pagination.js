@@ -49,7 +49,7 @@ define(
                 this.funcs = {
                     updatePagination: this.updatePagination.bind( this )
                 };
-                
+
                 this.pluginNS = pluginNS;
 
                 this.api.subscribe(
@@ -92,7 +92,7 @@ define(
             buildPagination: function( controls, btnPrev, btnNext ) {
 
                 this.api.publish( this.pluginNS + '/buildPagination/before' );
-                
+
                 var paginationArr = this.api.trigger( 'cache', this.pluginNS + '/paginationArr' );
 
                 var current
@@ -129,25 +129,25 @@ define(
 
                     paginationLength = paginationArr.length;
                 }
-                
+
                 else {
 
                     paginationLength  = ( this.api.getOption( 'incrementMode' ) === 'frame' ) ? curFrameLength : curTileLength;
-                    
+
                     paginationArr = [];
-                    
+
                     for ( var i = 0; i < paginationLength; i++ ) {
-                        
+
                         paginationArr.push( i );
                     }
                 }
-                
+
                 this.paginationArr = paginationArr;
                 this.pagination = btnNextParent.insertBefore( pagination, btnNext );
 
                 // Build pagination links
                 for ( var i = 0, p = 1; i < paginationLength; i++, p++ ) {
-                    
+
                     isSelected = frameIndex === paginationArr[ i ];
                     selectedClass = isSelected ? selected : '';
                     current = isSelected ? options.frameCurrentText : '';
@@ -170,7 +170,7 @@ define(
                 this.updatePagination();
 
                 this.api.addEvent( this.pagination, 'click', this.handlePagination.bind( this ) );
-                
+
                 this.api.publish( this.pluginNS + '/buildPagination/after' );
             },
 
@@ -183,7 +183,7 @@ define(
                 if ( !( this.options.center && this.options.wrapControls ) ) return;
 
                 controlsWidth = this.api.outerWidth( this.dom.controls );
-                
+
                 this.dom.controls.style.position = 'relative';
                 this.dom.controls.style.left = '50%';
                 this.dom.controls.style.marginLeft = '-' + controlsWidth / 2 + 'px';
@@ -216,24 +216,24 @@ define(
             },
 
             updatePagination: function() {
-                
+
                 this.api.publish( this.pluginNS + '/updatePagination/before' );
-                
+
                 var pageLink, linkClass, loopLength;
                 var newFrame = [];
                 var newFrameIndex = this.api.trigger( 'cache', this.pluginNS + '/newFrameIndex' );
-                
+
                 //console.log(newFrameIndex, this.api.getObjType( newFrameIndex ));
-                
+
                 // Turn off all pagination links
                 for ( var i = 0; i < this.paginationLinks.length; i++ ) {
 
                     pageLink = this.paginationLinks[ i ];
                     linkClass = pageLink.className;
-                    
+
                     // If link is currently selected, turn off
                     if ( linkClass.match( rSelected ) ) {
-                        
+
                         linkClass = linkClass.replace( rSelected, '' );
                         pageLink.className = linkClass;
                         pageLink.removeAttribute( 'title' );
@@ -242,7 +242,7 @@ define(
                         if ( !multipleOn ) break;
                     }
                 }
-                
+
                 // No cached new index value, so get current index from state object
                 if ( typeof newFrameIndex === 'undefined' ) {
 
@@ -271,14 +271,14 @@ define(
 
                 // Turn current pagination link on
                 if ( newFrame && newFrame.length > 0 ) {
-                    
+
                     for ( i = 0; i < newFrame.length; i++ ) {
 
                         newFrame[i].className += selected;
                         newFrame[i].setAttribute( 'title', this.options.frameCurrentText );
                     }
                 }
-                
+
                 this.api.publish( this.pluginNS + '/updatePagination/after' );
             }
         };

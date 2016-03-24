@@ -177,7 +177,7 @@ define(
          * @private
          */
         function addEvent( obj, evt, fn, capture ) {
-            
+
             if ( obj.addEventListener ) {
                 if ( !capture ) capture = false;
                 obj.addEventListener( evt, fn, capture );
@@ -203,7 +203,7 @@ define(
          * @private
          */
         function removeEvent( obj, evt, fn ) {
-            
+
             if ( obj.removeEventListener ){
                 obj.removeEventListener( evt, fn, false );
             }
@@ -220,7 +220,7 @@ define(
          * @param {Number} interval Interval at which to call provided function
          * @param {Number} repeats Number of times to repeat
          * @param {Boolean} immediate Flag for delaying running of callback
-         * @param {Function} callback Function to run at intervals 
+         * @param {Function} callback Function to run at intervals
          * @author http://codereview.stackexchange.com/questions/13046/javascript-repeat-a-function-x-times-at-i-intervals
          * @private
          */
@@ -240,7 +240,7 @@ define(
             // Run immediately
             if ( !!immediate ) { trigger(); }
         }
-        
+
         /**
          * Provides a more accurate object type string than typeof operator
          *
@@ -250,7 +250,7 @@ define(
          * @private
          */
         function getObjType( obj ) {
-            
+
             return Object.prototype.toString.call( obj );
         }
 
@@ -375,10 +375,10 @@ define(
                     , viewport          = templates.viewport.cloneNode( true )
                     , tilesPerFrame     = options.tilesPerFrame
                     ;
-                
+
                 // Save original tiles per frame data
                 self.options.origTilesPerFrame = tilesPerFrame;
-                    
+
                 // Make the main elements available to `this`
                 self.parentNode = carousel.parentNode;
                 self.wrapper = wrapper;
@@ -394,7 +394,7 @@ define(
                 if ( nextSibling ) {
                     insertAfter( wrapper, nextSibling );
                 }
-                
+
                 else {
                     parentNode.appendChild( wrapper );
                 }
@@ -450,7 +450,7 @@ define(
              * @method cache
              * @param {String} key Name of variable to be cached
              * @param {Any} value Value of variable to be cached (optional)
-             * @return {Object} {Any} Value of requested variable (read) or entire cache object (set) 
+             * @return {Object} {Any} Value of requested variable (read) or entire cache object (set)
              * @public
              */
             cache: function( key, value ) {
@@ -471,7 +471,7 @@ define(
 
                 return cache;
             },
-            
+
             /**
              * Re-initializes all carousel functionality
              *
@@ -479,16 +479,16 @@ define(
              * @public
              */
             reinit: function() {
-                
+
                 this.x.publish( this.ns + '/reinit/before' );
-                
+
                 this.buildFrames();
-                
+
                 this.rebuildNavigation();
-                
+
                 this.x.publish( this.ns + '/reinit/after' );
             },
-            
+
             /**
              * Updates properties in configuration options object, and runs reinit if necessary
              *
@@ -498,23 +498,23 @@ define(
              * @public
              */
             updateOptions: function( optsObj ) {
-                
+
                 var rebuild;
 
                 if ( getObjType( optsObj ) !== '[object Object]' ) return false;
-                    
+
                 rebuild = ( typeof optsObj.tilesPerFrame === 'number' && optsObj.tilesPerFrame !== this.options.tilesPerFrame ) ? true : false;
-                
+
                 this.x.extend( this.options, optsObj );
-                
+
                 if ( rebuild ) {
 
                     this.reinit();
                 }
-            
+
                 return this.options;
             },
-            
+
             /**
              * Updates properties in state object
              *
@@ -524,11 +524,11 @@ define(
              * @public
              */
             updateState: function( stateObj ) {
-                
+
                 if ( getObjType( stateObj ) !== '[object Object]' ) return false;
-                    
+
                 this.x.extend( this.state, stateObj );
-            
+
                 return this.state;
             },
 
@@ -586,7 +586,7 @@ define(
 
                 self.x.publish( self.ns + '/initState/after' );
             },
-            
+
             /**
              * Populates state object, including width calculations based on tilesPerFrame
              *
@@ -594,9 +594,9 @@ define(
              * @public
              */
             buildFrames: function() {
-                
+
                 this.x.publish( this.ns + '/buildFrames/before' );
-                
+
                 var tiles
                     , thisFrame
                     , frameStart
@@ -611,9 +611,9 @@ define(
                     ;
 
                 self.toggleAria( state.tileArr, 'add' ); //hide all tiles
-                
+
                 state.frameArr = [];
-                
+
                 for ( var sec = 0, len = tileArr.length / tilesPerFrame, count = 1;
                         sec < len;
                         sec++, count++ ) {
@@ -660,48 +660,48 @@ define(
                 self.cache( 'trackPercent', 100 * state.curTileLength );
                 self.cache( 'trackWidth', self.cache( 'tileWidth' ) * state.curTileLength );
                 // self.cache( 'frameWidth', options.tilesPerFrame * self.cache( 'tileWidth' ) );
-                
+
                 //call calculate - updates state (publish)
                 //dom styler - applies calculations (subscribed)
                 self.calcDimensions( tilesPerFrame );
 
                 self.updateDimensions();
-                
+
                 // Update position of carousel based on index
                 self.updatePosition( state.index );
-                
+
                 // Determine current frame based on increment mode
                 if ( options.incrementMode === 'frame' ) { //frame increment
-                    
+
                     thisFrame = state.curFrame;
                 }
-                
+
                 else { //tile increment
-                    
+
                     thisFrame = [];
-                    
+
                     frameEnd = state.index + tilesPerFrame;
                     carEnd = state.curTileLength;
-                    
+
                     if ( frameEnd > carEnd ) {
-                        
+
                         frameStart = carEnd - tilesPerFrame;
                         frameEnd = carEnd;
                     }
-                    
+
                     else {
 
                         frameStart = state.index;
                     }
-                    
+
                     for ( var i = frameStart; i < frameEnd; i++ ) {
 
                         thisFrame.push( state.tileArr[ i ] );
                     }
                 }
-                
+
                 self.toggleAria( thisFrame, 'remove' ); //makes tiles in current frame visible
-                
+
                 self.x.publish( self.ns + '/buildFrames/after' );
             },
 
@@ -718,7 +718,7 @@ define(
 
                 // Don't update state during tile transition
                 if ( !this.cache( 'animating' ) ) {
-                
+
                     this.x.publish( this.ns + '/syncState/before', this.state.index, index );
 
                     var self                = this
@@ -745,25 +745,25 @@ define(
                         };
 
                     self.updateState( updateObj );
-                
+
                     // Animate tile index change
                     if ( animate ) {
 
                         self.animate();
                     }
-                    
+
                     // Even if no animation, make sure carousel correctly positioned
                     else {
 
                         self.updatePosition( state.index );
                     }
-                    
+
                     self.x.publish( self.ns + '/syncState/after', origIndex, index );
 
                     return state;
                 }
             },
-            
+
             /**
              * Goes to indicated tile without an animation
              *
@@ -785,13 +785,13 @@ define(
                     , transformAttr = vendorPrefix + 'transform'
                     , transitionAttr = vendorPrefix + 'transition'
                     ;
-                
+
                 if ( supportsTransitions ) {
 
                     // Prevent animation of re-position
                     carousel.style.transition = '';
                     carousel.style[ transitionAttr ] = '';
-                    
+
                     carousel.style.transform = transformStr;
                     carousel.style[ transformAttr ] = transformStr;
                 }
@@ -801,7 +801,7 @@ define(
 
                     carousel.style.msTransform = transformStr;
                 }
-                
+
                 self.toggleAria( state.tileArr, 'add' );
                 self.toggleAria( state.curFrame, 'remove' );
             },
@@ -913,7 +913,7 @@ define(
 
                     //state.curTile.focus();
                     carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
-                    
+
                     self.cache( 'animating', false );
 
                     // Execute postFrameChange callback
@@ -1063,7 +1063,7 @@ define(
 
                 self.x.publish( self.ns + '/navigation/after' );
             },
-            
+
             /**
              * Re-builds out controls container and previous/next buttons (removing any previously existing elements)
              *
@@ -1071,16 +1071,16 @@ define(
              * @public
              */
             rebuildNavigation: function() {
-                
+
                 if ( this.controlsWrapper ) {
-                
+
                     this.x.publish( this.ns + '/navigation/rebuild/before' );
-                    
+
                     // Double parentNode necessary since controlsWrapper element is getting overwritten with controls element
                     this.controlsWrapper.parentNode.parentNode.removeChild( this.controlsWrapper.parentNode );
-                    
+
                     this.buildNavigation();
-                
+
                     this.x.publish( this.ns + '/navigation/rebuild/after' );
                 }
             },
@@ -1100,9 +1100,9 @@ define(
                     , isFirst = index === 0
                     , isLast = index + self.options.tilesPerFrame >= state.curTileLength
                     ;
-                
+
                 if ( options.preventNavDisable ) return;
-                
+
                 if ( isFirst ) self.prevBtn.disabled = true;
                 else self.prevBtn.disabled = false;
 
@@ -1195,13 +1195,13 @@ define(
                     , options = self.options
                     , frame = parseInt( frame, 10 )
                     , tilesPerFrame = self.options.tilesPerFrame
-                    , index = ( options.incrementMode === 'frame' ) ? 
+                    , index = ( options.incrementMode === 'frame' ) ?
                             frame * tilesPerFrame : frame
                     ;
 
                 index = index < 0 ? 0 : index;
 
-                if ( 
+                if (
                     ( options.incrementMode === 'tile' && index === state.index ) ||
                     ( options.incrementMode === 'frame' && frame > state.curFrameLength )
                 ) {

@@ -1,5 +1,5 @@
 require(
-    
+
 	[
 		'carousel',
         'carousel.pagination',
@@ -7,9 +7,9 @@ require(
         'carousel.loop',
         'carousel.responsive'
 	],
-    
+
     function( carousel ) {
-		
+
         var myCarousel = carousel.create({
             element: document.getElementById( 'example-carousel' ),
             wrapperClass: 'test-1 test-2',
@@ -27,7 +27,7 @@ require(
             loop: true
             //responsive: true
         });
-    
+
         // var myCarousel2 = carousel.create({
         //     element: document.getElementById( 'example-carousel-2' ),
         //     wrapperClass: 'test-3 test-4',
@@ -37,7 +37,7 @@ require(
         //     prevText: '<',
         //     nextText: '>',
         // });
-        
+
         // var myCarousel3 = carousel.create({
         //     element: document.getElementById( 'example-carousel-3' ),
         //     wrapperClass: 'test-5 test-6',
