@@ -37,6 +37,10 @@
 	display:block;
 }
 
+.carousel-no-transition {
+  transition: none !important;
+}
+
 /*
 ACCESSIBILITY
 ---------------------------------*/
@@ -50,8 +54,8 @@ ACCESSIBILITY
   visibility:hidden;
 }
 .state-hidden * {
-/*    display:none;*/
-    visibility:hidden;
+/* display:none;*/
+  visibility:hidden;
 }
 /*.carousel-viewport ul li {
     outline:none;

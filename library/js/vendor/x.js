@@ -1,112 +1,58 @@
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
-if (!Function.prototype.bind) {
-    Function.prototype.bind = function (oThis) {
-        if (typeof this !== "function") {
-            // closest thing possible to the ECMAScript 5 internal IsCallable function
-            throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
-        }
-
-        var aArgs = Array.prototype.slice.call(arguments, 1),
-            fToBind = this,
-            fNOP = function () {},
-            fBound = function () {
-              return fToBind.apply(this instanceof fNOP && oThis
-                                     ? this
-                                     : oThis,
-                                   aArgs.concat(Array.prototype.slice.call(arguments)));
-            };
-
-        fNOP.prototype = this.prototype;
-        fBound.prototype = new fNOP();
-
-        return fBound;
-    };
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-if (typeof Object.create != 'function') {
-    (function () {
-        var F = function () {};
-        Object.create = function (o) {
-            if (arguments.length > 1) { throw Error('Second argument not supported');}
-            if (o === null) { throw Error('Cannot set a null [[Prototype]]');}
-            if (typeof o != 'object') { throw TypeError('Argument must be an object');}
-            F.prototype = o;
-            return new F;
-        };
-    })();
-}
-
 define(
 
     [],
 
     function() {
 
-        // Provide component's static API
-        var staticAPI = {
+        'use strict';
 
-            plugin: function plugin( name, factory ) {
+        /**
+         * X API constructor (don't use new keyword)
+         *
+         * @module xApi
+         */
+        function xApi( component ) {
 
-                this.prototype.plugins[ name ] = factory;
-            },
+            var xObj = {}
+                , channels = {}
+                , tokenUid = -1
+                ;
 
             /**
-             * Provide a way to abstract away the use of the `new` keyword to instantiate a component.
+             * Retrieve value from component state object
+             *
+             * @method getState
+             * @param {String} key Key of requested state object entry
+             * @return {Any} Value of requested state key
+             * @public
              */
-            create: function create() {
+            xObj.getState = function getState( key ) {
 
-                var args = arguments
-                    , constructorFn = this
-                    ;
-
-                var aliasFn = function () {
-
-                    constructorFn.apply( this, args );
-                };
-
-                aliasFn.prototype = constructorFn.prototype;
-
-                return new aliasFn();
-            }
-        };
-
-        // Provide component's prototype API
-        var protoAPI = {
-
-            plugins: {},
-
-            setupPlugins: function setupPlugins() {
-
-                var plugins = this.plugins;
-
-                for ( var member in plugins ) {
-
-                    if ( !( member in this.options ) ) continue;
-
-                    this.x.nsPlugin = member;
-
-                    plugins[ member ]( this.x, this.options[ member ] );
-                }
-            }
-        };
-
-        // The X library's constructor
-        function X( component ) {
-
-            this.channels = {};
-            this.tokenUid = -1;
-            this.component = component;
-
-            this.getState = function( key ) {
                 return component.state[ key ];
             };
 
-            this.getOption = function( key ) {
+            /**
+             * Retrieve value from component option object
+             *
+             * @method getOption
+             * @param {String} key Key of requested options object entry
+             * @return {Any} Value of requested option key
+             * @public
+             */
+            xObj.getOption = function getOption( key ) {
+
                 return component.options[ key ];
             };
 
-            this.trigger = function ( method ) {
+            /**
+             * Trigger component method in context of component instance (called from plugin)
+             *
+             * @method trigger
+             * @param {Function} method Component method to run
+             * @return {Any} Returns any value returned by component method triggered
+             * @public
+             */
+            xObj.trigger = function trigger( method ) {
 
                 var func = component[ method ];
 
@@ -114,135 +60,238 @@ define(
 
                 return func.apply( component, [].slice.call( arguments, 1 ) );
             };
-        }
 
-        X.define = function( namespace, proto ) {
-
-            // Component constructor
-            var F = function() {
-
-                this.state = {};
-                this.ns = namespace;
-
-                // Provide an new instance of X
-                // Pass in the component
-                this.x = new X( this );
-                this.x.ns = namespace;
-
-                // Pass in constructor arguments to new component
-                this.setup.apply( this, arguments );
-            };
-
-            // Provide the component with static API
-            for ( var member in staticAPI ) {
-
-                F[ member ] = staticAPI[ member ];
-            }
-
-            // Provide the component's prototype with an API
-            for ( var member in protoAPI ) {
-
-                proto[ member ] = protoAPI[ member ];
-            }
-
-            // Add the component's members to the prototype
-            F.prototype = proto;
-
-            // Return the statc component
-            return F;
-        };
-
-        X.prototype = {
-
-            subscribe: function( channel, method ) {
+            /**
+             * Subscribe method to channel in internal pub-sub system
+             *
+             * @method subscribe
+             * @param {String} channel Name of publishable event
+             * @param {Function} method Function to run when named event is published
+             * @return {Number} Token of channel/method entry (used in unsubscribe method)
+             * @public
+             */
+            xObj.subscribe = function subscribe( channel, method ) {
 
                 var subscribers;
 
-                this.tokenUid = this.tokenUid + 1;
+                tokenUid = tokenUid + 1;
 
-                if ( !this.channels[ channel ] ) {
-                    this.channels[ channel ] = [];
+                if ( !channels[ channel ] ) {
+
+                    channels[ channel ] = [];
                 }
 
-                subscribers = this.channels[ channel ];
+                subscribers = channels[ channel ];
 
                 subscribers.push({
-                    token: this.tokenUid,
+                    token: tokenUid,
                     method: method
                 });
 
-                return this.tokenUid;
-            },
+                return tokenUid;
+            };
 
-            unsubscribe: function( token ) {
+            /**
+             * Unsubscribe channel/method entry from internal pub-sub system
+             *
+             * @method unsubscribe
+             * @param {Number} token Token of channel/method entry
+             * @return {Number} {Object} Returns token if found in channels object, otherwise X API
+             * @public
+             */
+            xObj.unsubscribe = function unsubscribe( token ) {
 
                 var subscribers;
 
-                for ( var channel in this.channels ) {
+                for ( var channel in channels ) {
 
-                    subscribers = this.channels[ channel ];
+                    if ( channels.hasOwnProperty( channel ) ) {
 
-                    if ( !subscribers ) { continue; }
+                        subscribers = channels[ channel ];
 
-                    for ( var i = 0, len = subscribers.length; i < len; i++ ) {
+                        if ( !subscribers ) { continue; }
 
-                        if ( !( subscribers[i].token === token ) ) { continue; }
+                        for ( var i = 0, len = subscribers.length; i < len; i++ ) {
 
-                        subscribers.splice( i, 1 );
+                            if ( subscribers[ i ].token !== token ) { continue; }
 
-                        return token;
+                            subscribers.splice( i, 1 );
+
+                            return token;
+                        }
                     }
                 }
 
-                return this;
-            },
+                return xObj;
+            };
 
-            publish: function( channel, data ) {
+            /**
+             * Publishes events within internal pub-sub system
+             *
+             * @method publish
+             * @param {String} channel Name of event to publish
+             * @return {Object} Returns X API
+             * @chainable
+             * @public
+             */
+            xObj.publish = function publish( channel ) {
 
-                var subscribers = this.channels[ channel ]
+                var subscribers = channels[ channel ]
                     , subsLength = subscribers ? subscribers.length : 0
                     ;
 
                 if ( !subscribers ) { return false; }
 
                 while ( subsLength-- ) {
+
                     subscribers[ subsLength ].method.apply( subscribers[ subsLength ], [].slice.call( arguments, 1 ) );
                 }
 
-                return this;
-            },
-
-            override: function ( name, func ) {
-
-                if ( !this.component.override ) { return; }
-
-                this.component.override.call( this.component, name, func );
-            },
+                return xObj;
+            };
 
             /**
-             * Simple method for extending multiple objects into one.
+             * Calls component's override method
              *
-             * @source http://stackoverflow.com/questions/11197247/javascript-equivalent-of-jquerys-extend-method/11197343#11197343
+             * @method override
+             * @param {String} name Name of component method to override
+             * @param {Function} func Function which will override component method
+             * @return {Any} Returns any value returned by component override method
+             * @public
              */
-            extend: function extend() {
+            xObj.override = function override( name, func ) {
+
+                if ( !component.override ) { return; }
+
+                return component.override.call( component, name, func );
+            };
+
+            /**
+             * Simple method for extending multiple objects into one
+             *
+             * @method extend
+             * @param {Object} Objects to be extended (at least 2)
+             * @return {Object} New extended object
+             * @author http://stackoverflow.com/questions/11197247/javascript-equivalent-of-jquerys-extend-method/11197343#11197343
+             * @public
+             */
+            xObj.extend = function extend() {
 
                 var length = arguments.length;
 
-                for( var i = 1; i < length; i++ ) {
+                for ( var i = 1; i < length; i++ ) {
 
-                    for( var key in arguments[i] ) {
+                    for ( var key in arguments[ i ] ) {
 
-                        if( arguments[i].hasOwnProperty( key ) ) {
+                        if( arguments[ i ].hasOwnProperty( key ) ) {
 
-                            arguments[0][key] = arguments[i][key];
+                            arguments[ 0 ][ key ] = arguments[ i ][ key ];
                         }
                     }
                 }
 
-                return arguments[0];
-            }
+                return arguments[ 0 ];
+            };
+
+            return xObj;
+        }
+
+        /**
+         * Creates static interface for instantiating components and plugins
+         *
+         * @method define
+         * @param {String} namespace Namespace of component
+         * @param {Object} spec Core object to be used for instantiating new components
+         * @return {Object} Returns X API
+         * @chainable
+         * @public
+         */
+        xApi.define = function( namespace, spec ) {
+
+            var plugins = {};
+
+            /**
+             * Component instance constructor (don't use new keyword)
+             *
+             * @module component
+             */
+            var constructor = function( args ) {
+
+                /**
+                 * Component instance interface
+                 *
+                 * @module instance
+                 */
+                var compInterface = {
+                    ns: namespace,
+                    /**
+                     * Initiates instance-level plugin functionality
+                     *
+                     * @method setupPlugins
+                     * @public
+                     */
+                    setupPlugins: function setupPlugins() {
+
+                        for ( var member in plugins ) {
+
+                            if ( plugins.hasOwnProperty( member ) ) {
+
+                                if ( !( member in compInterface.options ) ) continue;
+
+                                plugins[ member ]( compInterface.x, compInterface.options[ member ] );
+                            }
+                        }
+                    }
+                };
+
+                // Copy spec into interface
+                for ( var prop in spec ) {
+
+                    if ( spec.hasOwnProperty( prop ) ) {
+
+                        compInterface[ prop ] = spec[ prop ];
+                    }
+                }
+                    
+                // Provide an instance of X API to new interface
+                compInterface.x = xApi( compInterface );
+                compInterface.x.ns = namespace;
+
+                // Pass arguments to new instance's setup method
+                compInterface.setup.apply( compInterface, args );
+
+                return compInterface;
+            };
+
+            /**
+             * Registers plugin factory functions (called from each plugin)
+             *
+             * @method constructor.plugin
+             * @param {String} name Plugin namespace
+             * @param {Object} factory Plugin factory function
+             * @public
+             */
+            constructor.plugin = function plugin( name, factory ) {
+
+                plugins[ name ] = factory;
+            };
+
+            /**
+             * Instantiates component (usually called from mediator)
+             *
+             * @method constructor.create
+             * @return {Object} Component instance (component.setup() ran)
+             * @public
+             */
+            constructor.create = function create() {
+
+                return constructor( arguments );
+            };
+
+            // Return static interface
+            return constructor;
         };
 
-        return X;
+        return xApi;
     }
 );

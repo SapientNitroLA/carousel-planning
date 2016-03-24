@@ -33,17 +33,15 @@ define(
 
                 var self = this;
                 
-                this.updatePosition = false;
+                self.updatePosition = false;
                 
-                this.funcs = {
-                    updatePagination: this.updatePagination.bind( this )
+                self.funcs = {
+                    updatePagination: self.updatePagination.bind( self )
                 };
                 
                 // Carousel subscribers
-                this.api.subscribe(
-                    
-                    this.api.ns + '/buildFrames/before',
-                    
+                self.api.subscribe(
+                    self.api.ns + '/buildFrames/before',
                     function() {
                         
                         var pluginAttr = self.api.getOption( pluginNS );
@@ -71,7 +69,7 @@ define(
                                 );
 
                                 self.api.subscribe(
-                                    self.api.ns + '/animate/after',
+                                    'animate/transition/after',
                                     self.reposition.bind( self )
                                 );
 
@@ -197,7 +195,7 @@ define(
                 this.api.trigger( 'updateState', updateObj );
             },
             
-            checkLoop: function( origIndex, newIndex ) {
+            checkLoop: function( newIndex ) {
                 
                 var updateObj       = {},
                     tilesPerFrame   = this.carousel.tilesPerFrame,
@@ -238,7 +236,7 @@ define(
                 
                 if ( this.updatePosition ) {
 
-                    this.api.trigger( 'syncState', this.carousel.index, false );
+                    this.api.trigger( 'navigate', this.carousel.index, true );
                     this.updatePosition = false;
                 }
             },

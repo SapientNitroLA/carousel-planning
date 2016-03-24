@@ -4,24 +4,45 @@
 	<meta charset="UTF-8" />
 	<title>Example Carousel</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
 	<link rel="stylesheet" href="library/css/core.css" />
 	
 	<style>
 		.prevFrame {
-			float: left;
+			position: absolute;
+      bottom: 0;
+      left: 0;
 		}
 		.nextFrame {
-			float: right;
+			position: absolute;
+      bottom: 0;
+      right: 0;
 		}
 		.carousel-container {
 			clear: both;
 		}
-		li {
-			background-color: rgba(255,0,0,0.25);
+    .carousel-viewport li {
+      color: white;
+      font-family: Courier;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+		.carousel-viewport li:nth-child(odd) {
+			background-color: darkblue;
 		}
+    .carousel-viewport li:nth-child(even) {
+      background-color: darkred;
+    }
     .carousel-viewport ul li img {
       max-width:100%;
+    }
+    .carousel-viewport ul li p {
+      margin: 50% 0;
+    }
+    .carousel-pagination ul {
+      margin: 15px 0 10px;
     }
     .carousel-pagination li {
       margin:0 5px;
@@ -38,6 +59,8 @@
     }
     .carousel-controls {
       margin:0 auto;
+      padding: 15px 0;
+      width: 100%;
     }
     /* TEMP */
     body {
@@ -48,12 +71,16 @@
       overflow:hidden;
     }
     .carousel-wrapper {
-      width:45%;
-      margin:0 auto;
+      width: 100%%;
+      max-width: 450px;
+      margin: 0 auto;
     }
     .carousel-viewport ul li {
 /*      -webkit-transition:2s all ease-in-out;
       transition:2s all ease-in-out;*/
+    }
+    .carousel-controls-wrapper {
+      margin-bottom: 25px;
     }
     .state-visible {
 /*      left:0%;*/
@@ -80,14 +107,14 @@
     <li><p>5</p></li>
   </ul>
   
-  <!-- <ul id="example-carousel-3">
+  <ul id="example-carousel-2">
     <li><p>1</p></li>
     <li><p>2</p></li>
     <li><p>3</p></li>
     <li><p>4</p></li>
     <li><p>5</p></li>
     <li><p>6</p></li>
-  </ul> -->
+  </ul>
     
   
   <!-- <ul id="example-carousel">

@@ -82,6 +82,10 @@ define(
             tileClass: 'carousel-tile'
         };
 
+        var activeClass = 'state-visible'
+            , inactiveClass = 'state-hidden'
+            ;
+
         // Options that require integers
         var defaultInts = [ 'tilesPerFrame', 'wrapperDelta', 'viewportDelta' ];
 
@@ -212,35 +216,7 @@ define(
                 obj[ evt + fn ] = null;
             }
         }
-
-        /**
-         * Repeat a function X times at I intervals
-         *
-         * @method repeat
-         * @param {Number} interval Interval at which to call provided function
-         * @param {Number} repeats Number of times to repeat
-         * @param {Boolean} immediate Flag for delaying running of callback
-         * @param {Function} callback Function to run at intervals
-         * @author http://codereview.stackexchange.com/questions/13046/javascript-repeat-a-function-x-times-at-i-intervals
-         * @private
-         */
-        function repeat( interval, repeats, immediate, callback ) {
-
-            var timer;
-
-            var trigger = function () {
-                callback();
-                --repeats || clearInterval( timer );
-            };
-
-            interval = interval <= 0 ? 1000 : interval; // default: 1000ms
-            repeats = parseInt( repeats, 10 ) || 0; // default: repeat forever
-            timer = setInterval( trigger, interval );
-
-            // Run immediately
-            if ( !!immediate ) { trigger(); }
-        }
-
+        
         /**
          * Provides a more accurate object type string than typeof operator
          *
@@ -312,6 +288,39 @@ define(
         }
 
         /**
+         * Toggles class on an HTML element (mimics addClass and removeClass jQuery methods)
+         *
+         * @method toggleClass
+         * @param {HTML Element} elem Element which class will be toggled on (required)
+         * @param {String} elemClass Class name to be toggled (required)
+         * @param {Boolean} add Flag which will force adding or removal of class (optional)
+         * @private
+         */
+        function toggleClass( elem, elemClass, add ) {
+
+            if ( typeof elem === 'undefined' || typeof elemClass === 'undefined' ) {
+                return;
+            }
+
+            var classArr = elem.className.split(' ');
+            var classIdx = classArr.indexOf( elemClass );
+
+            // Element already has class, so remove unless add operation specified (add=true)
+            if ( classIdx !== -1 && add !== true ) {
+
+                classArr.splice( classIdx, 1 );
+            }
+
+            // Element doesn't have class, so add unless remove operation specified (add=false)
+            else if ( classIdx === -1 && add !== false ) {
+
+                classArr.push( elemClass );
+            }
+
+            elem.className = classArr.join(' ');
+        }
+
+        /**
          * Carousel core code
          *
          * @module carousel
@@ -345,9 +354,9 @@ define(
                 self.x.insertAfter = insertAfter;
                 self.x.addEvent = addEvent;
                 self.x.removeEvent = removeEvent;
-                self.x.repeat = repeat;
                 self.x.getObjType = getObjType;
                 self.x.getTransSupport = getTransSupport;
+                self.x.toggleClass = toggleClass;
 
                 // Setup plugins
                 self.setupPlugins();
@@ -377,8 +386,8 @@ define(
                     ;
 
                 // Save original tiles per frame data
-                self.options.origTilesPerFrame = tilesPerFrame;
-
+                options.origTilesPerFrame = tilesPerFrame;
+                    
                 // Make the main elements available to `this`
                 self.parentNode = carousel.parentNode;
                 self.wrapper = wrapper;
@@ -418,12 +427,223 @@ define(
                     addEvent( panels[ i ], 'blur', self.focusHandler );
                 }
 
+                self.initSwipe();
+
                 if ( options.ready ) {
 
                     options.ready.call( self, self.state );
                 }
 
                 self.x.publish( self.ns + '/init/after' );
+            },
+
+            initSwipe: function() {
+
+                var origin
+                    , stopMove
+                    , transCache = ''
+                    , self = this
+                    , options = self.options
+                    , state = self.state
+                    , tileWidth = self.cache( 'tileWidth' ) / window.devicePixelRatio //adjust for Retina
+                    , touchData = {}
+                    , elem = self.carousel
+                    , noTrans = 'carousel-no-transition'
+                    , evtDetail = { 'detail': { data: touchData } }
+                    , tilePercent = self.cache( 'tilePercent' )
+                    , transitionData = self.cache( 'transitionData' )
+                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
+                    , transformAttr = vendorPrefix + 'transform'
+                    , dragThreshold = function( deltaX ) {
+
+                        return Math.abs( deltaX ) > 4;
+                    }
+                    , setData = function( e ) {
+
+                        var touches = e.touches || e.originalEvent.touches;
+
+                        if ( e.type === 'touchstart' ) {
+
+                            origin = {
+                                x : touches[ 0 ].pageX,
+                                y: touches[ 0 ].pageY
+                            };
+                        }
+
+                        stopMove = false;
+
+                        if ( touches[ 0 ] && touches[ 0 ].pageX ) {
+
+                            touchData.touches = touches;
+                            touchData.deltaX = touches[ 0 ].pageX - origin.x;
+                            touchData.deltaY = touches[ 0 ].pageY - origin.y;
+                            touchData.w = tileWidth;
+                            touchData.h = tileWidth;
+                            touchData.xPercent = touchData.deltaX / touchData.w;
+                            touchData.yPercent = touchData.deltaY / touchData.h;
+                            touchData.srcEvent = e;
+                        }
+
+                    }
+                    , emitEvents = function( e ){
+
+                        var thisEvt;
+
+                        setData( e );
+
+                        if ( touchData.touches.length === 1 ) {
+
+                            thisEvt = new CustomEvent( self.ns + '.drag' + e.type.split( 'touch' )[ 1 ], evtDetail );
+
+                            elem.dispatchEvent( thisEvt );
+                        }
+                    };
+
+                /* 
+                 *  Native touch event listeners
+                 */
+                addEvent( elem, 'touchstart', function( e ) {
+
+                    toggleClass( elem, noTrans, true );
+
+                    transCache = elem.style.transform;
+
+                    emitEvents( e );
+                });
+
+                addEvent( elem, 'touchmove', function( e ) {
+
+                    if ( Math.abs( touchData.deltaX ) > 10 ) {
+
+                        if ( e && e.preventDefault ) {
+
+                            e.preventDefault();
+                        }
+                    }
+
+                    else if ( Math.abs( touchData.deltaY ) > 3 ) {
+
+                        stopMove = true;
+                    }
+
+                    if ( !stopMove ) {
+
+                        setData( e );
+                        emitEvents( e );
+                    }
+                });
+
+                addEvent( elem, 'touchend', function( e ) {
+
+                    toggleClass( elem, noTrans, false );
+                    emitEvents( e );
+                });
+
+                /* 
+                 *  Custom event listeners
+                 */
+                addEvent( elem, self.ns + '.dragmove', function( e ) {
+
+                    if ( Math.abs( touchData.deltaY ) > Math.abs( touchData.deltaX ) ) return;
+            
+                    if ( !dragThreshold( touchData.deltaX ) ) return;
+                
+                    var currentPosition = state.index
+                        , maxPosition = state.curTileLength - options.tilesPerFrame
+                        , forward = touchData.deltaX < 0
+                        , deltaX = Math.abs( touchData.deltaX )
+                        , nextIndex = forward ? currentPosition + 1 : currentPosition - 1
+                        , peekMod = forward ? options.tilesPerFrame - 1 : 0
+                        , peekIndex = nextIndex + peekMod
+                        , translateAmt = tilePercent * currentPosition
+                        , transformStr = 'translateX(calc(-' + translateAmt + '% + ' + touchData.deltaX + 'px))'
+                        // , calcPercent = currentPosition * -100
+                        // peeking
+                        // , calcOffset = currentPosition > 0 ? currentPosition * 30 : 0
+                        // , calcPosition = calcOffset + touchData.deltaX
+                        // , positionStr = 'calc(' + calcPercent + '% + ' + calcPosition + 'px)'
+                        // end peeking
+                        // , positionStr = 'calc(' + calcPercent + '% + ' + touchData.deltaX + 'px)'
+                        // , isFirst = currentPosition === 0 && touchData.deltaX > 0
+                        // , isLast = currentPosition === maxPosition && touchData.deltaX < 0
+                        ;
+                    
+                    // if ( isFirst || isLast ) return;
+
+                    elem.style.transform = transformStr;
+                    elem.style[ transformAttr ] = transformStr;
+
+                    if ( deltaX >= ( tileWidth / 2 ) ) {
+
+                        toggleClass( state.tileArr[ peekIndex ], inactiveClass, false );
+                        toggleClass( state.tileArr[ peekIndex ], activeClass, true );
+                    }
+                });
+
+                addEvent( elem, self.ns + '.dragend', function( e ) {
+
+                    if ( !dragThreshold( touchData.deltaX ) ) return;
+            
+                    self.x.publish( self.ns + '/move' );
+            
+                    var newSlide = Math.abs( touchData.deltaX ) >= tileWidth
+                        , currentPosition = state.index
+                        , maxPosition = state.curTileLength - options.tilesPerFrame
+                        // , isFirst = currentPosition === 0 && touchData.deltaX > 0
+                        // , isLast = currentPosition === maxPosition && touchData.deltaX < 0
+                        , forward = touchData.deltaX < 0
+                        , nextIndex = forward ? currentPosition + 1 : currentPosition - 1
+                        ;
+            
+                    // if ( isFirst || isLast ) return;
+                
+                    // Navigation threshold met, navigate carousel
+                    if ( newSlide ) {
+
+                        console.log(tileWidth, Math.abs( touchData.deltaX ));
+                
+                        var thisMethod = forward ? self.nextFrame : self.prevFrame;
+
+                        toggleClass( state.curTile, activeClass, false );
+                        toggleClass( state.curTile, inactiveClass, true );
+
+                        toggleClass( state.tileArr[ nextIndex ], inactiveClass, false );
+                        toggleClass( state.tileArr[ nextIndex ], activeClass, true );
+            
+                        thisMethod.call( self );
+                    }
+
+                    // Threshold not met, reset carousel to previous position
+                    else {
+
+                        toggleClass( elem, noTrans, false );
+                        
+                        elem.style.transform = transCache;
+                        elem.style[ transformAttr ] = transCache;
+
+                        transCache = '';
+                    }
+                });
+            },
+
+            /**
+             * Overrides internal method with provided function
+             *
+             * @method override
+             * @param {String} name Name of internal method to override
+             * @param {Function} func Function to replace internal method
+             * @return {Function} Replaced internal method
+             * @public
+             */
+            override: function( name, func ) {
+
+                if ( !this[ name ] ) { return; }
+
+                var origMethod = this[ name ].bind( this );
+
+                this[ name ] = func;
+
+                return origMethod; //return overidden method so that it can still be called if necessary
             },
 
             /**
@@ -655,7 +875,7 @@ define(
 
                 // Cache measurement vars
                 self.cache( 'tileDelta', ( options.tilesPerFrame * state.curFrameLength ) - state.curTileLength );
-                self.cache( 'tileWidth', outerWidth( state.tileArr[ state.index ] ) );
+                self.cache( 'tileWidth', outerWidth( state.curTile ) );
                 // self.cache( 'tileHeight', outerHeight( state.tileArr[ state.index ] ) );
                 self.cache( 'trackPercent', 100 * state.curTileLength );
                 self.cache( 'trackWidth', self.cache( 'tileWidth' ) * state.curTileLength );
@@ -710,58 +930,41 @@ define(
              *
              * @method syncState
              * @param {Number} index New index of left-most visible tile
-             * @param {Boolean} animate Flag whether to animate index change
              * @return {Object} Updated state object
              * @public
              */
-            syncState: function( index, animate ) {
+            syncState: function( index ) {
 
-                // Don't update state during tile transition
-                if ( !this.cache( 'animating' ) ) {
+                this.x.publish( this.ns + '/syncState/before', this.state.index, index );
 
-                    this.x.publish( this.ns + '/syncState/before', this.state.index, index );
+                var self                = this
+                    , state             = self.state
+                    , options           = self.options
+                    , tilesPerFrame     = options.tilesPerFrame
+                    , prevFrameIndex    = state.frameIndex
+                    , newIndex          = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
+                                            : index < 0 ? 0
+                                            : index
+                    , frameIndex        = Math.ceil( newIndex / tilesPerFrame )
+                    , isLastFrame       = newIndex === state.curTileLength - tilesPerFrame
+                    , tileDelta         = self.cache( 'tileDelta' )
+                    , updateObj = {
+                        index: newIndex,
+                        prevIndex: state.index,
+                        curTile: isLastFrame && tileDelta && options.incrementMode === 'frame'
+                                    ? state.tileArr[ newIndex + tileDelta ]
+                                    : state.tileArr[ newIndex ],
+                        curFrame: Array.prototype.slice.call( state.tileArr, newIndex, tilesPerFrame + newIndex ),
+                        frameIndex: frameIndex,
+                        prevFrameIndex: prevFrameIndex
+                    };
 
-                    var self                = this
-                        , state             = self.state
-                        , options           = self.options
-                        , tilesPerFrame     = options.tilesPerFrame
-                        , prevFrameIndex    = state.frameIndex
-                        , origIndex         = state.index
-                        , index             = index > state.curTileLength - tilesPerFrame ? state.curTileLength - tilesPerFrame
-                                                : index < 0 ? 0
-                                                : index
-                        , frameIndex        = Math.ceil( index / tilesPerFrame )
-                        , isLastFrame       = index === state.curTileLength - tilesPerFrame
-                        , tileDelta         = self.cache( 'tileDelta' )
-                        , updateObj = {
-                            index: index,
-                            prevIndex: state.index,
-                            curTile: isLastFrame && tileDelta && options.incrementMode === 'frame'
-                                        ? state.tileArr[ index + tileDelta ]
-                                        : state.tileArr[ index ],
-                            curFrame: Array.prototype.slice.call( state.tileArr, index, tilesPerFrame + index ),
-                            frameIndex: frameIndex,
-                            prevFrameIndex: prevFrameIndex
-                        };
+                // Update state object
+                self.updateState( updateObj );
+                
+                self.x.publish( self.ns + '/syncState/after', newIndex );
 
-                    self.updateState( updateObj );
-
-                    // Animate tile index change
-                    if ( animate ) {
-
-                        self.animate();
-                    }
-
-                    // Even if no animation, make sure carousel correctly positioned
-                    else {
-
-                        self.updatePosition( state.index );
-                    }
-
-                    self.x.publish( self.ns + '/syncState/after', origIndex, index );
-
-                    return state;
-                }
+                return state;
             },
 
             /**
@@ -772,6 +975,8 @@ define(
              * @public
              */
             updatePosition: function( index ) {
+
+                this.x.publish( this.ns + '/updatePosition/before' );
 
                 var self = this
                     , carousel = self.element
@@ -804,6 +1009,22 @@ define(
 
                 self.toggleAria( state.tileArr, 'add' );
                 self.toggleAria( state.curFrame, 'remove' );
+
+                self.x.publish( self.ns + '/updatePosition/after' );
+            },
+
+            /**
+             * Mediator function responsible for processing passed index, syncing state object, and navigating to appropriate tile
+             *
+             * @method navigate
+             * @param {Number} index Index of left-most visible tile
+             * @public
+             */
+            navigate: function( index ) {
+
+                var newState = this.syncState( index );
+
+                this.updatePosition( newState.index );
             },
 
             /**
@@ -852,126 +1073,6 @@ define(
                 for ( var i = 0; i< tileArr.length; i++ ) {
 
                     tileArr[ i ].style.width = tileStyle;
-                }
-            },
-
-            /**
-             * Animates carousel transitions
-             *
-             * @method animate
-             * @public
-             */
-            animate: function() {
-
-                this.x.publish( this.ns + '/animate/before' );
-
-                var timer
-                    , self = this
-                    , state = self.state
-                    , index = state.index
-                    , targetIndex = index
-                    , options = self.options
-                    , carousel = self.element
-                    , tilePercent = self.cache( 'tilePercent' )
-                    , preFrameChange = options.preFrameChange
-                    , postFrameChange = options.postFrameChange
-                    , seconds = 1
-                    , supportsTransitions = self.cache( 'supportsTransitions' )
-                    , transitionData = self.cache( 'transitionData' )
-                    , vendorPrefix = ( transitionData && typeof transitionData.prefix !== 'undefined' ) ? transitionData.prefix : ''
-                    , transformAttr = vendorPrefix + 'transform'
-                    , transitionAttr = vendorPrefix + 'transition'
-                    , transitionEvent = ( transitionData && transitionData.endEvt ) ? transitionData.endEvt : 'transitionend'
-                    , translateAmt = tilePercent * targetIndex
-                    , transformStr = 'translateX(-' + translateAmt + '%)'
-                    , translateStr = 'transform' + ' ' + seconds + 's'
-                    , numFrames = Math.ceil( (seconds * 1000) / 60 )
-                    , origin = state.prevIndex * tilePercent
-                    , distance = origin - translateAmt
-                    , frameDist = distance / numFrames
-                    ;
-
-                var initSettings = function() {
-
-                    self.cache( 'animating', true );
-
-                    // Execute preFrameChange callback
-                    if ( preFrameChange ) preFrameChange.call( self, state );
-
-                    // carousel.setAttribute( 'class', 'state-busy' );
-                    self.toggleAria( state.tileArr, 'remove' );
-
-                    self.updateNavigation();
-                };
-
-                var listener = function() {
-
-                    clearTimeout( timer );
-
-                    self.toggleAria( state.tileArr, 'add' );
-                    self.toggleAria( state.curFrame, 'remove' );
-
-                    //state.curTile.focus();
-                    carousel.className = carousel.className.replace( /\bstate-busy\b/, '' );
-
-                    self.cache( 'animating', false );
-
-                    // Execute postFrameChange callback
-                    if ( postFrameChange ) postFrameChange.call( self, state );
-
-                    self.x.publish( self.ns + '/transition/end' );
-                    self.x.publish( self.ns + '/animate/after' );
-                };
-
-                // Use CSS transitions
-                if ( supportsTransitions ) {
-
-                    initSettings();
-
-                    carousel.style.transition = translateStr;
-                    carousel.style[ transitionAttr ] = vendorPrefix + translateStr;
-
-                    self.x.subscribe( self.ns + '/transition/end', function() {
-
-                        carousel.removeEventListener( transitionEvent, listener, false );
-                    });
-
-                    carousel.addEventListener( transitionEvent, listener, false );
-
-                    carousel.style.transform = transformStr;
-                    carousel.style[ transformAttr ] = transformStr;
-
-                    // Set a little longer than transition time, so listener has chance to execute on its own
-                    timer = setTimeout( listener , seconds * 1010 );
-                }
-
-                // IE9 does not support CSS transitions
-                /*
-                    TODO Needs easing
-                */
-                else if ( 'msTransform' in carousel.style ) {
-
-                    initSettings();
-
-                    repeat( 16, numFrames, true, function() {
-
-                        origin -= frameDist;
-
-                        if ( origin < 0 ) {
-
-                            carousel.style.msTransform = 'translateX( 0px )';
-                            return;
-                        }
-
-                        carousel.style.msTransform = 'translateX( -' + origin + '% )';
-
-                    });
-
-                    setTimeout( function() {
-
-                        listener();
-
-                    }, ( 300 * seconds ) );
                 }
             },
 
@@ -1149,7 +1250,7 @@ define(
                     , index = this.state.index - modifier
                     ;
 
-                this.syncState( index, true );
+                this.navigate( index );
 
                 this.x.publish( this.ns + '/prevFrame/after' );
 
@@ -1172,7 +1273,7 @@ define(
                     , index = this.state.index + modifier
                     ;
 
-                this.syncState( index, true );
+                this.navigate( index );
 
                 this.x.publish( this.ns + '/nextFrame/after' );
 
@@ -1209,7 +1310,7 @@ define(
                     return self.carousel;
                 }
 
-                self.syncState( index, true );
+                self.navigate( index );
 
                 return self.carousel;
             },
@@ -1226,7 +1327,7 @@ define(
 
                 var index = 0;
 
-                this.syncState( index, true );
+                this.navigate( index );
 
                 return this.carousel;
             },
