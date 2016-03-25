@@ -33,7 +33,7 @@
 	position:relative;
 }
 .carousel-pagination li {
-	float:left;	
+	float:left;
 	display:block;
 }
 
@@ -45,8 +45,8 @@
 ACCESSIBILITY
 ---------------------------------*/
 /*
-	Render the element invisible to screen readers to make 
-	sure the content is ignored. This is used when 
+	Render the element invisible to screen readers to make
+	sure the content is ignored. This is used when
 	the element needs to take up space in the document
 	flow for dimension calculations.
 */

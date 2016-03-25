@@ -5,42 +5,17 @@
  *
  * Instantiate the carousel(s) by calling the plugin on an element or elements and passing an optional options object.
  *
- * Requires x.js
- *
- * @demo demo.php
- *
- * @example
- * SOURCE HTML STRUCTURE
- * <ul class="example-carousel">
- *      <li><img src="library/images/test-image-1.jpg" alt="" /></li>
- *      <li><img src="library/images/test-image-2.jpg" alt="" /></li>
- *      <li><img src="library/images/test-image-3.jpg" alt="" /></li>
- *      <li><img src="library/images/test-image-4.jpg" alt="" /></li>
- *      <li><img src="library/images/test-image-5.jpg" alt="" /></li>
- * </ul>
- *
- * var options = {
- *      parent: document.querySelector('.example-carousel')
- * }
- * var carousel1 = core();
- * carousel1.init(options);
- *
- *
- * @title Example #1: Default Instantiation
- * @syntax javascript
- * @desc Instantiation using default settings: single item carousel, one tile displayed at a time, advances one tile at a time, does not loop and does not display pagination. Note: the `carousel` class is not required for instantiation - any selector can be used.
- *
- *
- * @param Object options
- * @option Number tilesPerFrame Number of tiles to display per frame. Default is 1.
- * @option String incrementMode Whether to move the carousel by frame or single tile. Accepted values are `frame` and `tile`. Default is `frame`.
- * @option Boolean wrapControls Default is `false`. If `true`, a wrapper is placed around the prev/next links and pagination and centered.
- * @option String prevText Default is `Previous`. Set controls previous button text.
- * @option String nextText Default is `Next`. Set controls next button text.
- * @option Number wrapperDelta Change wrapper width by this pixel value. Default is 0.
- * @option Number viewportDelta Change viewport width by this pixel value. Default is 0.
- * @option Function preFrameChange Callback fired before the transitional frame animation.
- * @option Function postFrameChange Callback fired after the transitional frame animation.
+ * @param options {Object}
+ * @option element {HTMLElement}
+ * @option tilesPerFrame {Number} Number of tiles to display per frame. Default is 1.
+ * @option incrementMode {String} Whether to move the carousel by frame or single tile. Accepted values are `frame` and `tile`. Default is `frame`.
+ * @option wrapControls {Boolean} Default is `false`. If `true`, a wrapper is placed around the prev/next links and pagination and centered.
+ * @option prevText {String} Default is `Previous`. Set controls previous button text.
+ * @option nextText {String} Default is `Next`. Set controls next button text.
+ * @option wrapperDelta {Number} Change wrapper width by this pixel value. Default is 0.
+ * @option viewportDelta {Number} Change viewport width by this pixel value. Default is 0.
+ * @option preFrameChange {Function} Callback fired before the transitional frame animation.
+ * @option postFrameChange {Function} Callback fired after the transitional frame animation.
  *
  * @name carousel
  */
@@ -216,7 +191,7 @@ define(
                 obj[ evt + fn ] = null;
             }
         }
-        
+
         /**
          * Provides a more accurate object type string than typeof operator
          *
@@ -387,7 +362,7 @@ define(
 
                 // Save original tiles per frame data
                 options.origTilesPerFrame = tilesPerFrame;
-                    
+
                 // Make the main elements available to `this`
                 self.parentNode = carousel.parentNode;
                 self.wrapper = wrapper;
@@ -437,6 +412,64 @@ define(
                 self.x.publish( self.ns + '/init/after' );
             },
 
+            /**
+             * Initializes state object
+             *
+             * @method initState
+             * @public
+             */
+            initState: function() {
+
+                this.x.publish( this.ns + '/initState/before' );
+
+                var self                = this
+                    , carousel          = self.carousel
+                    , tileArr           = carousel.children
+                    , options           = self.options
+                    , tilesPerFrame     = options.tilesPerFrame
+                    , origTileLength    = tileArr.length
+                    , curTileLength     = origTileLength
+                    , frameLength       = Math.ceil( curTileLength / tilesPerFrame )
+                    , state = {
+                        index: 0,
+                        prevIndex: false,
+                        tileArr: tileArr,
+                        origTileLength: origTileLength,
+                        curTileLength: curTileLength,
+                        curTile: false,
+                        frameArr: [],
+                        curFrameLength: frameLength,
+                        curFrame: [],
+                        frameIndex: 0,
+                        prevFrameIndex: 0,
+                        dom: {
+                            wrapper: self.wrapper,
+                            viewport: self.viewport,
+                            carousel: self.element,
+                            controls: self.controls,
+                            prevBtn: self.prevBtn,
+                            nextBtn: self.nextBtn
+                        }
+                    }
+                    ;
+
+                // Cache internal vars for later use
+                self.cache( 'origWrapperClass', self.wrapper.className );
+                self.cache( 'tilePercent', 100 );
+
+                self.state = state;
+
+                self.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
+
+                // Build the normalized frames array
+                self.buildFrames();
+
+                self.x.publish( self.ns + '/initState/after' );
+            },
+            
+            /**
+             * TODO
+             */
             initSwipe: function() {
 
                 var origin
@@ -499,7 +532,7 @@ define(
                         }
                     };
 
-                /* 
+                /*
                  *  Native touch event listeners
                  */
                 addEvent( elem, 'touchstart', function( e ) {
@@ -539,15 +572,15 @@ define(
                     emitEvents( e );
                 });
 
-                /* 
+                /*
                  *  Custom event listeners
                  */
                 addEvent( elem, self.ns + '.dragmove', function( e ) {
 
                     if ( Math.abs( touchData.deltaY ) > Math.abs( touchData.deltaX ) ) return;
-            
+
                     if ( !dragThreshold( touchData.deltaX ) ) return;
-                
+
                     var currentPosition = state.index
                         , maxPosition = state.curTileLength - options.tilesPerFrame
                         , forward = touchData.deltaX < 0
@@ -567,7 +600,7 @@ define(
                         // , isFirst = currentPosition === 0 && touchData.deltaX > 0
                         // , isLast = currentPosition === maxPosition && touchData.deltaX < 0
                         ;
-                    
+
                     // if ( isFirst || isLast ) return;
 
                     elem.style.transform = transformStr;
@@ -583,9 +616,9 @@ define(
                 addEvent( elem, self.ns + '.dragend', function( e ) {
 
                     if ( !dragThreshold( touchData.deltaX ) ) return;
-            
+
                     self.x.publish( self.ns + '/move' );
-            
+
                     var newSlide = Math.abs( touchData.deltaX ) >= tileWidth
                         , currentPosition = state.index
                         , maxPosition = state.curTileLength - options.tilesPerFrame
@@ -594,14 +627,14 @@ define(
                         , forward = touchData.deltaX < 0
                         , nextIndex = forward ? currentPosition + 1 : currentPosition - 1
                         ;
-            
+
                     // if ( isFirst || isLast ) return;
-                
+
                     // Navigation threshold met, navigate carousel
                     if ( newSlide ) {
 
                         console.log(tileWidth, Math.abs( touchData.deltaX ));
-                
+
                         var thisMethod = forward ? self.nextFrame : self.prevFrame;
 
                         toggleClass( state.curTile, activeClass, false );
@@ -609,7 +642,7 @@ define(
 
                         toggleClass( state.tileArr[ nextIndex ], inactiveClass, false );
                         toggleClass( state.tileArr[ nextIndex ], activeClass, true );
-            
+
                         thisMethod.call( self );
                     }
 
@@ -617,7 +650,7 @@ define(
                     else {
 
                         toggleClass( elem, noTrans, false );
-                        
+
                         elem.style.transform = transCache;
                         elem.style[ transformAttr ] = transCache;
 
@@ -753,61 +786,6 @@ define(
             },
 
             /**
-             * Initializes state object
-             *
-             * @method initState
-             * @public
-             */
-            initState: function() {
-
-                this.x.publish( this.ns + '/initState/before' );
-
-                var self                = this
-                    , carousel          = self.carousel
-                    , tileArr           = carousel.children
-                    , options           = self.options
-                    , tilesPerFrame     = options.tilesPerFrame
-                    , origTileLength    = tileArr.length
-                    , curTileLength     = origTileLength
-                    , frameLength       = Math.ceil( curTileLength / tilesPerFrame )
-                    , state = {
-                        index: 0,
-                        prevIndex: false,
-                        tileArr: tileArr,
-                        origTileLength: origTileLength,
-                        curTileLength: curTileLength,
-                        curTile: false,
-                        frameArr: [],
-                        curFrameLength: frameLength,
-                        curFrame: [],
-                        frameIndex: 0,
-                        prevFrameIndex: 0,
-                        dom: {
-                            wrapper: self.wrapper,
-                            viewport: self.viewport,
-                            carousel: self.element,
-                            controls: self.controls,
-                            prevBtn: self.prevBtn,
-                            nextBtn: self.nextBtn
-                        }
-                    }
-                    ;
-
-                // Cache internal vars for later use
-                self.cache( 'origWrapperClass', self.wrapper.className );
-                self.cache( 'tilePercent', 100 );
-
-                self.state = state;
-
-                self.toggleAria( tileArr, 'add', options.tileClass ); //init tile classes (all tiles hidden by default)
-
-                // Build the normalized frames array
-                self.buildFrames();
-
-                self.x.publish( self.ns + '/initState/after' );
-            },
-
-            /**
              * Populates state object, including width calculations based on tilesPerFrame
              *
              * @method buildFrames
@@ -843,15 +821,6 @@ define(
                     // Every way I try to get around it, including the MDN shim, still causes IE8 to crash
                     tiles = Array.prototype.slice.call( tileArr, tilesPerFrame * sec, tilesPerFrame * count );
 
-                    // var tiles = [];
-                    // for ( var i = tilesPerFrame * sec, ii = 0, end = tilesPerFrame * count; i < end; i++, ii++) {
-                    //     console.log(i);
-                    //     console.log(ii);
-                    //     console.log(end);
-                    //     console.log(' ');
-                    //     tiles[ii] = tileArr[i];
-                    // }
-
                     state.frameArr.push( tiles );
                 }
 
@@ -863,15 +832,6 @@ define(
                 state.curFrame          = state.frameArr[ state.frameIndex ];
 
                 self.wrapper.setAttribute( 'class', origWrapperClass + ' ' + options.wrapperClass );
-
-                // tilePercent = ( parseInt( ( 100 / options.tilesPerFrame ) * 1000 ) ) / 1000;
-                // tileStyle = 'width: ' + tilePercent + '%; ';
-                //
-                // for ( var i = 0; i < tileArr.length; i++ ) {
-                //     tileArr[ i ].setAttribute( 'style', tileStyle );
-                //                     // tileArr[ 0 ].classList.add( 'component-container' ); // !TODO: Replace string
-                //                     // carousel.appendChild( tileArr[ 0 ] );
-                // }
 
                 // Cache measurement vars
                 self.cache( 'tileDelta', ( options.tilesPerFrame * state.curFrameLength ) - state.curTileLength );
@@ -961,7 +921,7 @@ define(
 
                 // Update state object
                 self.updateState( updateObj );
-                
+
                 self.x.publish( self.ns + '/syncState/after', newIndex );
 
                 return state;
